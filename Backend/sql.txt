@@ -1,0 +1,41 @@
+-- Insert into users table
+INSERT INTO users (id, username, email, password_hash, role, profile_image, bio, created_at) VALUES
+  (gen_random_uuid(), 'creator1', 'creator1@example.com', 'hashedpassword1', 'creator', 'image1.jpg', 'Bio of creator1', NOW()),
+  (gen_random_uuid(), 'brand1', 'brand1@example.com', 'hashedpassword2', 'brand', 'image2.jpg', 'Bio of brand1', NOW()),
+  (gen_random_uuid(), 'creator2', 'creator2@example.com', 'hashedpassword3', 'creator', 'image3.jpg', 'Bio of creator2', NOW());
+
+-- Insert into audience_insights table
+INSERT INTO audience_insights (id, user_id, audience_age_group, audience_location, engagement_rate, average_views, time_of_attention, price_expectation, created_at) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), '{"18-24": 70, "25-34": 30}', '{"USA": 50, "UK": 50}', 4.5, 10000, 120, 500.00, NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), '{"18-24": 60, "25-34": 40}', '{"India": 70, "Canada": 30}', 3.8, 8000, 100, 450.00, NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'brand1'), '{"18-24": 50, "25-34": 50}', '{"Germany": 60, "France": 40}', 4.2, 9000, 110, 480.00, NOW());
+
+-- Insert into sponsorships table
+INSERT INTO sponsorships (id, brand_id, title, description, required_audience, budget, engagement_minimum, status, created_at) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'brand1'), 'Tech Sponsorship', 'Sponsorship for tech influencers', '{"age": ["18-24"], "location": ["USA", "UK"]}', 5000.00, 4.0, 'open', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'brand1'), 'Fashion Sponsorship', 'Sponsorship for fashion bloggers', '{"age": ["18-34"], "location": ["India"]}', 3000.00, 3.5, 'open', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'brand1'), 'Gaming Sponsorship', 'Sponsorship for gaming content creators', '{"age": ["18-30"], "location": ["Germany"]}', 4000.00, 4.2, 'open', NOW());
+
+-- Insert into user_posts table
+INSERT INTO user_posts (id, user_id, title, content, post_url, category, engagement_metrics, created_at) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), 'Tech Review', 'A review of the latest smartphone.', 'https://example.com/post1', 'Tech', '{"likes": 500, "comments": 100, "shares": 50}', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), 'Fashion Trends', 'Exploring the latest fashion trends.', 'https://example.com/post2', 'Fashion', '{"likes": 300, "comments": 50, "shares": 20}', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), 'Gaming Setup', 'A detailed guide on the best gaming setup.', 'https://example.com/post3', 'Gaming', '{"likes": 400, "comments": 80, "shares": 40}', NOW());
+
+-- Insert into sponsorship_applications table
+INSERT INTO sponsorship_applications (id, creator_id, sponsorship_id, post_id, proposal, status, applied_at) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), (SELECT id FROM user_posts WHERE title = 'Tech Review'), 'I am interested in this sponsorship', 'pending', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), (SELECT id FROM user_posts WHERE title = 'Fashion Trends'), 'I can provide quality content', 'pending', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), (SELECT id FROM user_posts WHERE title = 'Gaming Setup'), 'I am a perfect fit for this campaign', 'pending', NOW());
+
+-- Insert into collaborations table
+INSERT INTO collaborations (id, creator_1_id, creator_2_id, collaboration_details, status, created_at) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'creator2'), 'Collaboration on tech and fashion', 'pending', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'creator1'), 'Gaming and tech collaboration', 'pending', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), 'Brand deal collaboration', 'pending', NOW());
+
+-- Insert into sponsorship_payments table
+INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amount, status, transaction_date) VALUES
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 500.00, 'completed', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 300.00, 'completed', NOW()),
+  (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 400.00, 'pending', NOW());
