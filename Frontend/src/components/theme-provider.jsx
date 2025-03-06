@@ -48,30 +48,3 @@ export const useTheme = () => {
   return context
 }
 
-// "use client";
-// import React, { useState, useEffect, useContext } from "react";
-
-// export default function ThemeProvider({ children }) {
-//   const [theme, setTheme] = useState("light");
-
-//   useEffect(() => {
-//     document.documentElement.classList.toggle("dark", theme === "dark");
-//   }, [theme]);
-
-//   return (
-//     <div className="bg-background text-foreground">
-//       <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-//         Toggle Dark Mode
-//       </button>
-//       {children}
-//     </div>
-//   );
-// }
-
-// export const useTheme = () => {
-//   const context = useContext(ThemeProviderContext)
-
-//   if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider")
-
-//   return context
-// }

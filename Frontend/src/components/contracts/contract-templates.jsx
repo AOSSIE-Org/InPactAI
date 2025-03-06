@@ -1,5 +1,4 @@
-"use client"
-
+import React from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileText, Copy, ArrowRight } from "lucide-react"
@@ -55,7 +54,7 @@ export function ContractTemplates() {
   const router = useRouter()
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
 
-  const handleUseTemplate = (templateId: string) => {
+  const handleUseTemplate = (templateId) => {
     setSelectedTemplate(templateId)
     // In a real app, this would navigate to a contract creation page with the template pre-loaded
     router.push(`/dashboard/contracts/create?template=${templateId}`)
