@@ -1,3 +1,85 @@
+-- Create users table
+CREATE TABLE users (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('creator', 'brand')),
+    profile_image TEXT,
+    bio TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create audience_insights table
+CREATE TABLE audience_insights (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    audience_age_group JSON NOT NULL,
+    audience_location JSON NOT NULL,
+    engagement_rate FLOAT NOT NULL,
+    average_views INT NOT NULL,
+    time_of_attention INT NOT NULL,
+    price_expectation DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create sponsorships table
+CREATE TABLE sponsorships (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    brand_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    required_audience JSON NOT NULL,
+    budget DECIMAL(10,2) NOT NULL,
+    engagement_minimum FLOAT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed')),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create user_posts table
+CREATE TABLE user_posts (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    post_url TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    engagement_metrics JSON NOT NULL, 
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create sponsorship_applications table
+CREATE TABLE sponsorship_applications (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    sponsorship_id VARCHAR NOT NULL REFERENCES sponsorships(id) ON DELETE CASCADE,
+    post_id VARCHAR REFERENCES user_posts(id) ON DELETE CASCADE,
+    proposal TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    applied_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create collaborations table
+CREATE TABLE collaborations (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_1_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    creator_2_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    collaboration_details TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected')),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create sponsorship_payments table
+CREATE TABLE sponsorship_payments (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    brand_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    sponsorship_id VARCHAR NOT NULL REFERENCES sponsorships(id) ON DELETE CASCADE,
+    amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+    transaction_date TIMESTAMP DEFAULT NOW()
+);
+
 -- Insert into users table
 INSERT INTO users (id, username, email, password_hash, role, profile_image, bio, created_at) VALUES
   (gen_random_uuid(), 'creator1', 'creator1@example.com', 'hashedpassword1', 'creator', 'image1.jpg', 'Bio of creator1', NOW()),
