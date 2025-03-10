@@ -123,7 +123,7 @@ uvicorn main:app --reload
 #### 5. Start Development Servers
 - **Frontend**:
 ```sh
-npm start
+npm run dev
 ```
 - **Backend**:
 ```sh
