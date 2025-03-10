@@ -1,4 +1,7 @@
-# Inpact - AI-Powered Creator Collaboration & Sponsorship Matchmaking
+![Inpact arch](https://github.com/user-attachments/assets/2b911c1f-2a14-4663-9a22-f04b22baa5b8)
+
+# Inpact - AI-Powered Creator Collaborat
+ion & Sponsorship Matchmaking
 
 Inpact is an open-source AI-powered platform designed to connect content creators, brands, and agencies through data-driven insights. By leveraging Generative AI (GenAI), audience analytics, and engagement metrics, Inpact ensures highly relevant sponsorship opportunities for creators while maximizing ROI for brands investing in influencer marketing.
 
