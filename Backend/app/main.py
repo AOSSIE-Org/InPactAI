@@ -3,7 +3,6 @@ from db.db import engine
 from models import models
 from routes.post import router as post_router
 from sqlalchemy.exc import SQLAlchemyError
-from contextlib import asynccontextmanager
 import logging
 import os
 from dotenv import load_dotenv
@@ -11,14 +10,6 @@ from contextlib import asynccontextmanager
 
 # Load environment variables
 load_dotenv()
-host=os.getenv("host")
-
-import socket
-socket.getaddrinfo(host,443)
-
-# Initialize logger
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Async function to create database tables with exception handling
 async def create_tables():
