@@ -3,14 +3,22 @@ from db.db import engine
 from models import models
 from routes.post import router as post_router
 from sqlalchemy.exc import SQLAlchemyError
+from contextlib import asynccontextmanager
+import logging
 import os
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 # Load environment variables
 load_dotenv()
+host=os.getenv("host")
 
-# Initialize FastAPI
-app = FastAPI()
+import socket
+socket.getaddrinfo(host,443)
+
+# Initialize logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Async function to create database tables with exception handling
 async def create_tables():
@@ -21,13 +29,16 @@ async def create_tables():
     except SQLAlchemyError as e:
         print(f"❌ Error creating tables: {e}")
 
-# Run table creation at startup
-@app.on_event("startup")
-async def startup():
-    try:
-        await create_tables()
-    except Exception as e:
-        print(f"❌ Unexpected error during startup: {e}")
+#Lifespan context manager for startup and shutdown events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("App is starting...")
+    await create_tables()
+    yield
+    print("App is shutting down...")
+
+# Initialize FastAPI
+app = FastAPI(lifespan=lifespan)
 
 # Include the routes
 app.include_router(post_router)

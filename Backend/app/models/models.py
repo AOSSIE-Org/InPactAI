@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Float, Text, JSON, DECIMAL, TIMESTAMP
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from db.db import Base
 import uuid
 
@@ -18,7 +18,7 @@ class User(Base):
     role = Column(String, nullable=False)  # 'creator' or 'brand'
     profile_image = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=lambda: datetime.now(timezone.utc))
 
     audience = relationship("AudienceInsights", back_populates="user", uselist=False)
     sponsorships = relationship("Sponsorship", back_populates="brand")
@@ -38,7 +38,7 @@ class AudienceInsights(Base):
     average_views = Column(Integer)
     time_of_attention = Column(Integer)  # in seconds
     price_expectation = Column(DECIMAL(10, 2))
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="audience")
 
@@ -54,7 +54,7 @@ class Sponsorship(Base):
     budget = Column(DECIMAL(10, 2))
     engagement_minimum = Column(Float)
     status = Column(String, default="open")
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=lambda: datetime.now(timezone.utc))
 
     brand = relationship("User", back_populates="sponsorships")
     applications = relationship("SponsorshipApplication", back_populates="sponsorship")
@@ -70,7 +70,7 @@ class UserPost(Base):
     post_url = Column(Text, nullable=True)
     category = Column(String, nullable=True)
     engagement_metrics = Column(JSON)  # {"likes": 500, "comments": 100, "shares": 50}
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="posts")
 
@@ -98,7 +98,7 @@ class Collaboration(Base):
     creator_2_id = Column(String, ForeignKey("users.id"), nullable=False)
     collaboration_details = Column(Text, nullable=False)
     status = Column(String, default="pending")
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP,default=lambda: datetime.now(timezone.utc))
 
 # Sponsorship Payments Table
 class SponsorshipPayment(Base):
