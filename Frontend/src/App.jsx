@@ -11,6 +11,7 @@ import ResetPasswordPage from "./pages/ResetPassword"
 
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
+import Dashboard from "./pages/Brand/Dashboard"
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path="/signup" element={<SignupPage/>} />
           <Route path='/forgot-password' element={<ForgotPasswordPage/>} />
           <Route path='/reset-password' element={<ResetPasswordPage/>} />
-
+          <Route path='/brand/dashboard' element={<Dashboard/>} />
           {/* Protected Routes*/}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}>
             <Route path="sponsorships" element={<SponsorshipsPage />} />
