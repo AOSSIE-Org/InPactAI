@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/ResetPassword"
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Dashboard from "./pages/Brand/Dashboard"
+import BasicDetails from "./pages/BasicDetails"
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path='/forgot-password' element={<ForgotPasswordPage/>} />
           <Route path='/reset-password' element={<ResetPasswordPage/>} />
           <Route path='/brand/dashboard' element={<Dashboard/>} />
+          <Route path='/basicDetails/:user' element={<BasicDetails/>} />
           {/* Protected Routes*/}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}>
             <Route path="sponsorships" element={<SponsorshipsPage />} />
