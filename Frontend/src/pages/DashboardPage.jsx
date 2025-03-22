@@ -10,7 +10,9 @@ import {
   Briefcase,
   DollarSign,
   FileText,
+  Icon,
   LayoutDashboard,
+  LogOut,
   MessageSquare,
   Rocket,
   Search,
@@ -19,8 +21,11 @@ import {
 import { PerformanceMetrics } from "../components/dashboard/performance-metrics"
 import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
+import { useAuth } from "../context/AuthContext"
 
 export default function DashboardPage() {
+  const {logout} = useAuth();
+
   return (
     <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)]">
       <header className="sticky top-0 z-50 w-full border-b border-[hsl(214.3,31.8%,91.4%)] bg-[rgba(255,255,255,0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsla(0,0%,100%,0.6)]">
@@ -52,7 +57,7 @@ export default function DashboardPage() {
     </Button>
   ))}
 </div>
-<div className="ml-auto flex items-center space-x-4">
+<div className="ml-auto flex items-center space-x-3">
   <div className="relative hidden md:flex">
     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
     <Input
@@ -62,6 +67,9 @@ export default function DashboardPage() {
     />
   </div>
   <ModeToggle />
+  <Button onClick={logout} variant="ghost">
+    <LogOut className="h-5 w-5" />  
+  </Button>
   <UserNav />
 </div>
 </div>
