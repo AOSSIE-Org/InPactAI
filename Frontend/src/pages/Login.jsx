@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Rocket } from "lucide-react"
+import { useAuth } from "../context/AuthContext"
 
 export default function LoginPage() {
   const Navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +23,7 @@ export default function LoginPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       // Redirect to dashboard on success
-      Navigate("/dashboard")
+      login()
     } catch (err) {
       setError("Invalid email or password. Please try again.")
     } finally {
