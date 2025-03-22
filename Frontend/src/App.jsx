@@ -26,6 +26,7 @@ function App() {
           <Route path='/reset-password' element={<ResetPasswordPage/>} />
           <Route path='/brand/dashboard' element={<Dashboard/>} />
           <Route path='/basicDetails/:user' element={<BasicDetails/>} />
+
           {/* Protected Routes*/}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}>
             <Route path="sponsorships" element={<SponsorshipsPage />} />
