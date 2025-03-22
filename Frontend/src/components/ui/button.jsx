@@ -21,7 +21,7 @@ const Button = React.forwardRef(({ asChild, className, variant = "default", size
 Button.displayName = "Button";
 
 const variants = {
-          default: "bg-gray-50 text-gray-600 hover:bg-gray-50",
+          default: "bg-gray-50 text-gray-600 hover:bg-gray-300",
           destructive: "bg-destructive text-gray-600 hover:bg-gray-50",
           outline: "border border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-600",
           secondary: "bg-gray-50 text-gray-900 hover:bg-gray-50",
