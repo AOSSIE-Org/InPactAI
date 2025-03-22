@@ -79,6 +79,7 @@ export default function SignupPage() {
     }
   }
 
+  
   const handleGoogleSignUp = async()=>{
     const {data,error} = supabase.auth.signInWithOAuth({
       provider:'google'
