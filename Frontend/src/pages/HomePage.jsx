@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {ArrowRight, BarChart3, Handshake, Layers, MessageSquare, Rocket, Users} from "lucide-react";
