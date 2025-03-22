@@ -26,7 +26,7 @@ import { ModeToggle } from "../components/mode-toggle"
 
 
 export default function BasicDetails() {
-    const { user } = useParams();
+  const { user } = useParams();
   const [step, setStep] = useState(0);
   const [animationDirection, setAnimationDirection] = useState(0);
 
