@@ -15,6 +15,7 @@ import { Button } from "../components/ui/button";
 import { MainNav } from "../components/main-nav";
 import { ModeToggle } from "../components/mode-toggle";
 import { UserNav } from "../components/user-nav";
+import Onboarding from "../components/Onboarding";
 
 const features = [
   {
@@ -170,6 +171,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Onboarding Section */}
+        <Onboarding />
 
         {/* Features Section - Revealed on Scroll */}
         <section ref={featuresRef} className="w-full py-24 bg-white">

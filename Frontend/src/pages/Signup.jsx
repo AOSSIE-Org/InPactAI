@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [step, setStep] = useState(1)
+  const [user,setuser] = useState("influencer")
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -21,6 +22,9 @@ export default function SignupPage() {
   }
 
   const handleAccountTypeChange = (type) => {
+    setuser(type)
+    console.log(type)
+    console.log(user)
     setFormData((prev) => ({ ...prev, accountType: type }))
   }
 
@@ -40,7 +44,7 @@ export default function SignupPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       // Redirect to dashboard on success
-      navigate("/dashboard")
+      navigate(`/BasicDetails/${user}`);
     } catch (err) {
       setError("Something went wrong. Please try again.")
     } finally {
@@ -100,7 +104,7 @@ export default function SignupPage() {
                 {step === 1 ? "Create your account" : "Complete your profile"}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-8">
-                {step === 1 ? "Join the AI-powered creator collaboration platform" : "Tell us more about yourself"}
+                {step === 1 ? "Join the AI-powered creator collaboration platform" : "How do you want to use our Platform?"}
               </p>
 
               {error && (
@@ -205,27 +209,11 @@ export default function SignupPage() {
                 ) : (
                   <>
                     <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Full Name
-                      </label>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                        placeholder="Your name"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Account Type</label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
-                          onClick={() => handleAccountTypeChange("creator")}
+                          onClick={() => handleAccountTypeChange("influencer")}
                           className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
                             formData.accountType === "creator"
                               ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
@@ -262,26 +250,6 @@ export default function SignupPage() {
                             <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                           <span className="text-sm font-medium">Brand</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAccountTypeChange("agency")}
-                          className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
-                            formData.accountType === "agency"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
-                              : "border-gray-300 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700"
-                          }`}
-                        >
-                          <svg
-                            className="h-6 w-6 mb-2"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          <span className="text-sm font-medium">Agency</span>
                         </button>
                       </div>
                     </div>
