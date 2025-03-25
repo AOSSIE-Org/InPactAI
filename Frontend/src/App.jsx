@@ -9,6 +9,8 @@ import SignupPage from "./pages/Signup"
 import ForgotPasswordPage from "./pages/ForgotPassword"
 import ResetPasswordPage from "./pages/ResetPassword"
 
+import ContractsPage from "./pages/Contracts"
+
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
 import Dashboard from "./pages/Brand/Dashboard"
@@ -27,12 +29,15 @@ function App() {
           <Route path='/brand/dashboard' element={<Dashboard/>} />
           <Route path='/basicDetails/:user' element={<BasicDetails/>} />
 
-          {/* Protected Routes*/}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}>
-            <Route path="sponsorships" element={<SponsorshipsPage />} />
-            <Route path="collaborations" element={<CollaborationsPage />} />
-            <Route path="messages" element={<MessagesPage />} />
-          </Route>
+         
+          <Route path="/dashboard" element={<DashboardPage />}/>
+            <Route path="/sponsorships" element={<SponsorshipsPage />} />
+            <Route path="/collaborations" element={<CollaborationsPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+           
+            <Route path="/contracts" element={<ContractsPage></ContractsPage>}/>
+      
+          
         </Routes>
       </AuthProvider>
     </Router>
