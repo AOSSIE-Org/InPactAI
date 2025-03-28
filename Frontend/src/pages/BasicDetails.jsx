@@ -59,8 +59,8 @@ const nextStep = () => {
   
 
   const InfluencerBasicDetails = () => (
-    <div className="space-y-4 p-4 border border-gray-300 rounded-md">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4 p-4 border border-gray-300 rounded-md  ">
+      <div className="grid grid-cols-2 gap-4 ">
         <div className="space-y-2">
           <Label htmlFor="firstName">First Name</Label>
           <Input id="firstName" placeholder="John" className="border border-gray-300"/>
@@ -80,11 +80,11 @@ const nextStep = () => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="category">Content Category</Label>
-        <Select>
+        <Select >
           <SelectTrigger>
             <SelectValue placeholder="Select your main content category"  />
           </SelectTrigger>
-          <SelectContent className="border border-gray-300">
+          <SelectContent className="border border-gray-300 bg-blue-100">
             <SelectItem value="lifestyle">Lifestyle</SelectItem>
             <SelectItem value="tech">Technology</SelectItem>
             <SelectItem value="fashion">Fashion</SelectItem>
@@ -149,13 +149,13 @@ const nextStep = () => {
         <Label htmlFor="avgEngagement">Average Engagement Rate (%)</Label>
         <Input id="avgEngagement" type="number" step="0.01" placeholder="e.g., 3.5" className="border border-gray-300" />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 ">
         <Label htmlFor="mainPlatform">Primary Platform</Label>
         <Select>
           <SelectTrigger>
             <SelectValue placeholder="Select your main platform" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className = "bg-blue-100">
             <SelectItem value="instagram">Instagram</SelectItem>
             <SelectItem value="youtube">YouTube</SelectItem>
             <SelectItem value="tiktok">TikTok</SelectItem>
@@ -169,7 +169,7 @@ const nextStep = () => {
           <SelectTrigger>
             <SelectValue placeholder="Select age range" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className = "bg-blue-100">
             <SelectItem value="13-17">13-17</SelectItem>
             <SelectItem value="18-24">18-24</SelectItem>
             <SelectItem value="25-34">25-34</SelectItem>
