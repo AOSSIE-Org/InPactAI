@@ -199,7 +199,7 @@ const nextStep = () => {
             <SelectTrigger className="text-white">
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className ="bg-white">
               <SelectItem value="fashion" className="text-sky-500">Fashion</SelectItem>
               <SelectItem value="tech" className="text-sky-500">Technology</SelectItem>
               <SelectItem value="food" className="text-sky-500">Food & Beverage</SelectItem>
@@ -215,7 +215,7 @@ const nextStep = () => {
             <SelectTrigger className="text-white">
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className ="bg-white">
               <SelectItem value="1-10" className="text-sky-500">1-10 employees</SelectItem>
               <SelectItem value="11-50" className="text-sky-500">11-50 employees</SelectItem>
               <SelectItem value="51-200" className="text-sky-500">51-200 employees</SelectItem>
@@ -227,11 +227,11 @@ const nextStep = () => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="budget" className="text-sky-500">Monthly Marketing Budget</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select budget range" className="text-white" />
+        <Select >
+          <SelectTrigger className="text-white" >
+            <SelectValue placeholder="Select budget range"  />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className = "bg-white"> 
             <SelectItem value="0-5000" className="text-sky-500">$0 - $5,000</SelectItem>
             <SelectItem value="5001-10000" className="text-sky-500">$5,001 - $10,000</SelectItem>
             <SelectItem value="10001-50000" className="text-sky-500">$10,001 - $50,000</SelectItem>
@@ -248,10 +248,10 @@ const nextStep = () => {
       <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 text-sky-500">Campaign Settings</h3>
         <Label htmlFor="targetAudience " className="text-sky-500">Target Audience Age Range</Label>
         <Select>
-          <SelectTrigger>
+          <SelectTrigger className ="text-white">
             <SelectValue placeholder="Select target age range"  className="text-white"/>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className = "bg-white">
             <SelectItem value="13-17"className="text-sky-500">13-17</SelectItem>
             <SelectItem value="25-34" className="text-sky-500">25-34</SelectItem>
             <SelectItem value="35-44" className="text-sky-500">35-44</SelectItem>
@@ -260,13 +260,13 @@ const nextStep = () => {
           </SelectContent>
         </Select>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 ">
         <Label htmlFor="preferredPlatforms" className="text-sky-500">Preferred Platforms</Label>
         <Select>
-          <SelectTrigger>
+          <SelectTrigger className = "text-white">
             <SelectValue placeholder="Select primary platform" className="text-white" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className ="bg-white">
             <SelectItem value="instagram"className="text-sky-500">Instagram</SelectItem>
             <SelectItem value="youtube"className="text-sky-500">YouTube</SelectItem>
             <SelectItem value="tiktok"className="text-sky-500">TikTok</SelectItem>
@@ -280,7 +280,7 @@ const nextStep = () => {
           <SelectTrigger className="text-white">
             <SelectValue placeholder="Select campaign goal"  />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className ="bg-white">
             <SelectItem value="awareness"className="text-sky-500">Brand Awareness</SelectItem>
             <SelectItem value="sales"className="text-sky-500">Direct Sales</SelectItem>
             <SelectItem value="engagement"className="text-sky-500">Community Engagement</SelectItem>
