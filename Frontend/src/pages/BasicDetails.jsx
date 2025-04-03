@@ -1,4 +1,5 @@
 import { Button } from "../components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -15,14 +16,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Instagram, Youtube, Twitter, BookText as TikTok, Globe, ChevronRight, ChevronLeft,Rocket, Check} from "lucide-react";
+import { Instagram, Youtube, Twitter, BookText as TikTok, Globe, ChevronRight, ChevronLeft,Rocket, Check, Target} from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState,useEffect} from "react";
+import React, { useState,useEffect} from "react";
 import { useParams } from "react-router-dom";
 import { UserNav } from "../components/user-nav";
 import { MainNav } from "../components/main-nav"
 import { Link } from "react-router-dom"
 import { ModeToggle } from "../components/mode-toggle"
+
+
+
+
+ 
+
+
+
+
 
 
 export default function BasicDetails() {
@@ -39,6 +49,36 @@ const nextStep = () => {
       }, 50);
     }
   };
+
+   //Reset form after clicking rreset
+  const [formData , setFormData] = useState(
+    {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      category: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      tiktok: "",
+      website: "",
+    });
+// This function will reset the form 
+    const resetForm = ()=>{
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        category: "",
+        instagram: "",
+        youtube: "",
+        twitter: "",
+        tiktok: "",
+        website: "",
+      });
+    };
 
   const prevStep = () => {
     if (step > 0) {
@@ -57,7 +97,6 @@ const nextStep = () => {
     return () => clearTimeout(timer);
   }, [step]);
   
-
   const InfluencerBasicDetails = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md  ">
       <div className="grid grid-cols-2 gap-4 ">
@@ -72,11 +111,11 @@ const nextStep = () => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sky-500">Email</Label>
-        <Input id="email" type="email" placeholder="john@example.com" className="border border-gray-300" />
+        <Input id="email"  type="email" placeholder="john@example.com" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-sky-500">Phone Number</Label>
-        <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" className="border border-gray-300"/>
+        <Input id="phone"  type="tel" placeholder="+1 (555) 000-0000" className="border border-gray-300"/>
       </div>
       <div className="space-y-2">
         <Label htmlFor="category" className="text-sky-500"  >Content Category</Label>
@@ -476,7 +515,7 @@ const nextStep = () => {
               </Card>
               
               <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                <p>Need to start over? <button className="text-purple-600 hover:text-purple-700 dark:text-purple-400 transition-colors">Reset form</button></p>
+                <p>Need to start over? <button className="text-purple-600 hover:text-purple-700 dark:text-purple-400 transition-colors" onClick={resetForm}>Reset form</button></p>
               </div>
             </div>
           </div>
