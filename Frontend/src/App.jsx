@@ -8,32 +8,31 @@ import LoginPage from "./pages/Login"
 import SignupPage from "./pages/Signup"
 import ForgotPasswordPage from "./pages/ForgotPassword"
 import ResetPasswordPage from "./pages/ResetPassword"
+import Contracts from "./pages/Contracts"
+import Analytics from "./pages/Analytics"
 
 import ContractsPage from "./pages/Contracts"
 
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/ProtectedRoute"
+import Dashboard from "./pages/Brand/Dashboard"
+import BasicDetails from "./pages/BasicDetails"
 
 function App() {
   return (
     <Router>  
       <AuthProvider>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage/>}/>
           <Route path="/signup" element={<SignupPage/>} />
           <Route path='/forgot-password' element={<ForgotPasswordPage/>} />
           <Route path='/reset-password' element={<ResetPasswordPage/>} />
+          <Route path='/brand/dashboard' element={<Dashboard/>} />
+          <Route path='/basicDetails/:user' element={<BasicDetails/>} />
 
-         
-          <Route path="/dashboard" element={<DashboardPage />}/>
-            <Route path="/sponsorships" element={<SponsorshipsPage />} />
-            <Route path="/collaborations" element={<CollaborationsPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-           
-            <Route path="/contracts" element={<ContractsPage></ContractsPage>}/>
-      
-          
+
         </Routes>
       </AuthProvider>
     </Router>
@@ -41,4 +40,3 @@ function App() {
 }
 
 export default App
-
