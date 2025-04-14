@@ -59,40 +59,40 @@ const nextStep = () => {
   
 
   const InfluencerBasicDetails = () => (
-    <div className="space-y-4 p-4 border border-gray-300 rounded-md">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4 p-4 border border-gray-300 rounded-md  ">
+      <div className="grid grid-cols-2 gap-4 ">
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="firstName" className="text-sky-500">First Name</Label>
           <Input id="firstName" placeholder="John" className="border border-gray-300"/>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
+          <Label htmlFor="lastName" className="text-sky-500">Last Name</Label>
           <Input id="lastName" placeholder="Doe" className="border border-gray-300"/>
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-sky-500">Email</Label>
         <Input id="email" type="email" placeholder="john@example.com" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone" className="text-sky-500">Phone Number</Label>
         <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" className="border border-gray-300"/>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="category">Content Category</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="category" className="text-sky-500"  >Content Category</Label>
+        <Select >
+          <SelectTrigger className= "text-white">
             <SelectValue placeholder="Select your main content category"  />
           </SelectTrigger>
-          <SelectContent className="border border-gray-300">
-            <SelectItem value="lifestyle">Lifestyle</SelectItem>
-            <SelectItem value="tech">Technology</SelectItem>
-            <SelectItem value="fashion">Fashion</SelectItem>
-            <SelectItem value="gaming">Gaming</SelectItem>
-            <SelectItem value="food">Food</SelectItem>
-            <SelectItem value="travel">Travel</SelectItem>
-            <SelectItem value="fitness">Fitness</SelectItem>
-            <SelectItem value="education">Education</SelectItem>
+          <SelectContent className="border border-gray-300 bg-blue-100">
+            <SelectItem value="lifestyle" className="text-sky-500">Lifestyle</SelectItem>
+            <SelectItem value="tech" className="text-sky-500">Technology</SelectItem>
+            <SelectItem value="fashion" className="text-sky-500">Fashion</SelectItem>
+            <SelectItem value="gaming"className="text-sky-500">Gaming</SelectItem>
+            <SelectItem value="food" className="text-sky-500">Food</SelectItem>
+            <SelectItem value="travel" className="text-sky-500">Travel</SelectItem>
+            <SelectItem value="fitness" className="text-sky-500">Fitness</SelectItem>
+            <SelectItem value="education" className="text-sky-500">Education</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -102,36 +102,36 @@ const nextStep = () => {
   const InfluencerSocialMedia = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
+        <Label className="flex items-center gap-2 text-pink-600">
           <Instagram className="h-5 w-5 text-pink-600" />
           Instagram Handle
         </Label>
-        <Input placeholder="@username" className="border border-gray-300" />
+        <Input placeholder="@username" className="border border-gray-300 text-sky-500" />
       </div>
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Youtube className="h-5 w-5 text-red-600" />
+        <Label className="flex items-center gap-2 text-red-600">
+          <Youtube className="h-5 w-5 text-red-600 " />
           YouTube Channel
         </Label>
         <Input placeholder="Channel URL"  className="border border-gray-300"/>
       </div>
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Twitter className="h-5 w-5 text-blue-400" />
+        <Label className="flex items-center gap-2 text-blue-400">
+          <Twitter className="h-5 w-5 text-blue-400 " />
           Twitter Handle
         </Label>
         <Input placeholder="@username" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <TikTok className="h-5 w-5" />
+        <Label className="flex items-center gap-2 text-sky-500">
+          <TikTok className="h-5 w-5 text-sky-500" />
           TikTok Username
         </Label>
         <Input placeholder="@username"  className="border border-gray-300"/>
       </div>
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Globe className="h-5 w-5 text-blue-500" />
+        <Label className="flex items-center gap-2 text-blue">
+          <Globe className="h-5 w-5 text-blue-500 text-sky-500" />
           Personal Website
         </Label>
         <Input placeholder="https://"  className="border border-gray-300"/>
@@ -142,34 +142,34 @@ const nextStep = () => {
   const InfluencerAudience = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
-        <Label htmlFor="audienceSize">Total Audience Size</Label>
+        <Label htmlFor="audienceSize" className="text-white">Total Audience Size</Label>
         <Input id="audienceSize" type="number" placeholder="e.g., 100000" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="avgEngagement">Average Engagement Rate (%)</Label>
+        <Label htmlFor="avgEngagement" className="text-white">Average Engagement Rate (%)</Label>
         <Input id="avgEngagement" type="number" step="0.01" placeholder="e.g., 3.5" className="border border-gray-300" />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="mainPlatform">Primary Platform</Label>
+      <div className="space-y-2 ">
+        <Label htmlFor="mainPlatform" className="text-white">Primary Platform</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select your main platform" />
+          <SelectTrigger className = "text-white">
+            <SelectValue  placeholder="Select your main platform" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="tiktok">TikTok</SelectItem>
-            <SelectItem value="twitter">Twitter</SelectItem>
+          <SelectContent className = "bg-blue-100">
+            <SelectItem value="instagram" className="text-sky-500">Instagram</SelectItem>
+            <SelectItem value="youtube" className="text-sky-500">YouTube</SelectItem>
+            <SelectItem value="tiktok" className="text-sky-500">TikTok</SelectItem>
+            <SelectItem value="twitter"className="text-sky-500">Twitter</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="audienceAge">Primary Audience Age Range</Label>
+        <Label htmlFor="audienceAge" className="text-white"> Primary Audience Age Range</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select age range" />
+          <SelectTrigger className = "text-white" >
+            <SelectValue placeholder="Select age range"/>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className = "bg-blue-100">
             <SelectItem value="13-17">13-17</SelectItem>
             <SelectItem value="18-24">18-24</SelectItem>
             <SelectItem value="25-34">25-34</SelectItem>
@@ -184,58 +184,58 @@ const nextStep = () => {
   const BrandBasicDetails = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
-      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Brand Information</h3>
-        <Label htmlFor="companyName">Company Name</Label>
+      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 text-sky-500">Brand Information</h3>
+        <Label htmlFor="companyName" className="text-sky-500">Company Name</Label>
         <Input id="companyName" placeholder="Brand Inc." />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="website">Company Website</Label>
+        <Label htmlFor="website" className="text-sky-500">Company Website</Label>
         <Input id="website" type="url" placeholder="https://www.example.com" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
+          <Label htmlFor="industry" className="text-sky-500">Industry</Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="text-white">
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fashion">Fashion</SelectItem>
-              <SelectItem value="tech">Technology</SelectItem>
-              <SelectItem value="food">Food & Beverage</SelectItem>
-              <SelectItem value="health">Health & Wellness</SelectItem>
-              <SelectItem value="beauty">Beauty</SelectItem>
-              <SelectItem value="entertainment">Entertainment</SelectItem>
+            <SelectContent className ="bg-white">
+              <SelectItem value="fashion" className="text-sky-500">Fashion</SelectItem>
+              <SelectItem value="tech" className="text-sky-500">Technology</SelectItem>
+              <SelectItem value="food" className="text-sky-500">Food & Beverage</SelectItem>
+              <SelectItem value="health" className="text-sky-500">Health & Wellness</SelectItem>
+              <SelectItem value="beauty" className="text-sky-500">Beauty</SelectItem>
+              <SelectItem value="entertainment" className="text-sky-500">Entertainment</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="size">Company Size</Label>
+          <Label htmlFor="size" className="text-sky-500">Company Size</Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="text-white">
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1-10 employees</SelectItem>
-              <SelectItem value="11-50">11-50 employees</SelectItem>
-              <SelectItem value="51-200">51-200 employees</SelectItem>
-              <SelectItem value="201-500">201-500 employees</SelectItem>
-              <SelectItem value="501+">501+ employees</SelectItem>
+            <SelectContent className ="bg-white">
+              <SelectItem value="1-10" className="text-sky-500">1-10 employees</SelectItem>
+              <SelectItem value="11-50" className="text-sky-500">11-50 employees</SelectItem>
+              <SelectItem value="51-200" className="text-sky-500">51-200 employees</SelectItem>
+              <SelectItem value="201-500" className="text-sky-500">201-500 employees</SelectItem>
+              <SelectItem value="501+" className="text-sky-500">501+ employees</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="budget">Monthly Marketing Budget</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select budget range" />
+        <Label htmlFor="budget" className="text-sky-500">Monthly Marketing Budget</Label>
+        <Select >
+          <SelectTrigger className="text-white" >
+            <SelectValue placeholder="Select budget range"  />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0-5000">$0 - $5,000</SelectItem>
-            <SelectItem value="5001-10000">$5,001 - $10,000</SelectItem>
-            <SelectItem value="10001-50000">$10,001 - $50,000</SelectItem>
-            <SelectItem value="50001+">$50,001+</SelectItem>
+          <SelectContent className = "bg-white"> 
+            <SelectItem value="0-5000" className="text-sky-500">$0 - $5,000</SelectItem>
+            <SelectItem value="5001-10000" className="text-sky-500">$5,001 - $10,000</SelectItem>
+            <SelectItem value="10001-50000" className="text-sky-500">$10,001 - $50,000</SelectItem>
+            <SelectItem value="50001+" className="text-sky-500">$50,001+</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -245,46 +245,46 @@ const nextStep = () => {
   const BrandCampaignPreferences = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
-      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Campaign Settings</h3>
-        <Label htmlFor="targetAudience">Target Audience Age Range</Label>
+      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 text-sky-500">Campaign Settings</h3>
+        <Label htmlFor="targetAudience " className="text-sky-500">Target Audience Age Range</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select target age range" />
+          <SelectTrigger className ="text-white">
+            <SelectValue placeholder="Select target age range"  className="text-white"/>
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="13-17">13-17</SelectItem>
-            <SelectItem value="18-24">18-24</SelectItem>
-            <SelectItem value="25-34">25-34</SelectItem>
-            <SelectItem value="35-44">35-44</SelectItem>
-            <SelectItem value="45+">45+</SelectItem>
+          <SelectContent className = "bg-white">
+            <SelectItem value="13-17"className="text-sky-500">13-17</SelectItem>
+            <SelectItem value="25-34" className="text-sky-500">25-34</SelectItem>
+            <SelectItem value="35-44" className="text-sky-500">35-44</SelectItem>
+            <SelectItem value="18-24" className="text-sky-500">18-24</SelectItem>
+            <SelectItem value="45+" className="text-sky-500">45+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2 ">
+        <Label htmlFor="preferredPlatforms" className="text-sky-500">Preferred Platforms</Label>
+        <Select>
+          <SelectTrigger className = "text-white">
+            <SelectValue placeholder="Select primary platform" className="text-white" />
+          </SelectTrigger>
+          <SelectContent className ="bg-white">
+            <SelectItem value="instagram"className="text-sky-500">Instagram</SelectItem>
+            <SelectItem value="youtube"className="text-sky-500">YouTube</SelectItem>
+            <SelectItem value="tiktok"className="text-sky-500">TikTok</SelectItem>
+            <SelectItem value="twitter"className="text-sky-500">Twitter</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="preferredPlatforms">Preferred Platforms</Label>
+        <Label htmlFor="campaignGoals"className="text-sky-500">Primary Campaign Goals</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select primary platform" />
+          <SelectTrigger className="text-white">
+            <SelectValue placeholder="Select campaign goal"  />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="tiktok">TikTok</SelectItem>
-            <SelectItem value="twitter">Twitter</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="campaignGoals">Primary Campaign Goals</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select campaign goal" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="awareness">Brand Awareness</SelectItem>
-            <SelectItem value="sales">Direct Sales</SelectItem>
-            <SelectItem value="engagement">Community Engagement</SelectItem>
-            <SelectItem value="loyalty">Brand Loyalty</SelectItem>
+          <SelectContent className ="bg-white">
+            <SelectItem value="awareness"className="text-sky-500">Brand Awareness</SelectItem>
+            <SelectItem value="sales"className="text-sky-500">Direct Sales</SelectItem>
+            <SelectItem value="engagement"className="text-sky-500">Community Engagement</SelectItem>
+            <SelectItem value="loyalty"className="text-sky-500">Brand Loyalty</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -297,20 +297,20 @@ const nextStep = () => {
       switch (step) {
         case 0:
           return {
-            title: "Basic Details",
-            description: "Let's start with your personal information",
+            title: (<h1 className="text-white">Basic Details</h1>),
+            description:(<h1 className="text-white"> Let's start with your personal information</h1> ),
             content: <InfluencerBasicDetails />,
           };
         case 1:
           return {
-            title: "Social Media Profiles",
-            description: "Connect your social media accounts",
+            title: (<h1 className="text-white">Social Media Profiles</h1>),
+            description: (<h1 className="text-white">Social Media Profiles</h1>),
             content: <InfluencerSocialMedia />,
           };
         case 2:
           return {
-            title: "Audience Information",
-            description: "Tell us about your audience and engagement",
+            title: (<h1 className="text-white">Audience Information</h1>),
+            description: (<h1 className="text-white">Audience Information</h1>),
             content: <InfluencerAudience />,
           };
       }
@@ -318,14 +318,14 @@ const nextStep = () => {
       switch (step) {
         case 0:
           return {
-            title: "Company Information",
-            description: "Tell us about your brand",
-            content: <BrandBasicDetails />,
+           title: (<h2 className="text-white">Basic Details</h2>),
+            description:( <h2 className="text-white">Tell us about your brand</h2>),
+            content: <BrandBasicDetails/>,
           };
         case 1:
           return {
-            title: "Campaign Preferences",
-            description: "Define your target audience and campaign goals",
+            title: (<h1 className="text-white">Campaign Preferences</h1>),
+            description:(<h1 className="text-white">Define your target audience and campaign goals</h1> ),
             content: <BrandCampaignPreferences />,
           };
       }
@@ -366,7 +366,7 @@ const nextStep = () => {
       <div className="flex justify-between items-center p-6">
         <Link href="/" className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105">
           <Rocket className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-          <span className="font-bold text-xl text-gray-900 dark:text-white">Inpact</span>
+          <span className="font-bold text-xl text-gray-900 dark:text-sky-500">Inpact</span>
         </Link>
         <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
           <span>Need help?</span>
@@ -409,7 +409,7 @@ const nextStep = () => {
                           index === step ? 'border-purple-600 dark:border-purple-400' : 'border-gray-300 dark:border-gray-600'}`}
                       >
                         {index < step ? (
-                          <Check className="h-4 w-4 text-white" />
+                          <Check className="h-4 w-4 text-sky-500" />
                         ) : (
                           <span className={index === step ? "text-purple-600 dark:text-purple-400" : "text-gray-400 dark:text-gray-600"}>
                             {index + 1}
@@ -469,7 +469,7 @@ const nextStep = () => {
                     </div>
                     
                     <Button
-                      className="bg-purple-700 hover:bg-purple-800 border border-purple-800 transition-all duration-200 transform hover:scale-105 text-white"
+                      className="bg-purple-700 hover:bg-purple-800 border border-purple-800 transition-all duration-200 transform hover:scale-105 text-white-500"
                       onClick={nextStep}
                       disabled={
                         (user === "influencer" && step === 2) ||
