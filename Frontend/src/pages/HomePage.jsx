@@ -71,74 +71,75 @@ export default function HomePage() {
           </div>
         </section>
         <Onboarding />
+        {/* container px-4 md:px-6 flex flex-col justify-center items-center min-h-screen */}
         <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-gray-900">Key Features</h2>
-                <p className="max-w-[900px] text-gray-600 md:text-xl">
-                  Leverage AI to transform your creator partnerships and brand sponsorships
-                </p>
-              </div>
-            </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3">
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <Handshake className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">AI-Driven Sponsorship Matchmaking</h3>
-                <p className="text-gray-600">
-                  Connect with brands based on audience demographics, engagement rates, and content style.
-                </p>
-              </div>
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <Users className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Creator Collaboration Hub</h3>
-                <p className="text-gray-600">
-                  Find and partner with creators who have complementary audiences and content niches.
-                </p>
-              </div>
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <Layers className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">AI-Based Pricing Optimization</h3>
-                <p className="text-gray-600">
-                  Get fair sponsorship pricing recommendations based on engagement and market trends.
-                </p>
-              </div>
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <MessageSquare className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Negotiation & Contract Assistant</h3>
-                <p className="text-gray-600">
-                  Structure deals, generate contracts, and optimize terms using AI insights.
-                </p>
-              </div>
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <BarChart3 className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Performance Analytics</h3>
-                <p className="text-gray-600">
-                  Track sponsorship performance, audience engagement, and campaign success.
-                </p>
-              </div>
-              <div className="grid gap-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
-                  <Rocket className="h-10 w-10 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">ROI Tracking</h3>
-                <p className="text-gray-600">
-                  Measure and optimize return on investment for both creators and brands.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+  <div className="container mx-auto px-4 md:px-6">
+    <div className="flex flex-col items-center justify-center space-y-4 text-center">
+      <div className="space-y-2">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-gray-900">Key Features</h2>
+        <p className="max-w-[900px] text-gray-600 md:text-xl">
+          Leverage AI to transform your creator partnerships and brand sponsorships
+        </p>
+      </div>
+    </div>
+    <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3">
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Handshake className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">AI-Driven Sponsorship Matchmaking</h3>
+        <p className="text-gray-600">
+          Connect with brands based on audience demographics, engagement rates, and content style.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Users className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Creator Collaboration Hub</h3>
+        <p className="text-gray-600">
+          Find and partner with creators who have complementary audiences and content niches.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Layers className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">AI-Based Pricing Optimization</h3>
+        <p className="text-gray-600">
+          Get fair sponsorship pricing recommendations based on engagement and market trends.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <MessageSquare className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Negotiation & Contract Assistant</h3>
+        <p className="text-gray-600">
+          Structure deals, generate contracts, and optimize terms using AI insights.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <BarChart3 className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Performance Analytics</h3>
+        <p className="text-gray-600">
+          Track sponsorship performance, audience engagement, and campaign success.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Rocket className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">ROI Tracking</h3>
+        <p className="text-gray-600">
+          Measure and optimize return on investment for both creators and brands.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
       </main>
       <footer className="border-t border-gray-200 py-6 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
