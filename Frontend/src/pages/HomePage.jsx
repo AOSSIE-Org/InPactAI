@@ -164,42 +164,76 @@ export default function HomePage() {
 
         {/* Onboarding Section */}
         <Onboarding />
-
-        {/* Features Section - Revealed on Scroll */}
-        <section ref={featuresRef} className="w-full py-24 bg-white">
-          <div
-            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${
-              isFeaturesVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-20"
-            }`}
-          >
-            <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
-              Key Features
-            </h2>
-            <p className="mt-4 text-lg text-gray-700">
-              Leverage AI to transform your creator partnerships and brand
-              sponsorships.
-            </p>
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map(({ icon: Icon, title, desc }, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md"
-                >
-                  <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4">
-                    <Icon className="h-10 w-10 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-gray-600">{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+        {/* container px-4 md:px-6 flex flex-col justify-center items-center min-h-screen */}
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50">
+  <div className="container mx-auto px-4 md:px-6">
+    <div className="flex flex-col items-center justify-center space-y-4 text-center">
+      <div className="space-y-2">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-gray-900">Key Features</h2>
+        <p className="max-w-[900px] text-gray-600 md:text-xl">
+          Leverage AI to transform your creator partnerships and brand sponsorships
+        </p>
+      </div>
+    </div>
+    <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3">
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Handshake className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">AI-Driven Sponsorship Matchmaking</h3>
+        <p className="text-gray-600">
+          Connect with brands based on audience demographics, engagement rates, and content style.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Users className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Creator Collaboration Hub</h3>
+        <p className="text-gray-600">
+          Find and partner with creators who have complementary audiences and content niches.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Layers className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">AI-Based Pricing Optimization</h3>
+        <p className="text-gray-600">
+          Get fair sponsorship pricing recommendations based on engagement and market trends.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <MessageSquare className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Negotiation & Contract Assistant</h3>
+        <p className="text-gray-600">
+          Structure deals, generate contracts, and optimize terms using AI insights.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <BarChart3 className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">Performance Analytics</h3>
+        <p className="text-gray-600">
+          Track sponsorship performance, audience engagement, and campaign success.
+        </p>
+      </div>
+      <div className="grid gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 mx-auto">
+          <Rocket className="h-10 w-10 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900">ROI Tracking</h3>
+        <p className="text-gray-600">
+          Measure and optimize return on investment for both creators and brands.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
 
       {/* Footer - Revealed on Scroll */}
       <footer
