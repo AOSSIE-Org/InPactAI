@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from 'react-router-dom'
 import { Check, Eye, EyeOff, Rocket } from "lucide-react"
+import {supabase} from '../utils/supabase'
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -23,8 +24,6 @@ export default function SignupPage() {
 
   const handleAccountTypeChange = (type) => {
     setuser(type)
-    console.log(type)
-    console.log(user)
     setFormData((prev) => ({ ...prev, accountType: type }))
   }
 
@@ -40,16 +39,62 @@ export default function SignupPage() {
     setError("")
 
     try {
-      // In a real app, you would call your auth API here
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const { name, email, password, accountType } = formData;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name, accountType } },
+      });
 
-      // Redirect to dashboard on success
+      if (error) {
+        console.error("Signup error:", error.message);
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('Signup success', data);
+
+      if (data.user) {
+        console.log("Inserting user into profiles table:", data.user.id);
+        
+        const { error: profileError } = await supabase.from("profiles").insert([
+          { id: data.user.id, accounttype : accountType }
+        ]);
+  
+        if (profileError) {
+          console.error("Profile insert error:", profileError.message);
+          setError("Error saving profile. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      setIsLoading(false);
       navigate(`/BasicDetails/${user}`);
     } catch (err) {
       setError("Something went wrong. Please try again.")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  
+  const handleGoogleSignUp = async()=>{
+    const {data,error} = supabase.auth.signInWithOAuth({
+      provider:'google'
+    });
+
+    if (error){
+      console.log("Google login error",error);
+      return;
+    }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        login();
+      }
+    });
   }
 
   const passwordStrength = () => {
@@ -333,6 +378,7 @@ export default function SignupPage() {
                   <div className="mt-6 grid grid-cols-2 gap-3">
                     <button
                       type="button"
+                      onClick={handleGoogleSignUp}
                       className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
                     >
                       <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
