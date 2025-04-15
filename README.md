@@ -92,14 +92,14 @@ cd inpact
 #### 2. Install Frontend Dependencies
 
 ```sh
-cd frontend
+cd Frontend
 npm install
 ```
 
 #### 3. Install Backend Dependencies
 
 ```sh
-cd backend
+cd Backend
 pip install -r requirements.txt
 ```
 
