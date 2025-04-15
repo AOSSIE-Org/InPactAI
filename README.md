@@ -86,50 +86,54 @@ Ensure you have the following installed:
 ```sh
 git clone https://github.com/AOSSIE-Org/InPact.git
 cd inpact
-
 ```
 
-#### 2. Install Frontend Dependencies
+#### 2. Frontend Setup
 
+1. Navigate to the frontend directory:
 ```sh
 cd frontend
+```
+
+2. Install dependencies:
+```sh
 npm install
 ```
 
-#### 3. Install Backend Dependencies
+3. Create a `.env` file using `.env-example` file:
 
-```sh
-cd backend
-pip install -r requirements.txt
-```
 
-#### 4. Backend Setup
+4. Get your Supabase credentials:
+   - Go to [Supabase](https://supabase.com/)
+   - Log in and create a new project (or use existing)
+   - Go to Project Settings -> API
+   - Copy the "Project URL" and paste it as VITE_SUPABASE_URL
+   - Copy the "anon public" key and paste it as VITE_SUPABASE_ANON_KEY
+
+#### 3. Backend Setup
 
 1. Navigate to the backend directory:
-
 ```sh
-cd backend
+cd ../backend
 ```
 
-2. Download the required dependencies:
-
+2. Install dependencies:
 ```sh
 pip install -r requirements.txt
 ```
 
 3. Navigate to the app directory:
-
 ```sh
 cd app
 ```
 
 4. Create a `.env` file using `.env-example` as a reference.
-5. Obtain Supabase credentials:
 
+5. Obtain Supabase credentials:
    - Go to [Supabase](https://supabase.com/)
-   - Log in and create a new project.
-   - Click on the project and remember the project password.
-   - Go to the **Connect** section at the top.
+   - Log in and create a new project
+   - Click on the project and remember the project password
+   - Go to the **Connect** section at the top
    - Select **SQLAlchemy** and copy the connection string:
 
      ```sh
@@ -152,29 +156,18 @@ cd app
       dbname=postgres
      ```
 
-   - Paste this in the `.env` file.
-
 6. Get the Groq API key:
-
    - Visit [Groq Console](https://console.groq.com/)
-   - Create an API key and paste it into the `.env` file.
+   - Create an API key and paste it into the `.env` file
 
-7. Start the backend server:
+#### 4. Start Development Servers
 
-```sh
-uvicorn main:app --reload
-```
-
-#### 5. Start Development Servers
-
-- **Frontend**:
-
+1. Start the frontend server (from the frontend directory):
 ```sh
 npm run dev
 ```
 
-- **Backend**:
-
+2. Start the backend server (from the backend/app directory):
 ```sh
 uvicorn main:app --reload
 ```
