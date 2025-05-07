@@ -4,7 +4,7 @@ from sqlalchemy.sql import select
 from datetime import datetime, timezone
 from models.models import User
 from models.chat import ChatList, ChatMessage, MessageStatus
-from typing import Dict
+from typing import Dict, Any, Literal
 from redis.asyncio import Redis
 import logging
 import json
@@ -423,6 +423,27 @@ class ChatService:
             }
 
         return await self.send_message(user_id, receiver.id, message_text, db, redis)
+
+    async def send_video_signal(
+        self,
+        sender_id: str,
+        receiver_id: str,
+        signal_type: Literal[
+            "VIDEO_OFFER", "VIDEO_ANSWER", "ICE_CANDIDATE", "CALL_ENDED"
+        ],
+        payload: Any,
+        redis: Redis,
+    ):
+        await redis.publish(
+            f"to_user:{receiver_id}",
+            json.dumps(
+                {
+                    "eventType": signal_type,
+                    "from": sender_id,
+                    "payload": payload,
+                }
+            ),
+        )
 
 
 chat_service = ChatService()

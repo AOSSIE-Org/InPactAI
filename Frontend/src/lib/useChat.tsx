@@ -18,8 +18,10 @@ import {
 } from "@/redux/chatSlice";
 import { API_URL } from "@/lib/utils";
 import axios from "axios";
+import useVideocall from "./useVideocall";
 
 interface ChatContextType {
+  currentUserId: string;
   sendMessage: (receiverId: string, message: string) => void;
   isConnected: boolean;
   fetchChatList: () => Promise<void>;
@@ -34,6 +36,16 @@ interface ChatContextType {
     username: string,
     message: string
   ) => Promise<boolean>;
+  sendVideoSignal: (
+    receiverId: string,
+    eventType: string,
+    payload: any
+  ) => void;
+  localStreamRef: React.MutableRefObject<MediaStream | null>;
+  remoteStreamRef: React.MutableRefObject<MediaStream | null>;
+  peerRef: React.MutableRefObject<RTCPeerConnection | null>;
+  handleCallEnd: () => void;
+  startCall: (receiverId: string) => Promise<void>; // Add startCall
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -44,6 +56,19 @@ export const ChatProvider: React.FC<{
 }> = ({ userId, children }) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const currentUserId = userId;
+  const {
+    sendVideoSignal,
+    localStreamRef,
+    remoteStreamRef,
+    peerRef,
+    handleOffer,
+    handleAnswer,
+    handleCandidate,
+    handleCallEnd,
+    startCall,
+  } = useVideocall(ws);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -86,6 +111,14 @@ export const ChatProvider: React.FC<{
             messageId: data.messageId,
           })
         );
+      } else if (data.eventType === "VIDEO_OFFER") {
+        handleOffer(data.payload, data.from);
+      } else if (data.eventType === "VIDEO_ANSWER") {
+        handleAnswer(data.payload);
+      } else if (data.eventType === "ICE_CANDIDATE") {
+        handleCandidate(data.payload);
+      } else if (data.eventType === "CALL_ENDED") {
+        handleCallEnd();
       }
     };
 
@@ -205,6 +238,7 @@ export const ChatProvider: React.FC<{
   return (
     <ChatContext.Provider
       value={{
+        currentUserId,
         sendMessage,
         isConnected,
         fetchChatList,
@@ -213,6 +247,12 @@ export const ChatProvider: React.FC<{
         fetchUserDetails,
         markMessageAsSeen,
         createChatWithMessage,
+        sendVideoSignal,
+        localStreamRef,
+        remoteStreamRef,
+        peerRef,
+        handleCallEnd,
+        startCall, // Expose startCall
       }}
     >
       {isConnected ? children : null}

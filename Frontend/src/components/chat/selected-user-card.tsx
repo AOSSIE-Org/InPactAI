@@ -11,6 +11,7 @@ import {
 } from "@/redux/chatSlice";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "../ui/button";
+import CallStarter from "../video-calling/call-starter";
 
 interface UserStatusResponse {
   isOnline: boolean;
@@ -82,6 +83,7 @@ export default function SelectedUserCard() {
           {receiver.isOnline ? "Online" : formatLastSeen(receiver.lastSeen)}
         </p>
       </div>
+      <CallStarter />
       <Button
         variant={"ghost"}
         size={"sm"}

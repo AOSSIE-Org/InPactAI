@@ -39,6 +39,17 @@ async def websocket_endpoint(
                 await chat_service.send_message(
                     sender_id, receiver_id, message_text, db, redis
                 )
+            elif event_type in {
+                "VIDEO_OFFER",
+                "VIDEO_ANSWER",
+                "ICE_CANDIDATE",
+                "CALL_ENDED",
+            }:
+                receiver_id = data.get("receiver_id")
+                payload = data.get("payload")
+                await chat_service.send_video_signal(
+                    user_id, receiver_id, event_type, payload, redis
+                )
 
     except WebSocketDisconnect:
         listener_task.cancel()
