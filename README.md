@@ -117,14 +117,20 @@ cd backend
 pip install -r requirements.txt
 ```
 
-3. Navigate to the app directory:
+3. Start the redis server using docker:
+
+```sh
+docker compose up -d
+```
+
+4. Navigate to the app directory:
 
 ```sh
 cd app
 ```
 
-4. Create a `.env` file using `.env-example` as a reference.
-5. Obtain Supabase credentials:
+5. Create a `.env` file using `.env-example` as a reference.
+6. Obtain Supabase credentials:
 
    - Go to [Supabase](https://supabase.com/)
    - Log in and create a new project.
@@ -154,12 +160,12 @@ cd app
 
    - Paste this in the `.env` file.
 
-6. Get the Groq API key:
+7. Get the Groq API key:
 
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file.
 
-7. Start the backend server:
+8. Start the backend server:
 
 ```sh
 uvicorn main:app --reload

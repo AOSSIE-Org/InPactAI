@@ -1,3 +1,4 @@
+import Chat from "@/components/chat/chat";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -269,89 +270,11 @@ const Dashboard = () => {
             </TabsContent>
 
             {/* Messages Tab */}
-            <TabsContent value="messages" className="grid grid-cols-12 gap-6">
-              {/* Message List */}
-              <div className="col-span-4 bg-white rounded-lg h-[calc(100vh-289px)] border border-gray-300">
-                <div className="p-4 border-neutral-200">
-                  <Input placeholder="Search messages..." />
-                </div>
-                <div className="overflow-y-auto h-[calc(100%-60px)]">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className={`p-4 border-neutral-200 hover:bg-gray-50 cursor-pointer ${
-                        i === 1 ? "bg-purple-50" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={`https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cG90cmFpdHxlbnwwfHwwfHx8MA%3D%3D`}
-                          alt="Creator"
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-medium text-gray-900">
-                              Emma Wilson
-                            </h3>
-                            <span className="text-xs text-gray-500">
-                              2h ago
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-500 truncate">
-                            Latest campaign updates...
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Message Content */}
-              <div className="col-span-8 bg-white rounded-lg h-[calc(100vh-300px)] flex flex-col border border-gray-300">
-                <div className="p-4 border-neutral-200">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHBvdHJhaXR8ZW58MHx8MHx8fDA%3D"
-                      alt="Creator"
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="font-medium text-gray-900">Emma Wilson</h3>
-                      <p className="text-sm text-gray-500">Online</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  <div className="flex justify-end">
-                    <div className="bg-purple-700 text-white rounded-lg p-3 max-w-md">
-                      <p>Hi Emma, how's the campaign going?</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg p-3 max-w-md">
-                      <p>
-                        Hey! It's going great! I've already started working on
-                        the content.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 border-t">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Type your message..."
-                      className="flex-1"
-                    />
-                    <Button className="bg-purple-700 hover:bg-purple-800 text-white">
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            <TabsContent
+              value="messages"
+              //  className="grid grid-cols-12 gap-6"
+            >
+              <Chat />
             </TabsContent>
 
             {/* Tracking Tab */}
