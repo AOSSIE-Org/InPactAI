@@ -29,6 +29,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/brand/dashboard" element={<Dashboard />} />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
+          <Route path="/creator/messages" element={<MessagesPage />} />
 
           {/* Protected Routes*/}
           <Route

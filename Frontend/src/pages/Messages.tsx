@@ -20,6 +20,7 @@ import { UserNav } from "../components/user-nav";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Separator } from "../components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
+import Chat from "@/components/chat/chat";
 
 const contacts = [
   {
@@ -232,7 +233,8 @@ export default function MessagesPage() {
           </div>
         </div>
       </header>
-      <main className="flex-1 flex">
+      {/* Old Code */}
+      <main className="flex-1 hidden">
         {/* Sidebar */}
         <div className="w-full md:w-175 border-r flex flex-col bg-white dark:bg-gray-900">
           {/* Search Input */}
@@ -394,6 +396,7 @@ export default function MessagesPage() {
           </div>
         </div>
       </main>
+      <Chat />
     </div>
   );
 }
