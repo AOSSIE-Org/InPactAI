@@ -174,13 +174,16 @@ export default function HomePage() {
         <Onboarding />
 
         {/* Features Section - Revealed on Scroll */}
-        <section ref={featuresRef} className="w-full py-24 bg-white">
+        <section
+          ref={featuresRef}
+          className="w-full py-24 bg-white flex justify-center"
+        >
           <div
             className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${
               isFeaturesVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-20"
-            }`}
+            } flex flex-col items-center`}
           >
             <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
               Key Features
