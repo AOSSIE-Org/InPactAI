@@ -98,10 +98,9 @@ cd frontend
 2. Install dependencies:
 ```sh
 npm install
-=======
 ```
 
-3. Create a `.env` file using `.env-example` file:
+3. Create a `.env` file using `.env.example` file:
 
 
 4. Get your Supabase credentials:
@@ -132,7 +131,7 @@ docker compose up -d
 ```sh
 cd app
 ```
-5. Create a `.env` file using `.env-example` as a reference.
+5. Create a `.env` file using `.env.example` as a reference.
 
 6. Obtain Supabase credentials:
    - Go to [Supabase](https://supabase.com/)
