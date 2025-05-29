@@ -19,7 +19,9 @@ DATABASE_URL = f"postgresql+asyncpg://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
 
 # Initialize async SQLAlchemy components
 try:
-    engine = create_async_engine(DATABASE_URL, echo=True, connect_args={"ssl": "require"})
+    engine = create_async_engine(
+        DATABASE_URL, echo=True, connect_args={"ssl": "require"}
+    )
 
     AsyncSessionLocal = sessionmaker(
         bind=engine, class_=AsyncSession, expire_on_commit=False
@@ -31,3 +33,8 @@ except SQLAlchemyError as e:
     engine = None
     AsyncSessionLocal = None
     Base = None
+
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
