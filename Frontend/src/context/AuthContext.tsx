@@ -5,7 +5,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase, User } from "../utils/supabase";
 
 interface AuthContextType {
@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -34,14 +35,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
-        if (session?.user) {
+        if (
+          session?.user &&
+          location.pathname !== "/reset-password" &&
+          event !== "PASSWORD_RECOVERY"
+        ) {
           navigate("/dashboard");
         }
       }
     );
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [location.pathname, navigate]);
 
   const login = () => {
     setIsAuthenticated(true);

@@ -10,6 +10,7 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
+    username: "",
     accountType: "creator",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +42,19 @@ export default function SignupPage() {
     setError("");
 
     try {
-      const { name, email, password, accountType } = formData;
+      const { name, email, password, accountType, username } = formData;
+      // Check if username already exists
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+      if (userCheckError) throw userCheckError;
+      if (existingUser) {
+        setError("This username is not available. Please choose another.");
+        setIsLoading(false);
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -55,25 +68,34 @@ export default function SignupPage() {
         return;
       }
 
-      console.log("Signup success", data);
-
       if (data.user) {
-        console.log("Inserting user into profiles table:", data.user.id);
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([{ id: data.user.id, accounttype: accountType }]);
-
-        if (profileError) {
-          console.error("Profile insert error:", profileError.message);
-          setError("Error saving profile. Please try again.");
+        // Insert into users table
+        const { error: userInsertError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: data.user.id,
+              username: username,
+              email: email,
+              password_hash: "managed_by_supabase_auth",
+              role: accountType,
+              profile_image: null,
+              bio: null,
+              created_at: new Date().toISOString(),
+              is_online: false,
+              last_seen: new Date().toISOString(),
+            },
+          ]);
+        if (userInsertError) {
+          console.error("User insert error:", userInsertError.message);
+          setError("Error saving user. Please try again.");
           setIsLoading(false);
           return;
         }
       }
 
       setIsLoading(false);
-      navigate(`/BasicDetails/${user}`);
+      navigate(`/BasicDetails/${accountType}`);
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -172,6 +194,24 @@ export default function SignupPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {step === 1 ? (
                   <>
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="username"
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Username
+                      </label>
+                      <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
+                        placeholder="Choose a unique username"
+                      />
+                    </div>
                     <div className="space-y-2">
                       <label
                         htmlFor="email"

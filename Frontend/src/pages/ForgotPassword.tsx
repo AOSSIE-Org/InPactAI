@@ -1,24 +1,41 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, Rocket } from "lucide-react";
+import { supabase } from "../utils/supabase";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setShowSignupPrompt(false);
 
     try {
-      // In a real app, you would call your auth API here
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Check if email exists in users table
+      const { data: users, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+      if (userError) throw userError;
+      if (!users) {
+        setShowSignupPrompt(true);
+        setIsLoading(false);
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/reset-password"
+      });
+      if (error) throw error;
       setIsSubmitted(true);
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +105,12 @@ export default function ForgotPasswordPage() {
                     </div>
                   )}
 
+                  {showSignupPrompt && (
+                    <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-yellow-700 dark:text-yellow-400 text-sm animate-[pulse_1s_ease-in-out]">
+                      No account found with this email. <Link to="/signup" className="underline text-purple-600">Sign up?</Link>
+                    </div>
+                  )}
+
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                       <label
@@ -103,7 +126,7 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                        placeholder="you@example.com"
+                        placeholder="you@example.com (CASE sensitive)"
                       />
                     </div>
 
