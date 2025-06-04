@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
     setShowSignupPrompt(false);
 
     try {
-      // Check if email exists in users table
+      // Check if the email exists in the users table before sending a reset link
       const { data: users, error: userError } = await supabase
         .from("users")
         .select("id")
@@ -25,16 +25,19 @@ export default function ForgotPasswordPage() {
         .maybeSingle();
       if (userError) throw userError;
       if (!users) {
+        // If the email does not exist, prompt the user to sign up
         setShowSignupPrompt(true);
         setIsLoading(false);
         return;
       }
+      // Send the password reset email using Supabase Auth
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + "/reset-password"
       });
       if (error) throw error;
       setIsSubmitted(true);
     } catch (err: any) {
+     
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -126,6 +129,7 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
+                        // Email is case sensitive for password reset
                         placeholder="you@example.com (CASE sensitive)"
                       />
                     </div>

@@ -35,6 +35,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
+        // Only redirect to dashboard if not on /reset-password and not during password recovery
+        
         if (
           session?.user &&
           location.pathname !== "/reset-password" &&

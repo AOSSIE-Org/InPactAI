@@ -53,10 +53,14 @@ export default function ResetPasswordPage() {
     setError("");
 
     try {
+      // Update the user's password using Supabase Auth
+      // Supabase automatically authenticates the user from the reset link
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setIsSuccess(true);
+      // After success,redirect to dashboard
     } catch (err: any) {
+      
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);

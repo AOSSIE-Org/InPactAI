@@ -43,7 +43,7 @@ export default function SignupPage() {
 
     try {
       const { name, email, password, accountType, username } = formData;
-      // Check if username already exists
+      // Check if username already exists in the users table before signup
       const { data: existingUser, error: userCheckError } = await supabase
         .from("users")
         .select("id")
@@ -51,10 +51,12 @@ export default function SignupPage() {
         .maybeSingle();
       if (userCheckError) throw userCheckError;
       if (existingUser) {
+        // Show error if username is not available
         setError("This username is not available. Please choose another.");
         setIsLoading(false);
         return;
       }
+      // Sign up user with Supabase Auth (handles password securely)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -62,6 +64,7 @@ export default function SignupPage() {
       });
 
       if (error) {
+       
         console.error("Signup error:", error.message);
         setError(error.message);
         setIsLoading(false);
@@ -69,7 +72,8 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        // Insert into users table
+      
+        // Use the id from Supabase Auth for consistency
         const { error: userInsertError } = await supabase
           .from("users")
           .insert([
@@ -77,7 +81,7 @@ export default function SignupPage() {
               id: data.user.id,
               username: username,
               email: email,
-              password_hash: "managed_by_supabase_auth",
+              password_hash: "managed_by_supabase_auth", 
               role: accountType,
               profile_image: null,
               bio: null,
@@ -87,6 +91,7 @@ export default function SignupPage() {
             },
           ]);
         if (userInsertError) {
+          
           console.error("User insert error:", userInsertError.message);
           setError("Error saving user. Please try again.");
           setIsLoading(false);
@@ -201,6 +206,7 @@ export default function SignupPage() {
                       >
                         Username
                       </label>
+                      {/* User enters username here. Must be unique. */}
                       <input
                         id="username"
                         name="username"
