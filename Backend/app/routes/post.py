@@ -44,7 +44,7 @@ async def create_user(user: UserCreate):
         "id": user_id,
         "username": user.username,
         "email": user.email,
-        "password_hash": user.password_hash,  
+        "password_hash": user.password_hash,
         "role": user.role,
         "profile_image": user.profile_image,
         "bio": user.bio,
