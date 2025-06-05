@@ -5,7 +5,7 @@ from datetime import datetime
 class UserCreate(BaseModel):
     username: str
     email: str
-    password_hash: str
+    # password_hash: str  # Removed: managed by Supabase Auth
     role: str
     profile_image: Optional[str] = None
     bio: Optional[str] = None
