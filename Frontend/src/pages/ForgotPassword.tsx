@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
       if (error) throw error;
       setIsSubmitted(true);
     } catch (err: any) {
-     
+
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -45,8 +45,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="flex justify-between items-center p-6">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50">
+      <div className="flex justify-between items-center p-6 dark:bg-nightP">
         <Link
           to="/"
           className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105"
@@ -58,9 +58,9 @@ export default function ForgotPasswordPage() {
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 dark:bg-nightP">
         <div className="w-full max-w-md">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
+          <div className="bg-white dark:bg-nightS rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
             <div className="p-8">
               <Link
                 to="/login"
@@ -177,7 +177,7 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      <footer className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+      <footer className="py-6 text-center text-sm text-gray-500 dark:text-nightTS dark:bg-nightP">
         © 2024 Inpact. All rights reserved.
       </footer>
     </div>

@@ -51,9 +51,9 @@ export function CreateNewChat() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <CirclePlus className="cursor-pointer" />
+        <CirclePlus className="cursor-pointer dark:text-nightTP" />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:bg-nightS">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Chat</DialogTitle>
@@ -71,25 +71,25 @@ export function CreateNewChat() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 dark:bg-[#364152] dark:text-nightTS"
                 disabled={loading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="message" className="text-right">
+              <Label htmlFor="message" className="text-right ">
                 Message
               </Label>
               <Textarea
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 dark:bg-[#364152] dark:text-nightTS"
                 disabled={loading}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="dark:bg-purple-600 dark:text-nightTS dark:hover:bg-purple-700">
               {loading ? "Creating..." : "Create Chat"}
             </Button>
           </DialogFooter>

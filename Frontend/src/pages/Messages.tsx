@@ -167,16 +167,16 @@ export default function MessagesPage() {
       : contacts.filter((contact) => contact.type === activeTab);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-gray-900">
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-16 items-center">
-          <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
+    <div className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-nightP">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-nightP">
+        <div className="container flex h-16 items-center dark:bg-nightP dark:text-nightTP">
+          <Link to="/" className="flex items-center space-x-2 mr-6  ml-6 dark:text-nightTP">
             <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
-            <span className="font-bold text-xl hidden md:inline-block">
+            <span className="font-bold text-xl hidden md:inline-block dark:text-nightTP">
               Inpact
             </span>
           </Link>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 dark:text-nightTS">
             {[
               { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
               {
@@ -225,7 +225,7 @@ export default function MessagesPage() {
               <Input
                 type="search"
                 placeholder="Search..."
-                className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
+                className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)] dark:bg-[#364152] dark:border-nightP"
               />
             </div>
             <ModeToggle />

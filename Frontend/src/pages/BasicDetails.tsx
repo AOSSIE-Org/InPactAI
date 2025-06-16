@@ -219,62 +219,62 @@ export default function BasicDetails() {
   );
 
   const BrandBasicDetails = () => (
-    <div className="space-y-4 p-4 border border-gray-300 rounded-md">
+    <div className="space-y-4 p-4 border border-gray-300 dark:border-nightS rounded-md">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+        <h3 className="text-lg font-medium text-gray-800 dark:text-nightTP">
           Brand Information
         </h3>
-        <Label htmlFor="companyName">Company Name</Label>
-        <Input id="companyName" placeholder="Brand Inc." />
+        <Label htmlFor="companyName" className="dark:text-nightTS">Company Name</Label>
+        <Input id="companyName" placeholder="Brand Inc." className="dark:bg-[#364152] mt-1"/>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="website">Company Website</Label>
-        <Input id="website" type="url" placeholder="https://www.example.com" />
+        <Label htmlFor="website" className="dark:text-nightTS">Company Website</Label>
+        <Input id="website" type="url" placeholder="https://www.example.com" className="dark:bg-[#364152] mt-1" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
+          <Label htmlFor="industry" className="dark:text-nightTS">Industry</Label>
           <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select industry" />
+            <SelectTrigger className="dark:bg-[#364152]">
+              <SelectValue placeholder="Select industry" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fashion">Fashion</SelectItem>
-              <SelectItem value="tech">Technology</SelectItem>
-              <SelectItem value="food">Food & Beverage</SelectItem>
-              <SelectItem value="health">Health & Wellness</SelectItem>
-              <SelectItem value="beauty">Beauty</SelectItem>
-              <SelectItem value="entertainment">Entertainment</SelectItem>
+            <SelectContent className="dark:bg-[#364152]">
+              <SelectItem value="fashion" className="dark:text-nightTS">Fashion</SelectItem>
+              <SelectItem value="tech" className="dark:text-nightTS">Technology</SelectItem>
+              <SelectItem value="food" className="dark:text-nightTS">Food & Beverage</SelectItem>
+              <SelectItem value="health" className="dark:text-nightTS">Health & Wellness</SelectItem>
+              <SelectItem value="beauty" className="dark:text-nightTS">Beauty</SelectItem>
+              <SelectItem value="entertainment" className="dark:text-nightTS">Entertainment</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="size">Company Size</Label>
           <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select size" />
+            <SelectTrigger className="dark:bg-[#364152]">
+              <SelectValue placeholder="Select size" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1-10 employees</SelectItem>
-              <SelectItem value="11-50">11-50 employees</SelectItem>
-              <SelectItem value="51-200">51-200 employees</SelectItem>
-              <SelectItem value="201-500">201-500 employees</SelectItem>
-              <SelectItem value="501+">501+ employees</SelectItem>
+            <SelectContent className="dark:bg-[#364152]">
+              <SelectItem value="1-10" className="dark:text-nightTS">1-10 employees</SelectItem>
+              <SelectItem value="11-50" className="dark:text-nightTS">11-50 employees</SelectItem>
+              <SelectItem value="51-200" className="dark:text-nightTS">51-200 employees</SelectItem>
+              <SelectItem value="201-500" className="dark:text-nightTS">201-500 employees</SelectItem>
+              <SelectItem value="501+" className="dark:text-nightTS">501+ employees</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="budget">Monthly Marketing Budget</Label>
+        <Label htmlFor="budget" className="dark:text-nightTS">Monthly Marketing Budget</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select budget range" />
+          <SelectTrigger  className="dark:bg-[#364152]">
+            <SelectValue placeholder="Select budget range" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0-5000">$0 - $5,000</SelectItem>
-            <SelectItem value="5001-10000">$5,001 - $10,000</SelectItem>
-            <SelectItem value="10001-50000">$10,001 - $50,000</SelectItem>
-            <SelectItem value="50001+">$50,001+</SelectItem>
+          <SelectContent className="dark:bg-[#364152]">
+            <SelectItem value="0-5000" className="dark:text-nightTS">$0 - $5,000</SelectItem>
+            <SelectItem value="5001-10000" className="dark:text-nightTS">$5,001 - $10,000</SelectItem>
+            <SelectItem value="10001-50000" className="dark:text-nightTS">$10,001 - $50,000</SelectItem>
+            <SelectItem value="50001+" className="dark:text-nightTS">$50,001+</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -282,50 +282,50 @@ export default function BasicDetails() {
   );
 
   const BrandCampaignPreferences = () => (
-    <div className="space-y-4 p-4 border border-gray-300 rounded-md">
+    <div className="space-y-4 p-4 border border-gray-300 dark:border-nightTS rounded-md">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+        <h3 className="text-lg font-medium text-gray-800 dark:text-nightTP">
           Campaign Settings
         </h3>
         <Label htmlFor="targetAudience">Target Audience Age Range</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select target age range" />
+          <SelectTrigger className="dark:bg-[#364152]">
+            <SelectValue placeholder="Select target age range" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="13-17">13-17</SelectItem>
-            <SelectItem value="18-24">18-24</SelectItem>
-            <SelectItem value="25-34">25-34</SelectItem>
-            <SelectItem value="35-44">35-44</SelectItem>
-            <SelectItem value="45+">45+</SelectItem>
+          <SelectContent className="dark:bg-[#364152]">
+            <SelectItem value="13-17" className="dark:text-nightTS">13-17</SelectItem>
+            <SelectItem value="18-24" className="dark:text-nightTS">18-24</SelectItem>
+            <SelectItem value="25-34" className="dark:text-nightTS">25-34</SelectItem>
+            <SelectItem value="35-44" className="dark:text-nightTS">35-44</SelectItem>
+            <SelectItem value="45+" className="dark:text-nightTS">45+</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor="preferredPlatforms">Preferred Platforms</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select primary platform" />
+          <SelectTrigger className="dark:bg-[#364152]">
+            <SelectValue placeholder="Select primary platform" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="tiktok">TikTok</SelectItem>
-            <SelectItem value="twitter">Twitter</SelectItem>
+          <SelectContent className="dark:bg-[#364152]">
+            <SelectItem value="instagram" className="dark:text-nightTS">Instagram</SelectItem>
+            <SelectItem value="youtube" className="dark:text-nightTS">YouTube</SelectItem>
+            <SelectItem value="tiktok" className="dark:text-nightTS">TikTok</SelectItem>
+            <SelectItem value="twitter" className="dark:text-nightTS">Twitter</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor="campaignGoals">Primary Campaign Goals</Label>
         <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select campaign goal" />
+          <SelectTrigger className="dark:bg-[#364152]">
+            <SelectValue placeholder="Select campaign goal" className="dark:text-nightTS dark:bg-[#364152] mt-1" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="awareness">Brand Awareness</SelectItem>
-            <SelectItem value="sales">Direct Sales</SelectItem>
-            <SelectItem value="engagement">Community Engagement</SelectItem>
-            <SelectItem value="loyalty">Brand Loyalty</SelectItem>
+          <SelectContent className="dark:bg-[#364152]">
+            <SelectItem value="awareness" className="dark:text-nightTS">Brand Awareness</SelectItem>
+            <SelectItem value="sales" className="dark:text-nightTS">Direct Sales</SelectItem>
+            <SelectItem value="engagement" className="dark:text-nightTS">Community Engagement</SelectItem>
+            <SelectItem value="loyalty" className="dark:text-nightTS">Brand Loyalty</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -404,8 +404,8 @@ export default function BasicDetails() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="flex justify-between items-center p-6">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="flex justify-between items-center p-6 dark:bg-nightP">
           <Link
             to="/"
             className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105"
@@ -426,9 +426,9 @@ export default function BasicDetails() {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex items-center justify-center p-6 dark:bg-nightP dark:text-nightTS">
           <div className="w-full max-w-4xl">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-nightS rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl border border-gray-200 dark:border-nightS">
               <div className="p-8">
                 {/* Progress indicator */}
                 <div className="mb-8">
@@ -487,9 +487,9 @@ export default function BasicDetails() {
                   </div>
                 </div>
 
-                <Card className="w-full border border-gray-300 dark:border-gray-600">
+                <Card className="w-full border border-gray-300 dark:border-nightS dark:bg-nightS">
                   <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-                    <CardTitle className="text-2xl">
+                    <CardTitle className="text-2xl dark:text-nightTP">
                       {currentStep?.title}
                     </CardTitle>
                     <CardDescription>

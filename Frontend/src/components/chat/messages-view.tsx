@@ -125,8 +125,8 @@ export default function MessagesView() {
 
   if (!selectedChatId) {
     return (
-      <div className="col-span-8 bg-white rounded-lg h-[calc(100vh-300px)] flex items-center justify-center border border-gray-300">
-        <p className="text-gray-500">Select a chat to view messages</p>
+      <div className="col-span-8 bg-white rounded-lg h-[calc(100vh-275px)] flex items-center justify-center border border-gray-300 dark:bg-nightS dark:text-nightTS dark:border-nightP mr-4">
+        <p className="text-gray-500 dark:text-nightTP">Select a chat to view messages</p>
       </div>
     );
   }

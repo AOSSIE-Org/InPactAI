@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from db.db import AsyncSessionLocal
-from models.models import (
+from app.db.db import AsyncSessionLocal
+from app.models.models import (
     User, AudienceInsights, Sponsorship, UserPost,
     SponsorshipApplication, SponsorshipPayment, Collaboration
 )
@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 load_dotenv()
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
+print(f"Supabase URL: {url}")
+print(f"Supabase Key: {key}")
 supabase: Client = create_client(url, key)
 
 # Define Router

@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-from db.db import Base
+from app.db.db import Base
 import uuid
 
 
@@ -40,10 +40,18 @@ class User(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    audience = relationship("AudienceInsights", back_populates="user", uselist=False)
-    sponsorships = relationship("Sponsorship", back_populates="brand")
-    posts = relationship("UserPost", back_populates="user")
-    applications = relationship("SponsorshipApplication", back_populates="creator")
+    audience = relationship(
+        "AudienceInsights", back_populates="user", uselist=False
+    )
+    sponsorships = relationship(
+        "Sponsorship", back_populates="brand"
+    )
+    posts = relationship(
+        "UserPost", back_populates="user"
+    )
+    applications = relationship(
+        "SponsorshipApplication", back_populates="creator"
+    )
     payments = relationship(
         "SponsorshipPayment",
         foreign_keys="[SponsorshipPayment.creator_id]",
@@ -83,7 +91,9 @@ class Sponsorship(Base):
     brand_id = Column(String, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    required_audience = Column(JSON)  # {"age": ["18-24"], "location": ["USA", "UK"]}
+    required_audience = Column(
+        JSON
+    )  # {"age": ["18-24"], "location": ["USA", "UK"]}
     budget = Column(DECIMAL(10, 2))
     engagement_minimum = Column(Float)
     status = Column(String, default="open")
@@ -105,7 +115,9 @@ class UserPost(Base):
     content = Column(Text, nullable=False)
     post_url = Column(Text, nullable=True)
     category = Column(String, nullable=True)
-    engagement_metrics = Column(JSON)  # {"likes": 500, "comments": 100, "shares": 50}
+    engagement_metrics = Column(
+        JSON
+    )  # {"likes": 500, "comments": 100, "shares": 50}
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

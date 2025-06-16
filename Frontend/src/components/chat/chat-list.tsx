@@ -39,20 +39,20 @@ export default function ChatList() {
   };
 
   return (
-    <div className="col-span-4 bg-white rounded-lg h-[calc(100vh-289px)] border border-gray-300">
+    <div className="col-span-4 bg-white rounded-lg h-[calc(100vh-289px)] border border-gray-300 dark:bg-nightS dark:text-nightTS dark:border-nightP ml-4">
       <div className="p-4 border-neutral-200 flex items-center gap-2">
         <ChatSearch />
         <CreateNewChat />
       </div>
-      <div className="overflow-y-auto h-[calc(100%-60px)]">
+      <div className="overflow-y-auto h-[calc(100%-60px)] dark:bg-nightS dark:text-nightTS">
         {loading && (
-          <div className="flex justify-center py-2">
-            <div className="text-gray-500">Loading chats...</div>
+          <div className="flex justify-center py-2  dark:bg-nightS dark:text-nightTS">
+            <div className="text-gray-500 dark:text-nightTP">Loading chats...</div>
           </div>
         )}
         {!loading && sortedChatList.length === 0 && (
-          <div className="flex justify-center py-2">
-            <div className="text-gray-500">No chats available</div>
+          <div className="flex justify-center py-2 dark:bg-nightS dark:text-nightTS">
+            <div className="text-gray-500 dark:text-nightTP">No chats available</div>
           </div>
         )}
         {sortedChatList.map((chat) => (

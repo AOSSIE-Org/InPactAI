@@ -73,6 +73,10 @@
 }
 
 @theme inline {
+    --color-nightP:#18181B;
+    --color-nightTS:#E4E4E7;
+    --color-nightS:#27272A;
+    --color-nightTP:#fff;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -118,3 +122,5 @@
     @apply bg-background text-foreground;
   }
 }
+
+
