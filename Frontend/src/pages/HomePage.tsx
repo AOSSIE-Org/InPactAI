@@ -6,10 +6,12 @@ import {
   Brain,
   Building,
   CheckCircle,
+  DollarSign,
   Handshake,
   Layers,
   MessageSquare,
   Rocket,
+  Search,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -19,6 +21,8 @@ import { ModeToggle } from "../components/mode-toggle";
 import { UserNav } from "../components/user-nav";
 import Onboarding from "../components/Onboarding";
 import { motion, useAnimation, useInView } from 'framer-motion'
+import AnimatedSection from "@/components/AnimatedSection";
+import CreatorFeatures from "./CreatorFeatures";
 
 const features = [
   {
@@ -136,7 +140,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section - Full Screen */}
-      <main className="w-full min-h-screen flex items-center pt-14  bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+      <section className="w-full min-h-screen mt-10 md:mt-10 lg:mt-10 xl:mt-0 flex items-center pt-14  bg-white to-purple- relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -159,17 +163,20 @@ export default function HomePage() {
               </motion.div>
 
               <motion.h1
-                className="text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight"
+                className="text-4xl font-bold tracking-tight sm:text-6xl text-gray-900"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                AI-Powered {" "}
-                <span className="gradient-text"> <span className="text-purple-600">Creator</span> Collaboration </span>{" "}
+                Connect Creators {" "}
+                <span className="gradient-text"> With</span>{" "}
+                {" "}
+                <span className="text-purple-600">AI-Powered</span>
+                {" "}Collaboration Platform
               </motion.h1>
 
               <motion.p
-                className="text-xl text-slate-600 mb-8 leading-relaxed"
+                className="text-xl text-slate-600 mb-8 leading-relaxed mt-4"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
@@ -186,7 +193,7 @@ export default function HomePage() {
               >
                 <Button className="px-8 py-4 bg-purple-600  hover:bg-purple-700 text-white rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                   <Rocket className="mr-2 h-5 w-5" />
-                  Start Matching Now
+                  <Link to={"/login"}>Start Matching Now</Link>
                 </Button>
               </motion.div>
 
@@ -210,14 +217,14 @@ export default function HomePage() {
                 </div>
               </motion.div>
             </motion.div>
-           
+
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
               className="relative"
             >
-              <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+              <div className="relative bg-white rounded-3xl shadow-md mb-1 md:mb-0  border border-slate-100 overflow-hidden">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-slate-50 to-blue-50 p-4 border-b border-slate-100">
                   <div className="flex items-center justify-between">
@@ -226,15 +233,15 @@ export default function HomePage() {
                       <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                       <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                     </div>
-                    <div className="text-xs text-slate-500 font-mono">inpact.ai/dashboard</div>
+                    <div className="text-xs text-slate-500 font-mono">inpact</div>
                   </div>
                 </div>
 
                 {/* Main Content */}
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-slate-800">Creator Collaboration</h3>
-                    <motion.div 
+                    <h3 className="text-lg font-semibold text-slate-800">Key Features</h3>
+                    <motion.div
                       className="flex items-center text-green-500"
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
@@ -246,122 +253,86 @@ export default function HomePage() {
 
                   {/* Creator Cards */}
                   <div className="space-y-3">
-                    <motion.div 
+                    <motion.div
                       className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: 0.8 }}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">TC</span>
+                      <div className="flex flex-col md:flex-row gap-4 md:gap-2 items-center space-x-3">
+                        <div className="p-3 aspect-square hidden bg-gradient-to-r from-blue-400 to-blue-400 rounded-full md:flex items-center justify-center overflow-hidden">
+                          <span className="text-white text-sm font-medium leading-none">AI</span>
                         </div>
                         <div>
-                          <div className="font-medium text-slate-800">Tech Creator</div>
-                          <div className="text-sm text-slate-500">Tech Reviews</div>
+                          <div className="font-medium text-slate-800">AI-Driven Sponsorship Matchmaking</div>
+                          <div className="text-sm text-slate-500">Connect with brands based on audience demographics</div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-green-600 font-semibold">95% Match</div>
-                        <div className="text-xs text-slate-500">Perfect fit</div>
                       </div>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: 1.0 }}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">LI</span>
+                      <div className="flex flex-col md:flex-row gap-4 md:gap-2 items-center space-x-3">
+                        <div className="p-3 hidden aspect-square bg-gradient-to-r from-purple-400 to-pink-400 rounded-full md:flex items-center justify-center overflow-hidden">
+                          <span className="text-white text-sm font-medium leading-none">CC</span>
                         </div>
+
                         <div>
-                          <div className="font-medium text-slate-800">Lifestyle Influencer</div>
-                          <div className="text-sm text-slate-500">Fashion & Lifestyle</div>
+                          <div className="font-medium text-slate-800">Creator Collaboration Hub</div>
+                          <div className="text-sm text-slate-500">Find and partner with creators who have complementary audiences and content niches.</div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-green-600 font-semibold">89% Match</div>
-                        <div className="text-xs text-slate-500">Great match</div>
                       </div>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: 1.2 }}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">FC</span>
+                      <div className="flex flex-col md:flex-row gap-4 md:gap-2 items-center space-x-3">
+                        <div className="p-2 hidden bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full md:flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">PO</span>
                         </div>
                         <div>
-                          <div className="font-medium text-slate-800">Food Creator</div>
-                          <div className="text-sm text-slate-500">Cooking & Recipes</div>
+                          <div className="font-medium text-slate-800">AI-Based Pricing Optimization</div>
+                          <div className="text-sm text-slate-500">Get fair sponsorship pricing recommendations based on engagement and market trends.</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-green-600 font-semibold">82% Match</div>
-                        <div className="text-xs text-slate-500">Good match</div>
-                      </div>
                     </motion.div>
-                  </div>
 
+                    <Button onClick={() => {
+                      const section = document.getElementById('key-features');
+                      if (section) {
+                        section.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                      className="px-8 py-4 bg-purple-600  hover:bg-purple-700 text-white rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                      View More
+                    </Button>
+
+                  </div>
                 </div>
               </div>
             </motion.div>
-
           </div>
         </div>
-      </main>
-      {/* <main className="flex-1">
-        <section className="w-full min-h-screen flex items-center bg-purple-100 pt-16">
-          <div className="container ml-23 px-6 md:px-12 flex flex-col-reverse lg:flex-row items-center gap-12">
-            <div className="text-center lg:text-left max-w-2xl">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-gray-900">
-                AI-Powered Creator Collaboration Platform
-              </h1>
-              <p className="mt-4 text-lg text-gray-700 md:text-xl">
-                Connect with brands, collaborate with creators, and optimize
-                your partnerships through data-driven insights.
-              </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  size="lg"
-                  className="bg-purple-600 text-white hover:bg-purple-700"
-                >
-                  <Link to="/dashboard" className="flex items-center">
-                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-gray-300 text-gray-900 hover:bg-gray-100"
-                >
-                  Learn More
-                </Button>
-              </div>
-            </div>
-            <div className="relative w-full max-w-lg">
-              <img
-                src="/Home.png"
-                alt="Hero Image"
-                className="rounded-xl shadow-xl object-cover w-full h-auto"
-              />
-            </div>
-          </div>
-        </section>
-      </main> */}
+      </section>
 
-        {/* Onboarding Section */}
+
+
+      {/* Creator features */}
+      <CreatorFeatures />
+
+      {/* Onboarding Section */}
       <Onboarding />
 
       {/* Features Section - Revealed on Scroll */}
-      <section ref={featuresRef} className="w-full py-24 bg-white">
+      <section id="key-features" ref={featuresRef} className="w-full py-24 bg-white">
         <div
           className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${isFeaturesVisible
             ? "opacity-100 translate-y-0"
@@ -377,18 +348,23 @@ export default function HomePage() {
           </p>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map(({ icon: Icon, title, desc }, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md"
+                whileHover={{ scale: 1.03 }}
+                className="flex hover:shadow-md flex-col items-center text-center p-6 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-100 rounded-xl "
               >
-                <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4"
+                >
                   <Icon className="h-10 w-10 text-purple-600" />
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold text-gray-900">
                   {title}
                 </h3>
                 <p className="mt-2 text-gray-600">{desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
