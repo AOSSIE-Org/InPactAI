@@ -3,10 +3,14 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight,
   BarChart3,
+  Brain,
+  Building,
+  CheckCircle,
   Handshake,
   Layers,
   MessageSquare,
   Rocket,
+  TrendingUp,
   Users,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -14,6 +18,7 @@ import { MainNav } from "../components/main-nav";
 import { ModeToggle } from "../components/mode-toggle";
 import { UserNav } from "../components/user-nav";
 import Onboarding from "../components/Onboarding";
+import { motion, useAnimation, useInView } from 'framer-motion'
 
 const features = [
   {
@@ -131,7 +136,188 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section - Full Screen */}
-      <main className="flex-1">
+      <main className="w-full min-h-screen flex items-center pt-14  bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.div
+                className="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm border mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <motion.div
+                  className="w-2 h-2 bg-green-400 rounded-full mr-2"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="text-sm text-slate-600">AI-Powered Platform • Open Source</span>
+              </motion.div>
+
+              <motion.h1
+                className="text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                AI-Powered {" "}
+                <span className="gradient-text"> <span className="text-purple-600">Creator</span> Collaboration </span>{" "}
+              </motion.h1>
+
+              <motion.p
+                className="text-xl text-slate-600 mb-8 leading-relaxed"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Connect with brands, collaborate with creators, and optimize
+                your partnerships through data-driven insights.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4 mb-8"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <Button className="px-8 py-4 bg-purple-600  hover:bg-purple-700 text-white rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                  <Rocket className="mr-2 h-5 w-5" />
+                  Start Matching Now
+                </Button>
+              </motion.div>
+
+              <motion.div
+                className="flex items-center gap-8 text-sm text-slate-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                <div className="flex items-center">
+                  <CheckCircle className="text-green-500 mr-2 h-4 w-4" />
+                  Free to start
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="text-green-500 mr-2 h-4 w-4" />
+                  Open source
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="text-green-500 mr-2 h-4 w-4" />
+                  AI-powered
+                </div>
+              </motion.div>
+            </motion.div>
+           
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-slate-50 to-blue-50 p-4 border-b border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                    <div className="text-xs text-slate-500 font-mono">inpact.ai/dashboard</div>
+                  </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-slate-800">Creator Collaboration</h3>
+                    <motion.div 
+                      className="flex items-center text-green-500"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                      <span className="text-sm">Live</span>
+                    </motion.div>
+                  </div>
+
+                  {/* Creator Cards */}
+                  <div className="space-y-3">
+                    <motion.div 
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: 0.8 }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">TC</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-800">Tech Creator</div>
+                          <div className="text-sm text-slate-500">Tech Reviews</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-green-600 font-semibold">95% Match</div>
+                        <div className="text-xs text-slate-500">Perfect fit</div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div 
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: 1.0 }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">LI</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-800">Lifestyle Influencer</div>
+                          <div className="text-sm text-slate-500">Fashion & Lifestyle</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-green-600 font-semibold">89% Match</div>
+                        <div className="text-xs text-slate-500">Great match</div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div 
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: 1.2 }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">FC</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-800">Food Creator</div>
+                          <div className="text-sm text-slate-500">Cooking & Recipes</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-green-600 font-semibold">82% Match</div>
+                        <div className="text-xs text-slate-500">Good match</div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                </div>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </main>
+      {/* <main className="flex-1">
         <section className="w-full min-h-screen flex items-center bg-purple-100 pt-16">
           <div className="container ml-23 px-6 md:px-12 flex flex-col-reverse lg:flex-row items-center gap-12">
             <div className="text-center lg:text-left max-w-2xl">
@@ -169,45 +355,45 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+      </main> */}
 
         {/* Onboarding Section */}
-        <Onboarding />
+      <Onboarding />
 
-        {/* Features Section - Revealed on Scroll */}
-        <section ref={featuresRef} className="w-full py-24 bg-white">
-          <div
-            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${
-              isFeaturesVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-20"
+      {/* Features Section - Revealed on Scroll */}
+      <section ref={featuresRef} className="w-full py-24 bg-white">
+        <div
+          className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${isFeaturesVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-20"
             }`}
-          >
-            <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
-              Key Features
-            </h2>
-            <p className="mt-4 text-lg text-gray-700">
-              Leverage AI to transform your creator partnerships and brand
-              sponsorships.
-            </p>
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map(({ icon: Icon, title, desc }, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md"
-                >
-                  <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4">
-                    <Icon className="h-10 w-10 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-gray-600">{desc}</p>
+        >
+          <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
+            Key Features
+          </h2>
+          <p className="mt-4 text-lg text-gray-700">
+            Leverage AI to transform your creator partnerships and brand
+            sponsorships.
+          </p>
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map(({ icon: Icon, title, desc }, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md"
+              >
+                <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4">
+                  <Icon className="h-10 w-10 text-purple-600" />
                 </div>
-              ))}
-            </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {title}
+                </h3>
+                <p className="mt-2 text-gray-600">{desc}</p>
+              </div>
+            ))}
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+      {/* </main> */}
 
       {/* Footer - Revealed on Scroll */}
       <footer
@@ -215,11 +401,10 @@ export default function HomePage() {
         className="mr-12 ml-12 border-t border-gray-200 bg-gray-50 py-6"
       >
         <div
-          className={`container flex flex-col md:flex-row items-center justify-between text-gray-600 transition-all duration-1000 transform ${
-            isFooterVisible
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-10"
-          }`}
+          className={`container flex flex-col md:flex-row items-center justify-between text-gray-600 transition-all duration-1000 transform ${isFooterVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-10"
+            }`}
         >
           <p>© 2024 Inpact. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
