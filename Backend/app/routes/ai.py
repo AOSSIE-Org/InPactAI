@@ -1,0 +1,55 @@
+from fastapi import APIRouter
+from datetime import date
+import os
+import requests
+import json
+from supabase import create_client, Client
+
+router = APIRouter()
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def fetch_from_gemini():
+    prompt = (
+        "List the top 6 trending content niches for creators and brands this week. For each, provide: name (the niche), insight (a short qualitative reason why it's trending), and global_activity (a number from 1 to 5, where 5 means very high global activity in this category, and 1 means low).Return as a JSON array of objects with keys: name, insight, global_activity."
+    )
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={GEMINI_API_KEY}"
+    resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+    resp.raise_for_status()
+    print("Gemini raw response:", resp.text)
+    data = resp.json()
+    print("Gemini parsed JSON:", data)
+    text = data['candidates'][0]['content']['parts'][0]['text']
+    print("Gemini text to parse as JSON:", text)
+    # Remove Markdown code block if present
+    if text.strip().startswith('```'):
+        text = text.strip().split('\n', 1)[1]  # Remove the first line (```json)
+        text = text.rsplit('```', 1)[0]        # Remove the last ```
+        text = text.strip()
+    return json.loads(text)
+
+@router.get("/api/trending-niches")
+def trending_niches():
+    today = str(date.today())
+    # Check if today's data exists
+    result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
+    if not result.data:
+        # Fetch from Gemini and store
+        try:
+            niches = fetch_from_gemini()
+            for niche in niches:
+                supabase.table("trending_niches").insert({
+                    "name": niche["name"],
+                    "insight": niche["insight"],
+                    "global_activity": int(niche["global_activity"]),
+                    "fetched_at": today
+                }).execute()
+            result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
+        except Exception as e:
+            print("Gemini fetch failed:", e)
+            # fallback: serve most recent data
+            result = supabase.table("trending_niches").select("*").order("fetched_at", desc=True).limit(6).execute()
+    return result.data

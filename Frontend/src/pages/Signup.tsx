@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, Eye, EyeOff, Rocket } from "lucide-react";
 import { supabase } from "../utils/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { demoInsert } from '../utils/demoInsert';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -10,8 +12,7 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
-    username: "",
-    accountType: "creator",
+    confirmPassword: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,14 +20,10 @@ export default function SignupPage() {
   const [step, setStep] = useState(1);
   const [user, setuser] = useState("influencer");
   const { login } = useAuth();
-  const [usernameError, setUsernameError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name === "username") {
-      setUsernameError(validateUsername(value));
-    }
   };
 
   const handleAccountTypeChange = (type: string) => {
@@ -34,90 +31,45 @@ export default function SignupPage() {
     setFormData((prev) => ({ ...prev, accountType: type }));
   };
 
-  const validateUsername = (username: string) => {
-    // Username must be 3-20 chars, start with a letter, only letters, numbers, underscores
-    const regex = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
-    if (!regex.test(username)) {
-      return "Username must be 3-20 characters, start with a letter, and contain only letters, numbers, or underscores.";
-    }
-    return "";
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (step === 1) {
-      setStep(2);
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
-
     setIsLoading(true);
     setError("");
-
-    // Validate username before submitting
-    const usernameValidation = validateUsername(formData.username);
-    if (usernameValidation) {
-      setUsernameError(usernameValidation);
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { name, email, password, accountType, username } = formData;
-      // Check if username already exists in the users table before signup
-      const { data: existingUser, error: userCheckError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", username)
-        .maybeSingle();
-      if (userCheckError) throw userCheckError;
-      if (existingUser) {
-        setError("This username is not available. Please choose another.");
+      const { name, email, password } = formData;
+      
+      // Check if user already exists
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email,
+        password: "dummy-password-to-check-existence",
+      });
+      
+      if (existingUser.user) {
+        setError("An account with this email already exists. Please sign in instead.");
         setIsLoading(false);
         return;
       }
-      // Sign up user with Supabase Auth (handles password securely)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name, accountType } },
+        options: { data: { name } },
       });
-
       if (error) {
-        console.error("Signup error:", error.message);
-        setError(error.message);
+        if (error.message.includes("already registered")) {
+          setError("An account with this email already exists. Please sign in instead.");
+        } else {
+          setError(error.message);
+        }
         setIsLoading(false);
         return;
       }
-
-      if (data.user) {
-        // Insert the new user into the users table with all required fields
-        // Use the id and canonical email from Supabase Auth for consistency
-        const { error: userInsertError } = await supabase
-          .from("users")
-          .insert([
-            {
-              id: data.user.id,
-              username: username,
-              email: data.user.email, // Use canonical email from Supabase
-              role: accountType,
-              profile_image: null,
-              bio: null,
-              created_at: new Date().toISOString(),
-              is_online: false,
-              last_seen: new Date().toISOString(),
-            },
-          ]);
-        if (userInsertError) {
-          console.error("User insert error:", userInsertError.message);
-          setError("Error saving user. Please try again.");
-          setIsLoading(false);
-          return;
-        }
-      }
-
       setIsLoading(false);
-      navigate(`/BasicDetails/${accountType}`);
+      // AuthContext will handle navigation based on user onboarding status and role
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -135,11 +87,7 @@ export default function SignupPage() {
       return;
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        login();
-      }
-    });
+    // AuthContext will handle navigation based on user onboarding status and role
   };
 
   const passwordStrength = () => {
@@ -214,277 +162,19 @@ export default function SignupPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {step === 1 ? (
-                  <>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="username"
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        Username
-                      </label>
-                      {/* User enters username here. Must be unique. */}
-                      <input
-                        id="username"
-                        name="username"
-                        type="text"
-                        value={formData.username}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                        placeholder="Choose a unique username"
-                      />
-                      {usernameError && (
-                        <div className="text-xs text-red-500 mt-1">{usernameError}</div>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="email"
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="password"
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                      >
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? "text" : "password"}
-                          value={formData.password}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                          placeholder="••••••••"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
-                        </button>
-                      </div>
-
-                      {formData.password && (
-                        <div className="mt-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              Password strength: {text}
-                            </span>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              {strength}/4
-                            </span>
-                          </div>
-                          <div className="h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${color} transition-all duration-300 ease-in-out`}
-                              style={{ width: `${(strength / 4) * 100}%` }}
-                            ></div>
-                          </div>
-                          <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400 mt-2">
-                            <li className="flex items-center">
-                              <span
-                                className={`mr-1 ${
-                                  formData.password.length >= 8
-                                    ? "text-green-500"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                {formData.password.length >= 8 ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  "○"
-                                )}
-                              </span>
-                              At least 8 characters
-                            </li>
-                            <li className="flex items-center">
-                              <span
-                                className={`mr-1 ${
-                                  /[A-Z]/.test(formData.password)
-                                    ? "text-green-500"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                {/[A-Z]/.test(formData.password) ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  "○"
-                                )}
-                              </span>
-                              At least 1 uppercase letter
-                            </li>
-                            <li className="flex items-center">
-                              <span
-                                className={`mr-1 ${
-                                  /[0-9]/.test(formData.password)
-                                    ? "text-green-500"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                {/[0-9]/.test(formData.password) ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  "○"
-                                )}
-                              </span>
-                              At least 1 number
-                            </li>
-                            <li className="flex items-center">
-                              <span
-                                className={`mr-1 ${
-                                  /[^A-Za-z0-9]/.test(formData.password)
-                                    ? "text-green-500"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                {/[^A-Za-z0-9]/.test(formData.password) ? (
-                                  <Check className="h-3 w-3" />
-                                ) : (
-                                  "○"
-                                )}
-                              </span>
-                              At least 1 special character
-                            </li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Account Type
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => handleAccountTypeChange("influencer")}
-                          className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
-                            formData.accountType === "creator"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
-                              : "border-gray-300 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700"
-                          }`}
-                        >
-                          <svg
-                            className="h-6 w-6 mb-2"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm font-medium">Creator</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAccountTypeChange("brand")}
-                          className={`flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
-                            formData.accountType === "brand"
-                              ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
-                              : "border-gray-300 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700"
-                          }`}
-                        >
-                          <svg
-                            className="h-6 w-6 mb-2"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm font-medium">Brand</span>
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className={`w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 focus:ring-offset-purple-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${
-                      isLoading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Creating account...
-                      </div>
-                    ) : step === 1 ? (
-                      "Continue"
-                    ) : (
-                      "Create Account"
-                    )}
-                  </button>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                  <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="you@example.com" />
                 </div>
-
-                {step === 1 && (
-                  <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                    By creating an account, you agree to our{" "}
-                    <Link
-                      to="/terms"
-                      className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      to="/privacy"
-                      className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-                )}
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                  <input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Password" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                  <input id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Confirm Password" />
+                </div>
+                <button type="submit" className="w-full py-3 px-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200" disabled={isLoading}>{isLoading ? "Signing up..." : "Sign Up"}</button>
               </form>
 
               {step === 1 && (

@@ -7,12 +7,12 @@ from fastapi import (
     HTTPException,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from db.db import get_db
-from services.chat_services import chat_service
+from ..db.db import get_db
+from ..services.chat_services import chat_service
 from redis.asyncio import Redis
-from services.redis_client import get_redis
+from ..services.redis_client import get_redis
 import asyncio
-from services.chat_pubsub import listen_to_channel
+from ..services.chat_pubsub import listen_to_channel
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 

@@ -30,7 +30,7 @@ export default function LoginPage() {
         return;
       }
 
-      Navigate("/dashboard");
+      // AuthContext will handle navigation based on user onboarding status and role
       setIsLoading(false);
     } catch (err) {
       setError("Invalid email or password. Please try again.");
@@ -49,11 +49,7 @@ export default function LoginPage() {
       return;
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        login();
-      }
-    });
+    // AuthContext will handle navigation based on user onboarding status and role
   };
 
   return (

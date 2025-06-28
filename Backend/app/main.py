@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from db.db import engine
-from db.seed import seed_db
-from models import models, chat
-from routes.post import router as post_router
-from routes.chat import router as chat_router
+from .db.db import engine
+from .db.seed import seed_db
+from .models import models, chat
+from .routes.post import router as post_router
+from .routes.chat import router as chat_router
+from .routes.match import router as match_router
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+from app.routes import ai
 
 # Load environment variables
 load_dotenv()
@@ -51,6 +53,8 @@ app.add_middleware(
 # Include the routes
 app.include_router(post_router)
 app.include_router(chat_router)
+app.include_router(match_router)
+app.include_router(ai.router)
 
 
 @app.get("/")

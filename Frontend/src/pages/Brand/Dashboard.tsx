@@ -33,8 +33,18 @@ import {
   Activity,
   Rocket,
 } from "lucide-react";
+import { CreatorMatches } from "../../components/dashboard/creator-matches";
+import { useState } from "react";
 
 const Dashboard = () => {
+  // Mock sponsorships for selection (replace with real API call if needed)
+  const sponsorships = [
+    { id: "1", title: "Summer Collection" },
+    { id: "2", title: "Tech Launch" },
+    { id: "3", title: "Fitness Drive" },
+  ];
+  const [selectedSponsorship, setSelectedSponsorship] = useState<string>("");
+
   return (
     <>
       <div className="min-h-screen bg-gray-50">
@@ -159,46 +169,24 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Recommended Creators
+                    Matched Creators for Your Campaign
                   </h2>
-                  <Button variant="default">View All</Button>
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {[1, 2, 3].map((i) => (
-                    <Card key={i} className="border border-gray-300">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={`https://images.unsplash.com/photo-1610276198568-eb6d0ff53e48?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cG90cmFpdHxlbnwwfHwwfHx8MA%3D%3D`}
-                            alt="Creator"
-                            className="h-16 w-16 rounded-full object-cover"
-                          />
-                          <div>
-                            <h3 className="font-semibold text-gray-900">
-                              Sarah Parker
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                              Lifestyle & Fashion
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-gray-500">Followers</p>
-                            <p className="font-semibold">245K</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Engagement</p>
-                            <p className="font-semibold">4.8%</p>
-                          </div>
-                        </div>
-                        <Button className="mt-4 w-full bg-purple-700 hover:bg-purple-800 text-white">
-                          View Profile
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="mb-4">
+                  <label htmlFor="sponsorship-select" className="mr-2 font-medium">Select Campaign:</label>
+                  <select
+                    id="sponsorship-select"
+                    value={selectedSponsorship}
+                    onChange={e => setSelectedSponsorship(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                  >
+                    <option value="">-- Select --</option>
+                    {sponsorships.map(s => (
+                      <option key={s.id} value={s.id}>{s.title}</option>
+                    ))}
+                  </select>
                 </div>
+                <CreatorMatches sponsorshipId={selectedSponsorship} />
               </div>
             </TabsContent>
 

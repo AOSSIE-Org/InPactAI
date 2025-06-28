@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from db.db import AsyncSessionLocal
-from models.models import (
+from ..db.db import AsyncSessionLocal
+from ..models.models import (
     User, AudienceInsights, Sponsorship, UserPost,
     SponsorshipApplication, SponsorshipPayment, Collaboration
 )
-from schemas.schema import (
+from ..schemas.schema import (
     UserCreate, AudienceInsightsCreate, SponsorshipCreate, UserPostCreate,
     SponsorshipApplicationCreate, SponsorshipPaymentCreate, CollaborationCreate
 )

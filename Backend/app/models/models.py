@@ -9,10 +9,11 @@ from sqlalchemy import (
     DECIMAL,
     DateTime,
     Boolean,
+    TIMESTAMP,
 )
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
-from db.db import Base
+from datetime import datetime
+from app.db.db import Base
 import uuid
 
 
@@ -31,14 +32,10 @@ class User(Base):
     role = Column(String, nullable=False)  # 'creator' or 'brand'
     profile_image = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
     is_online = Column(Boolean, default=False)  # ✅ Track if user is online
-    last_seen = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    last_seen = Column(TIMESTAMP, default=datetime.utcnow)
 
     audience = relationship("AudienceInsights", back_populates="user", uselist=False)
     sponsorships = relationship("Sponsorship", back_populates="brand")

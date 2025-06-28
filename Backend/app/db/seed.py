@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
-from db.db import AsyncSessionLocal
-from models.models import User
+from datetime import datetime
+from app.db.db import AsyncSessionLocal
+from app.models.models import User
 
 
 async def seed_db():
@@ -12,6 +12,8 @@ async def seed_db():
             "password": "password123",
             "role": "creator",
             "bio": "Lifestyle and travel content creator",
+            "profile_image": None,
+            "created_at": datetime.utcnow()
         },
         {
             "id": "6dbfcdd5-795f-49c1-8f7a-a5538b8c6f6f",
@@ -20,6 +22,8 @@ async def seed_db():
             "password": "password123",
             "role": "brand",
             "bio": "Sustainable fashion brand looking for influencers",
+            "profile_image": None,
+            "created_at": datetime.utcnow()
         },
     ]
 
@@ -40,11 +44,10 @@ async def seed_db():
                     id=user_data["id"],
                     username=user_data["username"],
                     email=user_data["email"],
-                    password_hash=user_data[
-                        "password"
-                    ],  # Using plain password directly
                     role=user_data["role"],
+                    profile_image=user_data["profile_image"],
                     bio=user_data["bio"],
+                    created_at=user_data["created_at"]
                 )
                 session.add(user)
                 print(f"Created user: {user_data['email']}")

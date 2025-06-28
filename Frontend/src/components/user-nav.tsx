@@ -1,5 +1,4 @@
 import React from "react";
-
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -12,47 +11,63 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export function UserNav() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const [avatarError, setAvatarError] = useState(false);
 
-  if (!isLoggedIn) {
+  if (!isAuthenticated || !user) {
     return (
-      <Button variant="ghost" size="sm" className="md:hidden">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="ghost" size="sm" className="md:hidden">
+          <Link to="/login">Login</Link>
+        </Button>
+        <Button size="sm" className="md:hidden bg-purple-600 text-white hover:bg-purple-700">
+          <Link to="/signup">Sign Up</Link>
+        </Button>
+      </div>
     );
   }
+
+  const handleAvatarError = () => {
+    setAvatarError(true);
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://via.placeholder.com/32" alt="User" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage 
+              src={avatarError ? "https://via.placeholder.com/32" : (user.user_metadata?.avatar_url || "https://via.placeholder.com/32")} 
+              alt="User" 
+              onError={handleAvatarError}
+            />
+            <AvatarFallback>{user.user_metadata?.name?.charAt(0) || user.email?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User Name</p>
+            <p className="text-sm font-medium leading-none">{user.user_metadata?.name || "User"}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              user@example.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link to="/dashboard">Dashboard</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

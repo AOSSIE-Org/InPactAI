@@ -5,7 +5,6 @@ from datetime import datetime
 class UserCreate(BaseModel):
     username: str
     email: str
-    password_hash: str
     role: str
     profile_image: Optional[str] = None
     bio: Optional[str] = None

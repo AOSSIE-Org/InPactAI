@@ -2,8 +2,8 @@ from fastapi import WebSocket, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select
 from datetime import datetime, timezone
-from models.models import User
-from models.chat import ChatList, ChatMessage, MessageStatus
+from app.models.models import User
+from app.models.chat import ChatList, ChatMessage, MessageStatus
 from typing import Dict
 from redis.asyncio import Redis
 import logging

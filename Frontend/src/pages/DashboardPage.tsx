@@ -24,7 +24,7 @@ import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
 
 export default function DashboardPage() {
-  const {logout} = useAuth();
+  const {logout, user} = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)]">
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                   <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Brands that match your audience and content</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <SponsorshipMatches />
+                  <SponsorshipMatches creatorId={user?.id || ""} />
                 </CardContent>
               </Card>
               <Card className="col-span-3 bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">

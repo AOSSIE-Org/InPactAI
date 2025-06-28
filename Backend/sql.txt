@@ -1,8 +1,8 @@
 -- Insert into users table
-INSERT INTO users (id, username, email, password_hash, role, profile_image, bio, created_at) VALUES
-  (gen_random_uuid(), 'creator1', 'creator1@example.com', 'hashedpassword1', 'creator', 'image1.jpg', 'Bio of creator1', NOW()),
-  (gen_random_uuid(), 'brand1', 'brand1@example.com', 'hashedpassword2', 'brand', 'image2.jpg', 'Bio of brand1', NOW()),
-  (gen_random_uuid(), 'creator2', 'creator2@example.com', 'hashedpassword3', 'creator', 'image3.jpg', 'Bio of creator2', NOW());
+INSERT INTO users (id, username, email, role, profile_image, bio, created_at) VALUES
+  (gen_random_uuid(), 'creator1', 'creator1@example.com', 'creator', 'image1.jpg', 'Bio of creator1', NOW()),
+  (gen_random_uuid(), 'brand1', 'brand1@example.com', 'brand', 'image2.jpg', 'Bio of brand1', NOW()),
+  (gen_random_uuid(), 'creator2', 'creator2@example.com', 'creator', 'image3.jpg', 'Bio of creator2', NOW());
 
 -- Insert into audience_insights table
 INSERT INTO audience_insights (id, user_id, audience_age_group, audience_location, engagement_rate, average_views, time_of_attention, price_expectation, created_at) VALUES
