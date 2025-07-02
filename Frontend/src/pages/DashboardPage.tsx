@@ -27,7 +27,7 @@ export default function DashboardPage() {
     const { logout } = useAuth();
 
     return (
-        <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)] dark:text-nightTS">
+        <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)] dark:text-nightTS dark:bg-nightP">
             <header className="sticky top-0 z-50 w-full border-b border-[hsl(214.3,31.8%,91.4%)] bg-[rgba(255,255,255,0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsla(0,0%,100%,0.6)] dark:bg-nightP dark:text-nightTS dark:border-white">
                 <div className="container flex h-16 items-center">
                     <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
