@@ -1,3 +1,4 @@
+# FastAPI router for AI-powered endpoints, including trending niches
 from fastapi import APIRouter
 from datetime import date
 import os
@@ -5,14 +6,18 @@ import requests
 import json
 from supabase import create_client, Client
 
+# Initialize router
 router = APIRouter()
 
+# Load environment variables for Supabase and Gemini
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_from_gemini():
+
+
     prompt = (
         "List the top 6 trending content niches for creators and brands this week. For each, provide: name (the niche), insight (a short qualitative reason why it's trending), and global_activity (a number from 1 to 5, where 5 means very high global activity in this category, and 1 means low).Return as a JSON array of objects with keys: name, insight, global_activity."
     )
@@ -33,8 +38,14 @@ def fetch_from_gemini():
 
 @router.get("/api/trending-niches")
 def trending_niches():
+    """
+    API endpoint to get trending niches for the current day.
+    - If today's data exists in Supabase, return it.
+    - Otherwise, fetch from Gemini, store in Supabase, and return the new data.
+    - If Gemini fails, fallback to the most recent data available.
+    """
     today = str(date.today())
-    # Check if today's data exists
+    # Check if today's data exists in Supabase
     result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
     if not result.data:
         # Fetch from Gemini and store

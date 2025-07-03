@@ -261,12 +261,14 @@ const brandShowcase = [
   },
 ];
 
-// TrendingNichesSection component
+// TrendingNichesSection: Fetches and displays trending niches from the backend
 function TrendingNichesSection() {
+  // State for trending niches, loading, and error
   const [niches, setNiches] = useState<{ name: string; insight: string; global_activity: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch trending niches from the backend API on mount
   useEffect(() => {
     fetch("/api/trending-niches")
       .then(res => {
@@ -286,24 +288,31 @@ function TrendingNichesSection() {
   if (loading) return <div>Loading trending niches...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  // Emoji icons for visual variety in cards
   const icons = ['🤖','🌱','🎮','💸','✈️','🧩'];
 
+  // Modern glassmorphism card design for each trending niche
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
       {niches.map((niche, idx) => (
         <div
           key={idx}
-          className="relative group p-6 bg-white/60 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 w-full max-w-xs transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
+          className="relative group pt-8 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-2xl w-full max-w-xs transition-transform duration-300 hover:scale-105 hover:shadow-2xl overflow-hidden"
         >
-          {/* Optional: Icon or Emoji */}
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full shadow-lg border-4 border-white">
+          {/* Gradient overlay for extra glass effect */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 via-white/10 to-blue-100/10 pointer-events-none" />
+          {/* Floating Emoji icon above the card */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full shadow-lg border-4 border-white z-10">
             <span className="text-2xl">{icons[idx % icons.length]}</span>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2 mt-6 text-center">{niche.name}</h3>
-          <blockquote className="italic text-gray-700 mb-4 text-center border-l-4 border-purple-300 pl-3">
+          {/* Niche name */}
+          <h3 className="text-xl font-bold text-gray-900 mb-2 mt-6 text-center relative z-10">{niche.name}</h3>
+          {/* Niche insight as a quote */}
+          <blockquote className="italic text-gray-700 mb-4 text-center border-l-4 border-purple-300 pl-3 relative z-10">
             “{niche.insight}”
           </blockquote>
-          <div className="flex flex-col items-center mt-4">
+          {/* Global activity as a progress bar */}
+          <div className="flex flex-col items-center mt-4 relative z-10">
             <span className="text-xs text-gray-500 mb-1">Global Activity</span>
             <div className="w-full flex items-center justify-center">
               <div className="w-24 h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -459,16 +468,15 @@ export default function HomePage() {
                     <span className="text-sm font-medium text-gray-700">Welcome back!</span>
                   </div>
                   <div className="space-y-6 w-full">
-                    <h1 className="text-5xl lg:text-7xl font-black tracking-tight leading-tight uppercase bg-gradient-to-r from-purple-600 via-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                      INPACT AI
+                    {/* Main Welcome Heading */}
+                    <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-tight w-full text-center lg:text-left">
+                      Welcome, <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">{user.user_metadata?.name || user.email?.split('@')[0]}</span>
                     </h1>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mt-4">
-                      Creator Collaboration Platform
-                    </h2>
                     <p className="text-xl lg:text-2xl text-gray-700 max-w-2xl mx-auto lg:mx-0 leading-relaxed w-full text-center lg:text-left">
                       Ready to grow your creator business? Explore new opportunities, track your performance, and connect with brands.
                     </p>
                   </div>
+                  {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <Button
                       size="lg"
