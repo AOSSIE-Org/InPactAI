@@ -13,6 +13,11 @@ router = APIRouter()
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+# Validate required environment variables
+if not all([SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY]):
+    raise ValueError("Missing required environment variables: SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY")
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_from_gemini():
