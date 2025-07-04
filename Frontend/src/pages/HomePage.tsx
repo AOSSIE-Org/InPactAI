@@ -19,6 +19,8 @@ import Onboarding from "../components/Onboarding";
 const MainNav = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const dropdownWrapperRef = useRef<HTMLDivElement | null>(null);
+  const closeTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const categoryGroups: Record<string, string[]> = {
     Lifestyle: ["Fashion", "Makeup", "Skincare", "Parenting", "DIY"],
@@ -33,6 +35,23 @@ const MainNav = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownWrapperRef.current &&
+        !dropdownWrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+        setHoveredCategory(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <nav className="hidden md:flex items-center gap-6 px-4 py-2 relative">
       <Link to="/features" className="text-sm font-medium hover:text-purple-600">Features</Link>
@@ -40,16 +59,23 @@ const MainNav = () => {
       <Link to="/about" className="text-sm font-medium hover:text-purple-600">About</Link>
       <Link to="/contact" className="text-sm font-medium hover:text-purple-600">Contact</Link>
 
-      {/* Categories Dropdown */}
-      <div className="relative">
+      <div className="relative" ref={dropdownWrapperRef}>
         <button onClick={handleClick} className="text-sm font-medium hover:text-purple-600">
           Categories
         </button>
 
         {isDropdownOpen && (
           <div
-            className="absolute left-0 mt-2 flex flex-col bg-white shadow-lg rounded-md w-auto min-w-[12rem] max-h-fit overflow-visible z-50"
-            onMouseLeave={() => setHoveredCategory(null)}
+            className="absolute left-0 mt-2 flex flex-col bg-white shadow-lg rounded-md w-auto min-w-[12rem] z-50"
+            onMouseEnter={() => {
+              if (closeTimeout.current) clearTimeout(closeTimeout.current);
+            }}
+            onMouseLeave={() => {
+              closeTimeout.current = setTimeout(() => {
+                setIsDropdownOpen(false);
+                setHoveredCategory(null);
+              }, 150);
+            }}
           >
             <ul className="py-2 divide-y divide-gray-100 text-sm">
               {Object.entries(categoryGroups).map(([group, items]) => (
@@ -117,12 +143,36 @@ export default function HomePage() {
   }, []);
 
   const features = [
-    { icon: Handshake, title: "AI-Driven Sponsorship Matchmaking", desc: "Connect with brands based on audience demographics, engagement rates, and content style." },
-    { icon: Users, title: "Creator Collaboration Hub", desc: "Find and partner with creators who have complementary audiences and content niches." },
-    { icon: Layers, title: "AI-Based Pricing Optimization", desc: "Get fair sponsorship pricing recommendations based on engagement and market trends." },
-    { icon: MessageSquare, title: "Negotiation & Contract Assistant", desc: "Structure deals, generate contracts, and optimize terms using AI insights." },
-    { icon: BarChart3, title: "Performance Analytics", desc: "Track sponsorship performance, audience engagement, and campaign success." },
-    { icon: Rocket, title: "ROI Tracking", desc: "Measure and optimize return on investment for both creators and brands." },
+    {
+      icon: Handshake,
+      title: "AI-Driven Sponsorship Matchmaking",
+      desc: "Connect with brands based on audience demographics, engagement rates, and content style.",
+    },
+    {
+      icon: Users,
+      title: "Creator Collaboration Hub",
+      desc: "Find and partner with creators who have complementary audiences and content niches.",
+    },
+    {
+      icon: Layers,
+      title: "AI-Based Pricing Optimization",
+      desc: "Get fair sponsorship pricing recommendations based on engagement and market trends.",
+    },
+    {
+      icon: MessageSquare,
+      title: "Negotiation & Contract Assistant",
+      desc: "Structure deals, generate contracts, and optimize terms using AI insights.",
+    },
+    {
+      icon: BarChart3,
+      title: "Performance Analytics",
+      desc: "Track sponsorship performance, audience engagement, and campaign success.",
+    },
+    {
+      icon: Rocket,
+      title: "ROI Tracking",
+      desc: "Measure and optimize return on investment for both creators and brands.",
+    },
   ];
 
   return (
@@ -140,8 +190,12 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             <ModeToggle />
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost"><Link to="/login" className="text-gray-900">Login</Link></Button>
-              <Button className="bg-purple-600 text-white hover:bg-purple-700"><Link to="/signup">Sign Up</Link></Button>
+              <Button variant="ghost">
+                <Link to="/login" className="text-gray-900">Login</Link>
+              </Button>
+              <Button className="bg-purple-600 text-white hover:bg-purple-700">
+                <Link to="/signup">Sign Up</Link>
+              </Button>
             </div>
             <UserNav />
           </div>
@@ -178,7 +232,7 @@ export default function HomePage() {
 
         <Onboarding />
 
-        {/* Features */}
+        {/* Features Section */}
         <section ref={featuresRef} className="w-full py-24 bg-white">
           <div className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${isFeaturesVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
             <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">Key Features</h2>
