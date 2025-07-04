@@ -107,11 +107,11 @@ const ChatSearch = () => {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div className="relative w-full max-w-md">
-          <SearchIcon className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground " />
           <Input
             type="text"
             placeholder="Search chats and messages..."
-            className="pl-9 pr-4"
+            className="pl-9 pr-4 rounded-full dark:bg-[#364152] dark:text-nightTS"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -128,7 +128,7 @@ const ChatSearch = () => {
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[300px] p-0 max-h-[400px] overflow-y-auto"
+        className="w-[300px] p-0 max-h-[400px] overflow-y-auto dark:bg-[#364152] dark:text-nightTP"
         onOpenAutoFocus={(e) => e.preventDefault()} // This prevents the auto focus
       >
         <div className="py-2">{renderSearchResults()}</div>

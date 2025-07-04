@@ -102,14 +102,14 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
+    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900  dark:bg-nightP dark:text-nightTS">
       {/* Header */}
-      <header className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg px-6">
+      <header className="fixed top-0 z-50 w-full border-b border-gray-200 dark:border-nightS bg-white/80 backdrop-blur-lg px-6 dark:bg-nightS dark:text-nightTS">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6 md:gap-10">
             <Link to="/" className="flex items-center space-x-2">
               <Rocket className="h-6 w-6 text-purple-600" />
-              <span className="font-bold text-xl text-gray-900">Inpact</span>
+              <span className="font-bold text-xl text-gray-900 dark:text-nightTP">Inpact</span>
             </Link>
             <MainNav />
           </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
             <ModeToggle />
             <div className="hidden md:flex gap-2">
               <Button variant="ghost">
-                <Link to="/login" className="text-gray-900">
+                <Link to="/login" className="text-gray-900 dark:text-nightTS">
                   Login
                 </Link>
               </Button>
@@ -131,14 +131,14 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section - Full Screen */}
-      <main className="flex-1">
-        <section className="w-full min-h-screen flex items-center bg-purple-100 pt-16">
+      <main className="flex-1 dark:bg-nightP dark:text-nightTS">
+        <section className="w-full min-h-screen flex items-center bg-purple-100 pt-16 dark:bg-nightP dark:text-nightTS">
           <div className="container ml-23 px-6 md:px-12 flex flex-col-reverse lg:flex-row items-center gap-12">
             <div className="text-center lg:text-left max-w-2xl">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-gray-900">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-gray-900  dark:text-nightTP">
                 AI-Powered Creator Collaboration Platform
               </h1>
-              <p className="mt-4 text-lg text-gray-700 md:text-xl">
+              <p className="mt-4 text-lg text-gray-700 md:text-xl  dark:text-nightTS">
                 Connect with brands, collaborate with creators, and optimize
                 your partnerships through data-driven insights.
               </p>
@@ -164,7 +164,10 @@ export default function HomePage() {
               <img
                 src="/Home.png"
                 alt="Hero Image"
-                className="rounded-xl shadow-xl object-cover w-full h-auto"
+                className="rounded-xl object-cover w-full h-auto transition-transform duration-300 hover:scale-105"
+                style={{
+                  boxShadow: "0 0 0 0 rgba(128,90,213,0.15), 0 8px 16px 0 rgba(128,90,213,0.15)"
+                }}
               />
             </div>
           </div>
@@ -174,18 +177,18 @@ export default function HomePage() {
         <Onboarding />
 
         {/* Features Section - Revealed on Scroll */}
-        <section ref={featuresRef} className="w-full py-24 bg-white">
+        <section ref={featuresRef} className="w-full py-24 bg-white flex flex-col-reverse lg:flex-row items-center dark:bg-nightP dark:text-nightTS">
           <div
-            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${
+            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform mx-auto ${
               isFeaturesVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-20"
             }`}
           >
-            <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
+            <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-nightTP">
               Key Features
             </h2>
-            <p className="mt-4 text-lg text-gray-700">
+            <p className="mt-4 text-lg text-gray-700 dark:text-nightTS">
               Leverage AI to transform your creator partnerships and brand
               sponsorships.
             </p>
@@ -193,15 +196,15 @@ export default function HomePage() {
               {features.map(({ icon: Icon, title, desc }, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md"
+                  className="flex flex-col items-center text-center p-6 bg-gray-100 rounded-xl shadow-md dark:bg-nightS dark:text-nightTS"
                 >
-                  <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4">
+                  <div className="flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 mb-4 dark:bg-nightS">
                     <Icon className="h-10 w-10 text-purple-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-nightTP">
                     {title}
                   </h3>
-                  <p className="mt-2 text-gray-600">{desc}</p>
+                  <p className="mt-2 text-gray-600 dark:text-nightTS">{desc}</p>
                 </div>
               ))}
             </div>
@@ -212,17 +215,17 @@ export default function HomePage() {
       {/* Footer - Revealed on Scroll */}
       <footer
         ref={footerRef}
-        className="mr-12 ml-12 border-t border-gray-200 bg-gray-50 py-6"
+        className="border-t border-gray-200 bg-gray-50 py-6 dark:bg-nightS dark:text-nightTS dark:border-nightS"
       >
         <div
-          className={`container flex flex-col md:flex-row items-center justify-between text-gray-600 transition-all duration-1000 transform ${
+          className={`container flex flex-col md:flex-row md:min-w-full items-center justify-between text-gray-600 transition-all duration-1000 transform dark:text-nightTS ${
             isFooterVisible
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-10"
           }`}
         >
-          <p>© 2024 Inpact. All rights reserved.</p>
-          <div className="flex gap-4 mt-4 md:mt-0">
+          <p className="dark:text-nightTS ml-12">© 2024 Inpact. All rights reserved.</p>
+          <div className="flex gap-4 mt-4 flex-row-reverse md:mt-0 dark:text-nightTS pr-12">
             <Link to="/terms" className="hover:underline">
               Terms
             </Link>

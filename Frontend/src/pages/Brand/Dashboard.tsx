@@ -37,14 +37,14 @@ import {
 const Dashboard = () => {
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50  dark:bg-nightP">
         {/* Navigation */}
-        <nav className="border-neutral-200 bg-white">
+        <nav className="border-neutral-200 bg-white dark:bg-nightS dark:text-nightTS">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
               <div className="flex items-center">
                 <Rocket className="h-8 w-8 text-purple-700" />
-                <span className="ml-2 text-xl font-bold text-black">
+                <span className="ml-2 text-xl font-bold text-black dark:text-nightTP">
                   Inpact
                 </span>
                 <span className="ml-1 mb-3 text-sm font-medium text-purple-500">
@@ -53,40 +53,40 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Bell className="h-6 w-6 text-gray-500 hover:text-purple-700 cursor-pointer" />
+                  <Bell className="h-6 w-6 text-gray-500 hover:text-purple-700 cursor-pointer dark:text-nightTS" />
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-purple-700 text-[10px] font-bold text-white flex items-center justify-center">
                     3
                   </span>
                 </div>
-                <UserCircle className="h-8 w-8 text-gray-500 hover:text-purple-700 cursor-pointer" />
+                <UserCircle className="h-8 w-8 text-gray-500 hover:text-purple-700 cursor-pointer dark:text-nightTS" />
               </div>
             </div>
           </div>
         </nav>
 
-        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 dark:bg-nightP dark:text-nightTS">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold  text-gray-900 dark:text-nightTP">
               Brand Dashboard
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-nightTS">
               Discover and collaborate with creators that match your brand
             </p>
           </div>
 
           {/* Search */}
           <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 border-neutral-200" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 border-neutral-200 dark:border-none" />
             <Input
-              className="pl-10 border border-gray-300"
+              className="pl-10 border border-gray-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 dark:border-none"
               placeholder="Search creators by niche, audience size, or location..."
             />
           </div>
 
           {/* Main Content */}
           <Tabs defaultValue="discover" className="space-y-8">
-            <TabsList className="bg-white border border-gray-300">
+            <TabsList className="bg-white border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
               <TabsTrigger value="discover">Discover</TabsTrigger>
               <TabsTrigger value="contracts">Contracts</TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
@@ -97,7 +97,7 @@ const Dashboard = () => {
             <TabsContent value="discover" className="space-y-8">
               {/* Stats */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
                     <CardTitle className="text-sm font-medium">
                       Active Creators
@@ -111,7 +111,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Avg. Engagement
@@ -125,7 +125,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Active Campaigns
@@ -139,7 +139,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Messages
@@ -158,14 +158,14 @@ const Dashboard = () => {
               {/* Creator Recommendations */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-gray-900  dark:text-nightTP">
                     Recommended Creators
                   </h2>
-                  <Button variant="default">View All</Button>
+                  <Button className="bg-purple-600 text-white hover:bg-purple-700">View All</Button>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {[1, 2, 3].map((i) => (
-                    <Card key={i} className="border border-gray-300">
+                    <Card key={i} className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-4">
                           <img
@@ -174,7 +174,7 @@ const Dashboard = () => {
                             className="h-16 w-16 rounded-full object-cover"
                           />
                           <div>
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-gray-900 dark:text-nightTP">
                               Sarah Parker
                             </h3>
                             <p className="text-sm text-gray-500">
@@ -205,7 +205,7 @@ const Dashboard = () => {
             {/* Contracts Tab */}
             <TabsContent value="contracts" className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-gray-900  dark:text-nightTP">
                   Active Contracts
                 </h2>
                 <Button className="bg-purple-700 hover:bg-purple-800 text-white">
@@ -218,7 +218,7 @@ const Dashboard = () => {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="bg-white p-6 rounded-lg shadow-sm border border-gray-300"
+                    className="bg-white p-6 rounded-lg shadow-sm border border-gray-300  dark:border-nightS dark:bg-nightS dark:text-nightTS"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex gap-4">
@@ -228,36 +228,36 @@ const Dashboard = () => {
                           className="h-12 w-12 rounded-full object-cover"
                         />
                         <div>
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-semibold text-gray-900  dark:text-nightTP">
                             Summer Collection Campaign
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-nightTS">
                             with Alex Rivera
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Clock className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 dark:text-nightTS">
                               Due in 12 days
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
                           Active
                         </span>
-                        <p className="mt-2 text-sm font-medium text-gray-900">
+                        <p className="mt-2 text-sm font-medium text-gray-900 dark:text-nightTP">
                           $2,400
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 flex justify-between items-center">
                       <div className="flex gap-4">
-                        <Button variant="default" size="sm">
+                        <Button variant="default" size="sm" className="dark:bg-[#364152] dark:text-nightTS">
                           <FileText className="mr-2 h-4 w-4" />
                           View Contract
                         </Button>
-                        <Button variant="default" size="sm">
+                        <Button variant="default" size="sm" className="dark:bg-[#364152] dark:text-nightTS">
                           <MessageSquareMore className="mr-2 h-4 w-4" />
                           Message
                         </Button>
@@ -272,7 +272,7 @@ const Dashboard = () => {
             {/* Messages Tab */}
             <TabsContent
               value="messages"
-              //  className="grid grid-cols-12 gap-6"
+            //    className="grid grid-cols-12 gap-6"
             >
               <Chat />
             </TabsContent>
@@ -280,7 +280,7 @@ const Dashboard = () => {
             {/* Tracking Tab */}
             <TabsContent value="tracking" className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Total Reach
@@ -294,7 +294,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Engagement Rate
@@ -308,7 +308,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">ROI</CardTitle>
                     <LineChart className="h-4 w-4 text-purple-700" />
@@ -320,7 +320,7 @@ const Dashboard = () => {
                     </p>
                   </CardContent>
                 </Card>
-                <Card className="border border-gray-300">
+                <Card className="border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Active Posts
@@ -336,7 +336,7 @@ const Dashboard = () => {
                 </Card>
               </div>
 
-              <div className="bg-white rounded-lg p-6 border border-gray-300">
+              <div className="bg-white rounded-lg p-6 border border-gray-300 dark:border-nightS dark:bg-nightS dark:text-nightTS">
                 <h3 className="text-lg font-semibold mb-4">
                   Campaign Performance
                 </h3>

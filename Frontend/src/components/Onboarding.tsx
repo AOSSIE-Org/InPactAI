@@ -5,10 +5,10 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gray-200 flex flex-col items-center justify-center px-4 py-16">
+    <div className="bg-gray-200 flex flex-col items-center justify-center px-4 py-16 dark:bg-nightP dark:text-nightTS">
       <div className="max-w-md w-full text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to Inpact</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-nightTP">Welcome to Inpact</h1>
+        <p className="mt-2 text-gray-600 dark:text-nightTS">
           Let's get you started with your profile setup
         </p>
 

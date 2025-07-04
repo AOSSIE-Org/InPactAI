@@ -6,12 +6,12 @@ import { Badge } from "../ui/badge"
 export function SponsorshipMatches() {
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="dark:bg-nightS dark:border-nightP">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src="https://via.placeholder.com/48" alt="EcoStyle" />
-              <AvatarFallback>ES</AvatarFallback>
+              <AvatarFallback className="bg-gray-200 dark:bg-white/70 dark:border-nightP dark:text-black">ES</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
@@ -26,7 +26,7 @@ export function SponsorshipMatches() {
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <Button size="sm">View Details</Button>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" className="dark:text-nightP dark:hover:bg-primary/90">
                   Contact
                 </Button>
               </div>
@@ -34,12 +34,12 @@ export function SponsorshipMatches() {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card  className="dark:bg-nightS dark:border-nightP">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src="https://via.placeholder.com/48" alt="TechGadgets" />
-              <AvatarFallback>TG</AvatarFallback>
+              <AvatarFallback className="bg-gray-200 dark:bg-white/70 dark:border-nightP dark:text-black">TG</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ export function SponsorshipMatches() {
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <Button size="sm">View Details</Button>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" className="dark:text-nightP dark:hover:bg-primary/90">
                   Contact
                 </Button>
               </div>
@@ -64,12 +64,12 @@ export function SponsorshipMatches() {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="dark:bg-nightS dark:border-nightP">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src="https://via.placeholder.com/48" alt="FitLife" />
-              <AvatarFallback>FL</AvatarFallback>
+              <AvatarFallback className="bg-gray-200 dark:bg-white/70 dark:border-nightP dark:text-black">FL</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export function SponsorshipMatches() {
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <Button size="sm">View Details</Button>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" className="dark:text-nightP dark:hover:bg-primary/90">
                   Contact
                 </Button>
               </div>

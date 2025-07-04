@@ -1,6 +1,8 @@
-from datetime import datetime, timezone
-from db.db import AsyncSessionLocal
-from models.models import User
+import sys
+import os
+from app.db.db import AsyncSessionLocal
+from app.models.models import User
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 async def seed_db():

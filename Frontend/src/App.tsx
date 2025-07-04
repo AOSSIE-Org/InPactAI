@@ -15,75 +15,78 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Brand/Dashboard";
 import BasicDetails from "./pages/BasicDetails";
+import { ThemeProvider } from "./components/theme-provider";
 
 function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/brand/dashboard" element={<Dashboard />} />
-          <Route path="/basicDetails/:user" element={<BasicDetails />} />
-          <Route path="/creator/messages" element={<MessagesPage />} />
+    return (
+        <Router>
+            <AuthProvider>
+                <ThemeProvider>
+                    <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/signup" element={<SignupPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        <Route path="/brand/dashboard" element={<Dashboard />} />
+                        <Route path="/basicDetails/:user" element={<BasicDetails />} />
+                        <Route path="/creator/messages" element={<MessagesPage />} />
 
-          {/* Protected Routes*/}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/sponsorships"
-            element={
-              <ProtectedRoute>
-                <SponsorshipsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/collaborations"
-            element={
-              <ProtectedRoute>
-                <CollaborationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/messages"
-            element={
-              <ProtectedRoute>
-                <MessagesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/contracts"
-            element={
-              <ProtectedRoute>
-                <Contracts />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/analytics"
-            element={
-              <ProtectedRoute>
-                <Analytics />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProvider>
-    </Router>
-  );
+                        {/* Protected Routes*/}
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/sponsorships"
+                            element={
+                                <ProtectedRoute>
+                                    <SponsorshipsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/collaborations"
+                            element={
+                                <ProtectedRoute>
+                                    <CollaborationsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/messages"
+                            element={
+                                <ProtectedRoute>
+                                    <MessagesPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/contracts"
+                            element={
+                                <ProtectedRoute>
+                                    <Contracts />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/analytics"
+                            element={
+                                <ProtectedRoute>
+                                    <Analytics />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </ThemeProvider>
+            </AuthProvider>
+        </Router>
+    );
 }
 
 export default App;

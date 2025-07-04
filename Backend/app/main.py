@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from db.db import engine
-from db.seed import seed_db
-from models import models, chat
-from routes.post import router as post_router
-from routes.chat import router as chat_router
+from app.db.db import engine
+from app.db.seed import seed_db
+from app.models import models, chat
+from app.routes.post import router as post_router
+from app.routes.chat import router as chat_router
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
