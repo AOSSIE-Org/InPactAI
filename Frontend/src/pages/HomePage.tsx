@@ -14,6 +14,8 @@ import { MainNav } from "../components/main-nav";
 import { ModeToggle } from "../components/mode-toggle";
 import { UserNav } from "../components/user-nav";
 import Onboarding from "../components/Onboarding";
+import TopNav from "@/components/TopNav";
+import Footer from "@/components/Footer";
 
 const features = [
   {
@@ -51,11 +53,9 @@ const features = [
 export default function HomePage() {
   // Refs for scroll detection
   const featuresRef = useRef(null);
-  const footerRef = useRef(null);
 
   // State to track visibility
   const [isFeaturesVisible, setIsFeaturesVisible] = useState(false);
-  const [isFooterVisible, setIsFooterVisible] = useState(false);
 
   // Set up intersection observer for scroll detection
   useEffect(() => {
@@ -71,64 +71,16 @@ export default function HomePage() {
       }
     );
 
-    const footerObserver = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        setIsFooterVisible(entry.isIntersecting);
-      },
-      {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.1,
-      }
-    );
-
     if (featuresRef.current) {
       featuresObserver.observe(featuresRef.current);
     }
 
-    if (footerRef.current) {
-      footerObserver.observe(footerRef.current);
-    }
-
-    return () => {
-      if (featuresRef.current) {
-        featuresObserver.unobserve(featuresRef.current);
-      }
-      if (footerRef.current) {
-        footerObserver.unobserve(footerRef.current);
-      }
-    };
   }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
       {/* Header */}
-      <header className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg px-6">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6 md:gap-10">
-            <Link to="/" className="flex items-center space-x-2">
-              <Rocket className="h-6 w-6 text-purple-600" />
-              <span className="font-bold text-xl text-gray-900">Inpact</span>
-            </Link>
-            <MainNav />
-          </div>
-          <div className="flex items-center gap-4">
-            <ModeToggle />
-            <div className="hidden md:flex gap-2">
-              <Button variant="ghost">
-                <Link to="/login" className="text-gray-900">
-                  Login
-                </Link>
-              </Button>
-              <Button className="bg-purple-600 text-white hover:bg-purple-700">
-                <Link to="/signup">Sign Up</Link>
-              </Button>
-            </div>
-            <UserNav />
-          </div>
-        </div>
-      </header>
+      <TopNav />
 
       {/* Hero Section - Full Screen */}
       <main className="flex-1">
@@ -176,11 +128,10 @@ export default function HomePage() {
         {/* Features Section - Revealed on Scroll */}
         <section ref={featuresRef} className="w-full py-24 bg-white">
           <div
-            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${
-              isFeaturesVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-20"
-            }`}
+            className={`container px-6 md:px-12 text-center transition-all duration-1000 transform ${isFeaturesVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-20"
+              }`}
           >
             <h2 className="text-3xl font-bold sm:text-4xl text-gray-900">
               Key Features
@@ -210,28 +161,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer - Revealed on Scroll */}
-      <footer
-        ref={footerRef}
-        className="mr-12 ml-12 border-t border-gray-200 bg-gray-50 py-6"
-      >
-        <div
-          className={`container flex flex-col md:flex-row items-center justify-between text-gray-600 transition-all duration-1000 transform ${
-            isFooterVisible
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-10"
-          }`}
-        >
-          <p>© 2024 Inpact. All rights reserved.</p>
-          <div className="flex gap-4 mt-4 md:mt-0">
-            <Link to="/terms" className="hover:underline">
-              Terms
-            </Link>
-            <Link to="/privacy" className="hover:underline">
-              Privacy
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
