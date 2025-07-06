@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 from ..services.db_service import match_creators_for_brand, match_brands_for_creator
 
 # Load environment variables
-load_dotenv()
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+# load_dotenv()
+# url: str = os.getenv("SUPABASE_URL")
+# key: str = os.getenv("SUPABASE_KEY")
+# supabase: Client = create_client(url, key)
 
 router = APIRouter(prefix="/match", tags=["Matching"])
 

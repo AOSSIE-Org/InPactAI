@@ -30,7 +30,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { UserNav } from "../components/user-nav";
-import { MainNav } from "../components/main-nav";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "../components/mode-toggle";
 

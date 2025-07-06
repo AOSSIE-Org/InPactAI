@@ -1,10 +1,12 @@
 # FastAPI router for AI-powered endpoints, including trending niches
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query
 from datetime import date
 import os
 import requests
 import json
 from supabase import create_client, Client
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Initialize router
 router = APIRouter()
@@ -21,13 +23,22 @@ if not all([SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY]):
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_from_gemini():
-
-
     prompt = (
         "List the top 6 trending content niches for creators and brands this week. For each, provide: name (the niche), insight (a short qualitative reason why it's trending), and global_activity (a number from 1 to 5, where 5 means very high global activity in this category, and 1 means low).Return as a JSON array of objects with keys: name, insight, global_activity."
     )
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={GEMINI_API_KEY}"
-    resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+    # Set up retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["POST"],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
+    resp = http.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=(3.05, 10))
     resp.raise_for_status()
     print("Gemini raw response:", resp.text)
     data = resp.json()
@@ -69,3 +80,22 @@ def trending_niches():
             # fallback: serve most recent data
             result = supabase.table("trending_niches").select("*").order("fetched_at", desc=True).limit(6).execute()
     return result.data
+
+youtube_router = APIRouter(prefix="/youtube", tags=["YouTube"])
+
+@youtube_router.get("/channel-info")
+def get_youtube_channel_info(channelId: str = Query(..., description="YouTube Channel ID")):
+    """
+    Proxy endpoint to fetch YouTube channel info securely from the backend.
+    The API key is kept secret and rate limiting can be enforced here.
+    """
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="YouTube API key not configured on server.")
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id={channelId}&key={api_key}"
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"YouTube API error: {str(e)}")

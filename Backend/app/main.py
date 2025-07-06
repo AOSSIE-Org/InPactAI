@@ -55,6 +55,7 @@ app.include_router(post_router)
 app.include_router(chat_router)
 app.include_router(match_router)
 app.include_router(ai.router)
+app.include_router(ai.youtube_router)
 
 
 @app.get("/")

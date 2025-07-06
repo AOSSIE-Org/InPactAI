@@ -21,7 +21,7 @@ const steps = [
   "Review & Submit",
 ];
 
-const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+// const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY; // No longer needed in frontend
 
 type BrandData = {
   brand_name: string;
@@ -1180,8 +1180,17 @@ function YouTubeDetails({ details, setDetails }: { details: any, setDetails: (d:
     }
     try {
       const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${YOUTUBE_API_KEY}`
+        `/youtube/channel-info?channelId=${encodeURIComponent(channelId)}`
       );
+      if (!res.ok) {
+        let errMsg = `Error: ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData && errData.detail) errMsg = errData.detail;
+        } catch {}
+        setError(errMsg);
+        return;
+      }
       const data = await res.json();
       if (data.items && data.items.length > 0) {
         const ch = data.items[0];
@@ -1198,7 +1207,7 @@ function YouTubeDetails({ details, setDetails }: { details: any, setDetails: (d:
         setError("Channel not found");
       }
     } catch (e) {
-      setError("Failed to fetch channel");
+      setError("Failed to fetch channel. Please check your network connection or try again later.");
     } finally {
       setLoading(false);
     }

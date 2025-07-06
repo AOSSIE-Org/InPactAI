@@ -334,6 +334,47 @@ function TrendingNichesSection() {
   );
 }
 
+function WhyChooseSection() {
+  return (
+    <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
+      <div className="container mx-auto px-6 md:px-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Inpact AI?</h2>
+        <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+          Powerful tools for both brands and creators to connect, collaborate, and grow.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {/* Brands Column */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100">
+            <div className="flex items-center gap-3 mb-4">
+              <Rocket className="h-8 w-8 text-purple-600" />
+              <span className="text-xl font-semibold text-purple-700">For Brands</span>
+            </div>
+            <ul className="space-y-4 text-gray-700 w-full">
+              <li className="flex items-start gap-3"><Handshake className="h-6 w-6 text-blue-500" /> AI-driven creator matching for your campaigns</li>
+              <li className="flex items-start gap-3"><BarChart3 className="h-6 w-6 text-green-500" /> Real-time performance analytics & ROI tracking</li>
+              <li className="flex items-start gap-3"><Layers className="h-6 w-6 text-pink-500" /> Smart pricing & budget optimization</li>
+              <li className="flex items-start gap-3"><MessageSquare className="h-6 w-6 text-orange-500" /> Streamlined communication & contract management</li>
+            </ul>
+          </div>
+          {/* Creators Column */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="h-8 w-8 text-blue-600" />
+              <span className="text-xl font-semibold text-blue-700">For Creators</span>
+            </div>
+            <ul className="space-y-4 text-gray-700 w-full">
+              <li className="flex items-start gap-3"><TrendingUp className="h-6 w-6 text-purple-500" /> Get discovered by top brands in your niche</li>
+              <li className="flex items-start gap-3"><Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship deals & transparent payments</li>
+              <li className="flex items-start gap-3"><BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered content & contract assistant</li>
+              <li className="flex items-start gap-3"><Heart className="h-6 w-6 text-pink-500" /> Grow your audience & track your impact</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
   
@@ -517,42 +558,7 @@ export default function HomePage() {
           </section>
 
           {/* Why Choose Inpact AI Section (for logged out users) */}
-          <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
-            <div className="container mx-auto px-6 md:px-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Inpact AI?</h2>
-              <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                Powerful tools for both brands and creators to connect, collaborate, and grow.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Brands Column */}
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Rocket className="h-8 w-8 text-purple-600" />
-                    <span className="text-xl font-semibold text-purple-700">For Brands</span>
-                  </div>
-                  <ul className="space-y-4 text-gray-700 w-full">
-                    <li className="flex items-start gap-3"><Handshake className="h-6 w-6 text-blue-500" /> AI-driven creator matching for your campaigns</li>
-                    <li className="flex items-start gap-3"><BarChart3 className="h-6 w-6 text-green-500" /> Real-time performance analytics & ROI tracking</li>
-                    <li className="flex items-start gap-3"><Layers className="h-6 w-6 text-pink-500" /> Smart pricing & budget optimization</li>
-                    <li className="flex items-start gap-3"><MessageSquare className="h-6 w-6 text-orange-500" /> Streamlined communication & contract management</li>
-                  </ul>
-                </div>
-                {/* Creators Column */}
-                <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Users className="h-8 w-8 text-blue-600" />
-                    <span className="text-xl font-semibold text-blue-700">For Creators</span>
-                  </div>
-                  <ul className="space-y-4 text-gray-700 w-full">
-                    <li className="flex items-start gap-3"><TrendingUp className="h-6 w-6 text-purple-500" /> Get discovered by top brands in your niche</li>
-                    <li className="flex items-start gap-3"><Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship deals & transparent payments</li>
-                    <li className="flex items-start gap-3"><BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered content & contract assistant</li>
-                    <li className="flex items-start gap-3"><Heart className="h-6 w-6 text-pink-500" /> Grow your audience & track your impact</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
+          <WhyChooseSection />
 
           {/* Trending Niches Section - Centered Grid, No Extra Right Space */}
           <section ref={trendingRef} className="w-full py-24 bg-gradient-to-b from-blue-50 via-white to-purple-50 relative">
@@ -819,42 +825,7 @@ export default function HomePage() {
         </section>
 
         {/* Why Choose Inpact AI Section (for logged out users) */}
-        <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
-          <div className="container mx-auto px-6 md:px-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Inpact AI?</h2>
-            <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-              Powerful tools for both brands and creators to connect, collaborate, and grow.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              {/* Brands Column */}
-              <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100">
-                <div className="flex items-center gap-3 mb-4">
-                  <Rocket className="h-8 w-8 text-purple-600" />
-                  <span className="text-xl font-semibold text-purple-700">For Brands</span>
-                </div>
-                <ul className="space-y-4 text-gray-700 w-full">
-                  <li className="flex items-start gap-3"><Handshake className="h-6 w-6 text-blue-500" /> AI-driven creator matching for your campaigns</li>
-                  <li className="flex items-start gap-3"><BarChart3 className="h-6 w-6 text-green-500" /> Real-time performance analytics & ROI tracking</li>
-                  <li className="flex items-start gap-3"><Layers className="h-6 w-6 text-pink-500" /> Smart pricing & budget optimization</li>
-                  <li className="flex items-start gap-3"><MessageSquare className="h-6 w-6 text-orange-500" /> Streamlined communication & contract management</li>
-                </ul>
-              </div>
-              {/* Creators Column */}
-              <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100">
-                <div className="flex items-center gap-3 mb-4">
-                  <Users className="h-8 w-8 text-blue-600" />
-                  <span className="text-xl font-semibold text-blue-700">For Creators</span>
-                </div>
-                <ul className="space-y-4 text-gray-700 w-full">
-                  <li className="flex items-start gap-3"><TrendingUp className="h-6 w-6 text-purple-500" /> Get discovered by top brands in your niche</li>
-                  <li className="flex items-start gap-3"><Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship deals & transparent payments</li>
-                  <li className="flex items-start gap-3"><BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered content & contract assistant</li>
-                  <li className="flex items-start gap-3"><Heart className="h-6 w-6 text-pink-500" /> Grow your audience & track your impact</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+        <WhyChooseSection />
 
         {/* Success Stories Section */}
         <section ref={successStoriesRef} className="w-full py-24 bg-gradient-to-b from-purple-50 via-white to-blue-50 relative">
