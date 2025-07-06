@@ -28,7 +28,7 @@ class User(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(Text, nullable=False)  # Restored for now
+    # password_hash = Column(Text, nullable=False)  # Removed as Supabase handles auth
     role = Column(String, nullable=False)  # 'creator' or 'brand'
     profile_image = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
