@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/dialog";
 import { format } from "date-fns";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../utils/supabase";
 
-// Placeholder icons for categories
 const categoryIcons: Record<string, string> = {
   welcome: "👋",
   message: "💬",
@@ -12,26 +13,43 @@ const categoryIcons: Record<string, string> = {
 };
 
 export default function NotificationsPage() {
+  const { user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [openDialog, setOpenDialog] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Fetch the user's access token on mount
+  useEffect(() => {
+    const getToken = async () => {
+      const { data } = await supabase.auth.getSession();
+      setAccessToken(data.session?.access_token || null);
+    };
+    getToken();
+  }, []);
 
   // Fetch notifications from backend
   useEffect(() => {
+    if (!accessToken || !user) return;
     const fetchNotifications = async () => {
       setLoading(true);
       setError("");
       try {
         const res = await fetch("http://localhost:8000/notifications/", {
           headers: {
-            "x-user-id": "test-user-id", // Replace with real user id or auth token
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
           },
         });
+        if (res.status === 401) throw new Error("Unauthorized. Please log in again.");
         if (!res.ok) throw new Error("Failed to fetch notifications");
         const data = await res.json();
         setNotifications(data);
+        setError("");
       } catch (err: any) {
         setError(err.message || "Error fetching notifications");
       } finally {
@@ -39,7 +57,36 @@ export default function NotificationsPage() {
       }
     };
     fetchNotifications();
-  }, []);
+  }, [accessToken, user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to new notifications for this user
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setNotifications((prev) => {
+            // Avoid duplicates
+            if (prev.some((n) => n.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
@@ -56,73 +103,114 @@ export default function NotificationsPage() {
   };
 
   const deleteSelected = async () => {
+    setActionLoading(true);
+    setError("");
+    setSuccessMsg("");
     try {
       await fetch("http://localhost:8000/notifications/", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": "test-user-id",
+          "Authorization": `Bearer ${accessToken}`,
         },
         body: JSON.stringify(selected),
       });
       setNotifications((prev) => prev.filter((n) => !selected.includes(n.id)));
       setSelected([]);
+      setSuccessMsg("Selected notifications deleted.");
     } catch (err) {
-      alert("Failed to delete notifications");
+      setError("Failed to delete notifications");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const deleteAll = async () => {
+    setActionLoading(true);
+    setError("");
+    setSuccessMsg("");
     try {
       await fetch("http://localhost:8000/notifications/", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": "test-user-id",
+          "Authorization": `Bearer ${accessToken}`,
         },
         body: JSON.stringify(notifications.map((n) => n.id)),
       });
       setNotifications([]);
       setSelected([]);
+      setSuccessMsg("All notifications deleted.");
     } catch (err) {
-      alert("Failed to delete notifications");
+      setError("Failed to delete notifications");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const getIcon = (category: string) => categoryIcons[category] || categoryIcons.default;
 
   const handleOpenDialog = async (n: any) => {
+    setError("");
+    setSuccessMsg("");
     if (!n.is_read) {
+      setActionLoading(true);
       try {
         await fetch("http://localhost:8000/notifications/mark-read", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "x-user-id": "test-user-id",
+            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify([n.id]),
         });
         setNotifications((prev) => prev.map((notif) => notif.id === n.id ? { ...notif, is_read: true } : notif));
+        setSuccessMsg("Notification marked as read.");
       } catch (err) {
-        // ignore error for now
+        setError("Failed to mark notification as read");
+      } finally {
+        setActionLoading(false);
       }
     }
     setOpenDialog(n);
   };
 
+  const dismissError = () => setError("");
+  const dismissSuccess = () => setSuccessMsg("");
+
+  if (!isAuthenticated) {
+    return <div className="py-12 text-center text-gray-400">Please log in to view notifications.</div>;
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-purple-700">Notifications</h1>
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded relative flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={dismissError} className="ml-4 text-lg font-bold">&times;</button>
+        </div>
+      )}
+      {successMsg && (
+        <div className="mb-4 p-4 bg-green-100 border border-green-300 text-green-700 rounded relative flex items-center justify-between">
+          <span>{successMsg}</span>
+          <button onClick={dismissSuccess} className="ml-4 text-lg font-bold">&times;</button>
+        </div>
+      )}
       <div className="flex gap-2 mb-6">
-        <Button onClick={selectAll} size="sm">Select All</Button>
-        <Button onClick={deselectAll} size="sm" variant="outline">Deselect All</Button>
-        <Button onClick={deleteSelected} size="sm" variant="destructive" disabled={selected.length === 0}>Delete Selected</Button>
-        <Button onClick={deleteAll} size="sm" variant="destructive" disabled={notifications.length === 0}>Delete All</Button>
+        <Button onClick={selectAll} size="sm" disabled={actionLoading}>Select All</Button>
+        <Button onClick={deselectAll} size="sm" variant="outline" disabled={actionLoading}>Deselect All</Button>
+        <Button onClick={deleteSelected} size="sm" variant="destructive" disabled={selected.length === 0 || actionLoading}>Delete Selected</Button>
+        <Button onClick={deleteAll} size="sm" variant="destructive" disabled={notifications.length === 0 || actionLoading}>Delete All</Button>
       </div>
       {loading ? (
-        <div className="py-12 text-center text-gray-400">Loading...</div>
-      ) : error ? (
-        <div className="py-12 text-center text-red-500">{error}</div>
+        <div className="py-12 text-center text-gray-400">
+          <svg className="animate-spin h-8 w-8 mx-auto text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          Loading...
+        </div>
       ) : (
         <ul className="divide-y divide-gray-200 bg-white rounded-xl shadow overflow-hidden">
           {notifications.length === 0 && <li className="py-12 text-center text-gray-400">No notifications</li>}
@@ -142,6 +230,7 @@ export default function NotificationsPage() {
                 onChange={e => { e.stopPropagation(); toggleSelect(n.id); }}
                 className="form-checkbox h-5 w-5 text-purple-600"
                 onClick={e => e.stopPropagation()}
+                disabled={actionLoading}
               />
               <span className="text-2xl">{getIcon(n.category)}</span>
               <div className="flex-1">

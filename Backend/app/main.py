@@ -6,6 +6,7 @@ from .models import models, chat
 from .routes.post import router as post_router
 from .routes.chat import router as chat_router
 from .routes.match import router as match_router
+from .routes import notification
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
@@ -56,6 +57,7 @@ app.include_router(chat_router)
 app.include_router(match_router)
 app.include_router(ai.router)
 app.include_router(ai.youtube_router)
+app.include_router(notification.router)
 
 
 @app.get("/")
