@@ -63,6 +63,12 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link to="/dashboard">Dashboard</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/notifications" className="flex items-center justify-between w-full">
+              Notifications
+              <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">3</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>

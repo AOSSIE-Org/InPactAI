@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/ResetPassword";
 import Contracts from "./pages/Contracts";
 import Analytics from "./pages/Analytics";
 import RoleSelection from "./pages/RoleSelection";
+import NotificationsPage from "./pages/Notifications";
 
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -72,6 +73,11 @@ function App() {
           <Route path="/onboarding" element={
             <ProtectedRoute>
               <Onboarding />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <NotificationsPage />
             </ProtectedRoute>
           } />
 
