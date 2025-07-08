@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
@@ -25,6 +25,7 @@ import { supabase } from "./utils/supabase";
 function AppContent() {
   const { user, isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
@@ -52,7 +53,7 @@ function AppContent() {
 
   return (
     <>
-      <UserNav unreadCount={unreadCount} />
+      {location.pathname !== "/notifications" && <UserNav unreadCount={unreadCount} />}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />

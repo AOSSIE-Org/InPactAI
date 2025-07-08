@@ -4,6 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { format } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../utils/supabase";
+import { ArrowLeft } from "lucide-react";
+import { UserNav } from "../components/user-nav";
+import { useNavigate } from "react-router-dom";
 
 const categoryIcons: Record<string, string> = {
   welcome: "👋",
@@ -14,6 +17,7 @@ const categoryIcons: Record<string, string> = {
 
 export default function NotificationsPage() {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [openDialog, setOpenDialog] = useState<any>(null);
@@ -184,7 +188,19 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-purple-700">Notifications</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <UserNav />
+        </div>
+        <h1 className="text-3xl font-bold text-purple-700 flex-1 text-center">Notifications</h1>
+        <button
+          className="ml-auto p-2 rounded-full hover:bg-gray-100 text-gray-500"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
+        >
+          <ArrowLeft size={24} />
+        </button>
+      </div>
       {error && (
         <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded relative flex items-center justify-between">
           <span>{error}</span>
