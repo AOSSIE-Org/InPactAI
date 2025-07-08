@@ -1,3 +1,4 @@
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 VITE_YOUTUBE_API_KEY=your-youtube-api-key-here
+VITE_API_BASE_URL=https://your-api-url.com

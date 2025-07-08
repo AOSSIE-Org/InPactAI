@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update
 from typing import List
@@ -10,6 +10,7 @@ from supabase import create_client, Client
 from datetime import datetime, timezone
 import uuid
 import logging
+from fastapi.responses import JSONResponse
 
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
@@ -39,56 +40,57 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 # Use the Supabase JWT public key for RS256 verification
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
 SUPABASE_JWT_PUBLIC_KEY = os.environ.get("SUPABASE_JWT_PUBLIC_KEY")
+SUPABASE_JWT_AUDIENCE = os.environ.get("SUPABASE_JWT_AUDIENCE", "padhvzdttdlxbvldvdhz")
 
 # Dependency to verify JWT and extract user id
 # Make sure to set SUPABASE_JWT_PUBLIC_KEY in your environment (from Supabase Project Settings > API > JWT Verification Key)
 def get_current_user(authorization: str = Header(...)):
-    print("Authorization header received:", authorization)
+    logger.info(f"Authorization header received: {authorization}")
     if not authorization or not authorization.startswith("Bearer "):
-        print("Missing or invalid Authorization header")
+        logger.warning("Missing or invalid Authorization header")
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
     token = authorization.split(" ", 1)[1]
     # Try RS256 first
     try:
         if SUPABASE_JWT_PUBLIC_KEY:
-            print("Trying RS256 verification...")
+            logger.info("Trying RS256 verification...")
             payload = jwt.decode(
                 token,
                 SUPABASE_JWT_PUBLIC_KEY,
                 algorithms=["RS256"],
-                audience="padhvzdttdlxbvldvdhz",  # Your project ref
+                audience=SUPABASE_JWT_AUDIENCE,
             )
-            print("RS256 verification succeeded. JWT payload:", payload)
+            logger.info(f"RS256 verification succeeded. JWT payload: {payload}")
             user_id = payload.get("sub")
             if not user_id:
-                print("No user_id in payload (RS256)")
+                logger.error("No user_id in payload (RS256)")
                 raise HTTPException(status_code=401, detail="Invalid token payload: no user id (RS256)")
             return {"id": user_id}
         else:
-            print("No RS256 public key set, skipping RS256 check.")
+            logger.warning("No RS256 public key set, skipping RS256 check.")
     except Exception as e:
-        print("RS256 verification failed:", str(e))
+        logger.error(f"RS256 verification failed: {str(e)}")
     # Try HS256 as fallback
     try:
         if SUPABASE_JWT_SECRET:
-            print("Trying HS256 verification...")
+            logger.info("Trying HS256 verification...")
             payload = jwt.decode(
                 token,
                 SUPABASE_JWT_SECRET,
                 algorithms=["HS256"],
-                audience="padhvzdttdlxbvldvdhz",  # Your project ref
+                audience=SUPABASE_JWT_AUDIENCE,
             )
-            print("HS256 verification succeeded. JWT payload:", payload)
+            logger.info(f"HS256 verification succeeded. JWT payload: {payload}")
             user_id = payload.get("sub")
             if not user_id:
-                print("No user_id in payload (HS256)")
+                logger.error("No user_id in payload (HS256)")
                 raise HTTPException(status_code=401, detail="Invalid token payload: no user id (HS256)")
             return {"id": user_id}
         else:
-            print("No HS256 secret set, skipping HS256 check.")
+            logger.warning("No HS256 secret set, skipping HS256 check.")
     except Exception as e:
-        print("HS256 verification failed:", str(e))
-    print("Both RS256 and HS256 verification failed.")
+        logger.error(f"HS256 verification failed: {str(e)}")
+    logger.error("Both RS256 and HS256 verification failed.")
     raise HTTPException(status_code=401, detail="Invalid token: could not verify with RS256 or HS256.")
 
 @router.get("/", response_model=List[dict])
@@ -170,13 +172,13 @@ async def create_notification(
         supabase_ok = insert_notification_to_supabase(notif_dict)
         if not supabase_ok:
             logger.error(f"Notification {notif_id} saved locally but failed to push to Supabase.")
-            return {"error": "Notification saved locally, but failed to push to Supabase. Realtime delivery may be delayed."}, 202
+            return JSONResponse(status_code=202, content={"error": "Notification saved locally, but failed to push to Supabase. Realtime delivery may be delayed."})
         logger.info(f"Notification {notif_id} created for user {user['id']}.")
         return notif_dict
     except Exception as e:
         logger.error(f"Failed to create notification: {e}")
         await db.rollback()
-        return {"error": f"Failed to create notification: {str(e)}"}, 500
+        return JSONResponse(status_code=500, content={"error": f"Failed to create notification: {str(e)}"})
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_notifications(

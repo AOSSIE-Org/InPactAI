@@ -8,6 +8,29 @@ import { ArrowLeft } from "lucide-react";
 import { UserNav } from "../components/user-nav";
 import { useNavigate } from "react-router-dom";
 import "../App.css"; // For custom animation
+import { isValid, parseISO } from "date-fns";
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  category?: string;
+  created_at: string;
+  type?: string;
+  link?: string;
+}
+
+export interface NotificationDialog {
+  id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  category?: string;
+  created_at: string;
+  type?: string;
+  link?: string;
+}
 
 const categoryIcons: Record<string, string> = {
   welcome: "👋",
@@ -19,9 +42,9 @@ const categoryIcons: Record<string, string> = {
 export default function NotificationsPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [openDialog, setOpenDialog] = useState<any>(null);
+  const [openDialog, setOpenDialog] = useState<NotificationDialog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -44,7 +67,8 @@ export default function NotificationsPage() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("http://localhost:8000/notifications/", {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const res = await fetch(`${apiBaseUrl}/notifications/`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json"
@@ -55,8 +79,12 @@ export default function NotificationsPage() {
         const data = await res.json();
         setNotifications(data);
         setError("");
-      } catch (err: any) {
-        setError(err.message || "Error fetching notifications");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Error fetching notifications");
+        }
       } finally {
         setLoading(false);
       }
@@ -112,7 +140,7 @@ export default function NotificationsPage() {
     setError("");
     setSuccessMsg("");
     try {
-      await fetch("http://localhost:8000/notifications/", {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -123,8 +151,8 @@ export default function NotificationsPage() {
       setNotifications((prev) => prev.filter((n) => !selected.includes(n.id)));
       setSelected([]);
       setSuccessMsg("Selected notifications deleted.");
-    } catch (err) {
-      setError("Failed to delete notifications");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete notifications");
     } finally {
       setActionLoading(false);
     }
@@ -135,7 +163,7 @@ export default function NotificationsPage() {
     setError("");
     setSuccessMsg("");
     try {
-      await fetch("http://localhost:8000/notifications/", {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -146,8 +174,8 @@ export default function NotificationsPage() {
       setNotifications([]);
       setSelected([]);
       setSuccessMsg("All notifications deleted.");
-    } catch (err) {
-      setError("Failed to delete notifications");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete notifications");
     } finally {
       setActionLoading(false);
     }
@@ -155,13 +183,13 @@ export default function NotificationsPage() {
 
   const getIcon = (category: string) => categoryIcons[category] || categoryIcons.default;
 
-  const handleOpenDialog = async (n: any) => {
+  const handleOpenDialog = async (n: Notification) => {
     setError("");
     setSuccessMsg("");
     if (!n.is_read) {
       setActionLoading(true);
       try {
-        await fetch("http://localhost:8000/notifications/mark-read", {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/mark-read`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -171,8 +199,8 @@ export default function NotificationsPage() {
         });
         setNotifications((prev) => prev.map((notif) => notif.id === n.id ? { ...notif, is_read: true } : notif));
         setSuccessMsg("Notification marked as read.");
-      } catch (err) {
-        setError("Failed to mark notification as read");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to mark notification as read");
       } finally {
         setActionLoading(false);
       }
@@ -266,15 +294,30 @@ export default function NotificationsPage() {
                     checked={selected.includes(n.id)}
                     onChange={e => { e.stopPropagation(); toggleSelect(n.id); }}
                     className="form-checkbox h-5 w-5 text-purple-600"
-                    onClick={e => e.stopPropagation()}
+                    aria-checked={selected.includes(n.id)}
+                    aria-label={`Select notification: ${n.title}`}
                     disabled={actionLoading}
+                    tabIndex={0}
+                    onKeyDown={e => {
+                      if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        toggleSelect(n.id);
+                      }
+                    }}
                   />
-                  <span className="text-2xl">{getIcon(n.category)}</span>
+                  <span className="text-2xl">{getIcon(n.category || "default")}</span>
                   <div className="flex-1">
                     <div className={`text-lg ${n.is_read ? "font-normal text-gray-500" : "font-semibold text-gray-800"}`}>{n.title}</div>
                     <div className={`text-sm ${n.is_read ? "text-gray-400" : "text-gray-600"} line-clamp-1`}>{n.message}</div>
                   </div>
-                  <div className={`text-xs ml-2 whitespace-nowrap ${n.is_read ? "text-gray-300" : "text-gray-400"}`}>{format(new Date(n.created_at), "PPpp")}</div>
+                  <div className={`text-xs ml-2 whitespace-nowrap ${n.is_read ? "text-gray-300" : "text-gray-400"}`}>
+                    {(() => {
+                      const dateObj = typeof n.created_at === 'string' ? parseISO(n.created_at) : new Date(n.created_at);
+                      return isValid(dateObj)
+                        ? format(dateObj, "PPpp")
+                        : "Invalid date";
+                    })()}
+                  </div>
                   {!n.is_read && <span className="ml-2 inline-block w-2 h-2 bg-purple-500 rounded-full" title="Unread"></span>}
                 </li>
               ))}
@@ -285,7 +328,7 @@ export default function NotificationsPage() {
               {openDialog && (
                 <>
                   <DialogHeader>
-                    <span className="text-3xl mb-2">{getIcon(openDialog.category)}</span>
+                    <span className="text-3xl mb-2">{getIcon(openDialog.category || "default")}</span>
                     <DialogTitle className="text-xl mt-2">{openDialog.title}</DialogTitle>
                     <DialogDescription className="text-gray-500 mb-2">
                       {format(new Date(openDialog.created_at), "PPpp")}

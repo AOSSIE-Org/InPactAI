@@ -66,8 +66,13 @@ export function UserNav({ unreadCount }: { unreadCount?: number }) {
           <DropdownMenuItem asChild>
             <Link to="/notifications" className="flex items-center justify-between w-full">
               Notifications
-              {unreadCount && unreadCount > 0 && (
-                <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{unreadCount}</span>
+              {typeof unreadCount === 'number' && unreadCount > 0 && (
+                <span
+                  className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+                  aria-label={`You have ${unreadCount} unread notifications`}
+                >
+                  {unreadCount}
+                </span>
               )}
             </Link>
           </DropdownMenuItem>

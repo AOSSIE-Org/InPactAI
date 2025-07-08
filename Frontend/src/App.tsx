@@ -34,7 +34,8 @@ function AppContent() {
       const accessToken = data.session?.access_token;
       if (!accessToken) return;
       try {
-        const res = await fetch("http://localhost:8000/notifications/", {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const res = await fetch(`${apiBaseUrl}/notifications/`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json"
