@@ -11,13 +11,7 @@ from datetime import datetime, timezone
 import uuid
 import logging
 from fastapi.responses import JSONResponse
-
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_KEY")
-if not supabase_url or not supabase_key:
-    logger.error("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
-    raise RuntimeError("Missing required Supabase configuration")
-supabase: Client = create_client(supabase_url, supabase_key)
+import time
 
 # Set up logging
 logger = logging.getLogger("notification")
@@ -28,15 +22,26 @@ handler.setFormatter(formatter)
 if not logger.hasHandlers():
     logger.addHandler(handler)
 
-def insert_notification_to_supabase(notification_dict):
-    try:
-        supabase.table("notifications").insert(notification_dict).execute()
-        logger.info(f"Notification {notification_dict['id']} inserted into Supabase.")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to insert notification {notification_dict['id']} into Supabase: {e}")
-        # Optionally, add to a retry queue here
-        return False
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_KEY")
+if not supabase_url or not supabase_key:
+    logger.error("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
+    raise RuntimeError("Missing required Supabase configuration")
+supabase: Client = create_client(supabase_url, supabase_key)
+
+def insert_notification_to_supabase(notification_dict, max_retries=3, delay=0.5):
+    for attempt in range(1, max_retries + 1):
+        try:
+            supabase.table("notifications").insert(notification_dict).execute()
+            logger.info(f"Notification {notification_dict['id']} inserted into Supabase.")
+            return True
+        except Exception as e:
+            logger.error(f"Supabase insert attempt {attempt} failed for notification {notification_dict['id']}: {e}")
+            if attempt < max_retries:
+                time.sleep(delay)
+    logger.error(f"Failed to insert notification {notification_dict['id']} into Supabase after {max_retries} attempts.")
+    # Optionally, add to a persistent retry queue here
+    return False
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -48,7 +53,7 @@ SUPABASE_JWT_AUDIENCE = os.environ.get("SUPABASE_JWT_AUDIENCE", "padhvzdttdlxbvl
 # Dependency to verify JWT and extract user id
 # Make sure to set SUPABASE_JWT_PUBLIC_KEY in your environment (from Supabase Project Settings > API > JWT Verification Key)
 def get_current_user(authorization: str = Header(...)):
-    logger.info(f"Authorization header received: {authorization}")
+    logger.info("Authorization header received")
     if not authorization or not authorization.startswith("Bearer "):
         logger.warning("Missing or invalid Authorization header")
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
@@ -123,7 +128,6 @@ async def get_notifications(
         ]
     except Exception as e:
         logger.error(f"Failed to fetch notifications: {e}")
-        from fastapi.responses import JSONResponse
         return JSONResponse(status_code=500, content={"error": "Failed to fetch notifications."})
 
 @router.post("/", status_code=201)
@@ -175,7 +179,7 @@ async def create_notification(
             "link": notif_obj.link,
             "is_read": notif_obj.is_read,
             "category": notif_obj.category,
-            "created_at": notif_obj.created_at.astimezone(timezone.utc).isoformat() if notif_obj.created_at else None,
+            "created_at": notif_obj.created_at.isoformat() if notif_obj.created_at else None,
         }
         supabase_ok = insert_notification_to_supabase(notif_dict)
         if not supabase_ok:
@@ -194,7 +198,6 @@ async def delete_notifications(
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    from fastapi.responses import JSONResponse
     if not ids or not isinstance(ids, list) or len(ids) == 0:
         logger.warning("Delete notifications called with empty or invalid ids list.")
         return JSONResponse(status_code=400, content={"error": "No notification IDs provided for deletion."})
@@ -220,7 +223,6 @@ async def mark_notifications_read(
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    from fastapi.responses import JSONResponse
     if not ids or not isinstance(ids, list) or len(ids) == 0:
         logger.warning("Mark notifications read called with empty or invalid ids list.")
         return JSONResponse(status_code=400, content={"error": "No notification IDs provided to mark as read."})
