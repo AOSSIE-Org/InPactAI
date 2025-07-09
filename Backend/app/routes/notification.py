@@ -60,7 +60,7 @@ def get_current_user(authorization: str = Header(...)):
                 algorithms=["RS256"],
                 audience=SUPABASE_JWT_AUDIENCE,
             )
-            logger.info(f"RS256 verification succeeded. JWT payload: {payload}")
+            logger.info("RS256 verification succeeded.")
             user_id = payload.get("sub")
             if not user_id:
                 logger.error("No user_id in payload (RS256)")
@@ -80,7 +80,7 @@ def get_current_user(authorization: str = Header(...)):
                 algorithms=["HS256"],
                 audience=SUPABASE_JWT_AUDIENCE,
             )
-            logger.info(f"HS256 verification succeeded. JWT payload: {payload}")
+            logger.info("HS256 verification succeeded.")
             user_id = payload.get("sub")
             if not user_id:
                 logger.error("No user_id in payload (HS256)")
@@ -98,25 +98,30 @@ async def get_notifications(
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    result = await db.execute(
-        select(Notification)
-        .where(Notification.user_id == user["id"])
-        .order_by(Notification.created_at.desc())
-    )
-    notifs = result.scalars().all()
-    return [
-        {
-            "id": n.id,
-            "title": n.title,
-            "message": n.message,
-            "is_read": n.is_read,
-            "category": n.category,
-            "created_at": n.created_at,
-            "type": n.type,
-            "link": n.link,
-        }
-        for n in notifs
-    ]
+    try:
+        result = await db.execute(
+            select(Notification)
+            .where(Notification.user_id == user["id"])
+            .order_by(Notification.created_at.desc())
+        )
+        notifs = result.scalars().all()
+        return [
+            {
+                "id": n.id,
+                "title": n.title,
+                "message": n.message,
+                "is_read": n.is_read,
+                "category": n.category,
+                "created_at": n.created_at,
+                "type": n.type,
+                "link": n.link,
+            }
+            for n in notifs
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch notifications: {e}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=500, content={"error": "Failed to fetch notifications."})
 
 @router.post("/", status_code=201)
 async def create_notification(
@@ -186,13 +191,24 @@ async def delete_notifications(
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    await db.execute(
-        delete(Notification)
-        .where(Notification.user_id == user["id"])
-        .where(Notification.id.in_(ids))
-    )
-    await db.commit()
-    return
+    from fastapi.responses import JSONResponse
+    if not ids or not isinstance(ids, list) or len(ids) == 0:
+        logger.warning("Delete notifications called with empty or invalid ids list.")
+        return JSONResponse(status_code=400, content={"error": "No notification IDs provided for deletion."})
+    try:
+        result = await db.execute(
+            delete(Notification)
+            .where(Notification.user_id == user["id"])
+            .where(Notification.id.in_(ids))
+        )
+        await db.commit()
+        if result.rowcount == 0:
+            logger.warning(f"No notifications deleted for user {user['id']} with ids: {ids}")
+            return JSONResponse(status_code=404, content={"error": "No notifications found to delete."})
+        return
+    except Exception as e:
+        logger.error(f"Failed to delete notifications: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to delete notifications."})
 
 @router.patch("/mark-read", status_code=status.HTTP_200_OK)
 async def mark_notifications_read(
@@ -200,11 +216,22 @@ async def mark_notifications_read(
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    await db.execute(
-        update(Notification)
-        .where(Notification.user_id == user["id"])
-        .where(Notification.id.in_(ids))
-        .values(is_read=True)
-    )
-    await db.commit()
-    return {"success": True} 
+    from fastapi.responses import JSONResponse
+    if not ids or not isinstance(ids, list) or len(ids) == 0:
+        logger.warning("Mark notifications read called with empty or invalid ids list.")
+        return JSONResponse(status_code=400, content={"error": "No notification IDs provided to mark as read."})
+    try:
+        result = await db.execute(
+            update(Notification)
+            .where(Notification.user_id == user["id"])
+            .where(Notification.id.in_(ids))
+            .values(is_read=True)
+        )
+        await db.commit()
+        if result.rowcount == 0:
+            logger.warning(f"No notifications marked as read for user {user['id']} with ids: {ids}")
+            return JSONResponse(status_code=404, content={"error": "No notifications found to mark as read."})
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Failed to mark notifications as read: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to mark notifications as read."}) 
