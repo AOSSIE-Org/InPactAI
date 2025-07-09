@@ -14,6 +14,9 @@ from fastapi.responses import JSONResponse
 
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
+if not supabase_url or not supabase_key:
+    logger.error("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
+    raise RuntimeError("Missing required Supabase configuration")
 supabase: Client = create_client(supabase_url, supabase_key)
 
 # Set up logging
