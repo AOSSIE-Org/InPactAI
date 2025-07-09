@@ -208,6 +208,7 @@ async def delete_notifications(
         return
     except Exception as e:
         logger.error(f"Failed to delete notifications: {e}")
+        await db.rollback()
         return JSONResponse(status_code=500, content={"error": "Failed to delete notifications."})
 
 @router.patch("/mark-read", status_code=status.HTTP_200_OK)
@@ -234,4 +235,5 @@ async def mark_notifications_read(
         return {"success": True}
     except Exception as e:
         logger.error(f"Failed to mark notifications as read: {e}")
+        await db.rollback()
         return JSONResponse(status_code=500, content={"error": "Failed to mark notifications as read."}) 
