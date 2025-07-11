@@ -10,65 +10,62 @@ import { Badge } from "../components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Label } from "../components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import CreatorMatchGrid from "../components/collaboration-hub/CreatorMatchGrid";
+import { mockCreatorMatches } from "../components/dashboard/creator-collaborations";
+import ActiveCollabsGrid from "../components/collaboration-hub/ActiveCollabsGrid";
+import React from "react";
 
-export default function CollaborationsPage() {
+export default function CollaborationsPage({ showHeader = true }: { showHeader?: boolean }) {
   return (
     <div className="flex min-h-screen flex-col bg-white text-gray-900">
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container flex h-16 items-center">
-          <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
-            <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
-            <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-  {[
-    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
-    { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
-    { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
-    { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-    { to: "/dashboard/messages", icon: MessageSquare, label: "Messages" },
-  ].map(({ to, icon: Icon, label }) => (
-    <Button
-      key={to}
-      variant="ghost"
-      size="sm"
-      className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
-      asChild
-    >
-      <Link to={to}>
-        <Icon className="h-5 w-5" />
-        <span className="sr-only">{label}</span>
-      </Link>
-    </Button>
-  ))}
-</div>
-<div className="ml-auto flex items-center space-x-4">
-  <div className="relative hidden md:flex">
-    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-    <Input
-      type="search"
-      placeholder="Search..."
-      className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
-    />
-  </div>
-  <ModeToggle />
-  <UserNav />
-</div>
-        </div>
-      </header>
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Creator Collaboration Hub</h1>
-          <div className="flex items-center space-x-2">
-            <Button className="bg-purple-600 text-white hover:bg-purple-700">
-              <Users className="mr-2 h-4 w-4" />
-              Find Collaborators
-            </Button>
+      {showHeader && (
+        <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+          <div className="container flex h-16 items-center">
+            <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
+              <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
+              <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
+            </Link>
+            <div className="flex items-center space-x-4">
+              {[
+                { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+                { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
+                { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
+                { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
+                { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
+                { to: "/dashboard/messages", icon: MessageSquare, label: "Messages" },
+              ].map(({ to, icon: Icon, label }) => (
+                <Button
+                  key={to}
+                  variant="ghost"
+                  size="sm"
+                  className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
+                  asChild
+                >
+                  <Link to={to}>
+                    <Icon className="h-5 w-5" />
+                    <span className="sr-only">{label}</span>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+            <div className="ml-auto flex items-center space-x-4">
+              <div className="relative hidden md:flex">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
+                <Input
+                  type="search"
+                  placeholder="Search..."
+                  className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
+                />
+              </div>
+              <ModeToggle />
+              <UserNav />
+            </div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        </header>
+      )}
+      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+          {/* Filter Sidebar */}
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="text-gray-900">Filters</CardTitle>
@@ -144,164 +141,41 @@ export default function CollaborationsPage() {
               <Button className="w-full bg-purple-600 text-white hover:bg-purple-700">Apply Filters</Button>
             </CardContent>
           </Card>
-
-          <div className="md:col-span-3 space-y-4">
+          {/* Main Content */}
+          <div className="md:col-span-3 pl-0 md:pl-4 space-y-4 w-full">
+            {/* Tabs for AI Matches, Active Collabs, Requests */}
             <Tabs defaultValue="matches">
-              <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-100 mb-2">
                 <TabsTrigger value="matches" className="text-gray-900">AI Matches</TabsTrigger>
                 <TabsTrigger value="active" className="text-gray-900">Active Collabs</TabsTrigger>
                 <TabsTrigger value="requests" className="text-gray-900">Requests</TabsTrigger>
               </TabsList>
-              <TabsContent value="matches" className="space-y-4 pt-4">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Sarah Johnson" />
-                        <AvatarFallback className="bg-gray-200">SJ</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900">Sarah Johnson</h3>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">Travel</Badge>
-                              <Badge variant="outline">Lifestyle</Badge>
-                            </div>
-                          </div>
-                          <Badge className="w-fit text-lg px-3 py-1 bg-purple-100 text-purple-600">95% Match</Badge>
-                        </div>
-                        <p>
-                          Travel content creator specializing in sustainable tourism and local experiences. Looking to
-                          collaborate with creators who share similar values and can bring complementary perspectives.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                          <div>
-                            <p className="text-sm text-gray-500">Audience</p>
-                            <p className="font-medium text-gray-900">350K followers</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Engagement</p>
-                            <p className="font-medium text-gray-900">4.8%</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Location</p>
-                            <p className="font-medium text-gray-900">Los Angeles, CA</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Audience Overlap</p>
-                            <p className="font-medium text-gray-900">32%</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2 pt-4">
-                          <Button className="bg-purple-600 text-white hover:bg-purple-700">View Profile</Button>
-                          <Button variant="outline" className="border-gray-200 text-gray-900 hover:bg-gray-100">Message</Button>
-                          <Button variant="secondary" className="bg-gray-100 text-gray-900 hover:bg-gray-200">Propose Collaboration</Button>
-                        </div>
-                      </div>
+              <TabsContent value="matches" className="space-y-4 pt-2">
+                {/* Banner */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-yellow-500 text-xl">⚡</span>
+                      <span className="font-semibold text-yellow-800">AI-Powered Creator Matching</span>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Sarah Johnson" />
-                        <AvatarFallback className="bg-gray-200">SJ</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900">Sarah Johnson</h3>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">Travel</Badge>
-                              <Badge variant="outline">Lifestyle</Badge>
-                            </div>
-                          </div>
-                          <Badge className="w-fit text-lg px-3 py-1 bg-purple-100 text-purple-600">95% Match</Badge>
-                        </div>
-                        <p>
-                          Travel content creator specializing in sustainable tourism and local experiences. Looking to
-                          collaborate with creators who share similar values and can bring complementary perspectives.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                          <div>
-                            <p className="text-sm text-gray-500">Audience</p>
-                            <p className="font-medium text-gray-900">350K followers</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Engagement</p>
-                            <p className="font-medium text-gray-900">4.8%</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Location</p>
-                            <p className="font-medium text-gray-900">Los Angeles, CA</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Audience Overlap</p>
-                            <p className="font-medium text-gray-900">32%</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2 pt-4">
-                          <Button className="bg-purple-600 text-white hover:bg-purple-700">View Profile</Button>
-                          <Button variant="outline" className="border-gray-200 text-gray-900 hover:bg-gray-100">Message</Button>
-                          <Button variant="secondary" className="bg-gray-100 text-gray-900 hover:bg-gray-200">Propose Collaboration</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Sarah Johnson" />
-                        <AvatarFallback className="bg-gray-200">SJ</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900">Sarah Johnson</h3>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">Travel</Badge>
-                              <Badge variant="outline">Lifestyle</Badge>
-                            </div>
-                          </div>
-                          <Badge className="w-fit text-lg px-3 py-1 bg-purple-100 text-purple-600">95% Match</Badge>
-                        </div>
-                        <p>
-                          Travel content creator specializing in sustainable tourism and local experiences. Looking to
-                          collaborate with creators who share similar values and can bring complementary perspectives.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                          <div>
-                            <p className="text-sm text-gray-500">Audience</p>
-                            <p className="font-medium text-gray-900">350K followers</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Engagement</p>
-                            <p className="font-medium text-gray-900">4.8%</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Location</p>
-                            <p className="font-medium text-gray-900">Los Angeles, CA</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Audience Overlap</p>
-                            <p className="font-medium text-gray-900">32%</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2 pt-4">
-                          <Button className="bg-purple-600 text-white hover:bg-purple-700">View Profile</Button>
-                          <Button variant="outline" className="border-gray-200 text-gray-900 hover:bg-gray-100">Message</Button>
-                          <Button variant="secondary" className="bg-gray-100 text-gray-900 hover:bg-gray-200">Propose Collaboration</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <div className="text-yellow-900 text-sm">Our AI analyzes your content style, audience demographics, and engagement patterns to find your ideal collaborators.</div>
+                  </div>
+                  <Button className="bg-yellow-400 text-white hover:bg-yellow-500">Refresh Matches</Button>
+                </div>
+                {/* Creator Match Grid with Pagination */}
+                <div className="w-full">
+                  <CreatorMatchGrid creators={mockCreatorMatches} />
+                </div>
+                {/* View More Recommendations Button */}
+                <div className="flex justify-center mt-6">
+                  <Button className="bg-gray-100 text-gray-900 hover:bg-gray-200">View More Recommendations</Button>
+                </div>
+              </TabsContent>
+              <TabsContent value="active" className="space-y-4 pt-4">
+                <ActiveCollabsGrid />
+              </TabsContent>
+              <TabsContent value="requests" className="space-y-4 pt-4">
+                <div className="text-gray-500 text-center py-8">No collaboration requests at this time.</div>
               </TabsContent>
             </Tabs>
           </div>
