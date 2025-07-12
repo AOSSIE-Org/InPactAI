@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
-export function UserNav() {
+export function UserNav({ unreadCount }: { unreadCount?: number }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
 
@@ -62,6 +62,19 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link to="/dashboard">Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/notifications" className="flex items-center justify-between w-full">
+              Notifications
+              {typeof unreadCount === 'number' && unreadCount > 0 && (
+                <span
+                  className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+                  aria-label={`You have ${unreadCount} unread notifications`}
+                >
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
