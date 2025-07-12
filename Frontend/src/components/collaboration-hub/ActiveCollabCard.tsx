@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export interface ActiveCollabCardProps {
+  id: number;
   collaborator: {
     name: string;
     avatar: string;
@@ -43,6 +45,7 @@ function getTimelineProgress(start: string, due: string) {
 }
 
 const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
+  id,
   collaborator,
   collabTitle,
   status,
@@ -53,6 +56,7 @@ const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
   lastActivity,
   latestUpdate
 }) => {
+  const navigate = useNavigate();
   const deliverableProgress = Math.round((deliverables.completed / deliverables.total) * 100);
   const timelineProgress = getTimelineProgress(startDate, dueDate);
   const daysLeft = getDaysLeft(dueDate);
@@ -105,7 +109,13 @@ const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
         <span className="font-semibold text-gray-800">Latest update:</span> {latestUpdate}
       </div>
       <div className="flex gap-2 mt-2">
-        <Button className="bg-gray-100 text-gray-900 hover:bg-gray-200 font-semibold rounded-full py-2" variant="secondary">View Details</Button>
+        <Button 
+          className="bg-gray-100 text-gray-900 hover:bg-gray-200 font-semibold rounded-full py-2" 
+          variant="secondary"
+          onClick={() => navigate(`/dashboard/collaborations/${id}`)}
+        >
+          View Details
+        </Button>
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-full py-2">Message</Button>
         {status !== "Completed" && (
           <Button className="bg-green-100 text-green-700 hover:bg-green-200 font-semibold rounded-full py-2">Mark Complete</Button>
