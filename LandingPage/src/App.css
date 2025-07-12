@@ -40,3 +40,21 @@
 .read-the-docs {
   color: #888;
 }
+/* Applies to WebKit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #fc5fff, #764e95); /* Gradient colors */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #de43e9, #764e95); /* Darker on hover */
+}
