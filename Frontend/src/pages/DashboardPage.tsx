@@ -22,6 +22,7 @@ import { PerformanceMetrics } from "../components/dashboard/performance-metrics"
 import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
+import CollaborationsPage from "./Collaborations";
 
 export default function DashboardPage() {
   const {logout, user} = useAuth();
@@ -189,7 +190,7 @@ export default function DashboardPage() {
                   <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Creators with complementary audiences</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* <CreatorCollaborations /> */}
+                  <CollaborationsPage />
                 </CardContent>
               </Card>
             </div>
@@ -211,20 +212,7 @@ export default function DashboardPage() {
         </Card>
       </TabsContent>
       <TabsContent value="collaborations" className="space-y-4">
-        <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-          <CardHeader>
-            <CardTitle className="text-[hsl(222.2,84%,4.9%)]">Creator Collaboration Hub</CardTitle>
-            <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Find and partner with creators who have complementary audiences</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-[hsl(214.3,31.8%,91.4%)] bg-[hsl(210,40%,96.1%)] p-4">
-              <h3 className="text-lg font-semibold text-[hsl(222.2,84%,4.9%)]">Coming Soon</h3>
-              <p className="text-sm text-[hsl(215.4,16.3%,46.9%)]">
-                The full creator collaboration interface will be available here.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <CollaborationsPage showHeader={false} />
       </TabsContent>
       <TabsContent value="analytics" className="space-y-4">
         <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">

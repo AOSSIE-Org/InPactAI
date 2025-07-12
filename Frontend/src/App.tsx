@@ -4,6 +4,7 @@ import HomePage from "../src/pages/HomePage";
 import DashboardPage from "../src/pages/DashboardPage";
 import SponsorshipsPage from "../src/pages/Sponsorships";
 import CollaborationsPage from "../src/pages/Collaborations";
+import CollaborationDetails from "../src/pages/CollaborationDetails";
 import MessagesPage from "../src/pages/Messages";
 import LoginPage from "./pages/Login";
 import SignupPage from "./pages/Signup";
@@ -97,6 +98,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CollaborationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/collaborations/:id"
+            element={
+              <ProtectedRoute>
+                <CollaborationDetails />
               </ProtectedRoute>
             }
           />
