@@ -35,7 +35,12 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, onClose, onSend, matc
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20">
-      <div className="bg-white rounded-2xl shadow-xl w-auto min-w-[320px] max-w-full mx-2 p-0 sm:p-0 relative flex flex-col sm:flex-row overflow-hidden">
+      <div
+        className="bg-white rounded-2xl shadow-xl w-auto min-w-[320px] max-w-full mx-2 p-0 sm:p-0 relative flex flex-col sm:flex-row overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="connect-modal-title"
+      >
         <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 z-10" onClick={onClose} aria-label="Close">
           ×
         </button>
@@ -48,7 +53,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, onClose, onSend, matc
             <AvatarImage src={profile.avatar} alt={profile.name} />
             <AvatarFallback className="bg-gray-200">{profile.name.slice(0,2).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-bold text-gray-900 text-center sm:text-left">Connect with {profile.name}</h2>
+          <h2 id="connect-modal-title" className="text-xl font-bold text-gray-900 text-center sm:text-left">Connect with {profile.name}</h2>
           <div className="text-gray-500 text-sm text-center sm:text-left mb-2">{profile.contentType}</div>
           <div className="mb-3 bg-gray-50 border border-gray-100 rounded-lg p-3 w-full">
             <div className="font-semibold text-sm mb-1">Why you match</div>
@@ -84,21 +89,28 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, onClose, onSend, matc
           </div>
           <div className="mb-4">
             <div className="font-semibold text-sm mb-2">Select a message to send</div>
-            <div className="space-y-2">
-              {mockRequestTexts.map((text, idx) => (
-                <label key={idx} className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="requestText"
-                    value={text}
-                    checked={selectedText === text}
-                    onChange={() => setSelectedText(text)}
-                    className="mt-1 accent-yellow-400"
-                  />
-                  <span className={`text-sm px-4 py-2 rounded-2xl inline-block ${selectedText === text ? 'bg-yellow-100 text-yellow-900 border border-yellow-300' : 'bg-gray-100 text-gray-700'}`}>{text}</span>
-                </label>
-              ))}
-            </div>
+            <fieldset className="space-y-2 border-0 p-0 m-0">
+              <legend className="sr-only">Select a message to send</legend>
+              {mockRequestTexts.map((text, idx) => {
+                const radioId = `requestText-${idx}`;
+                return (
+                  <div key={radioId} className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      id={radioId}
+                      name="requestText"
+                      value={text}
+                      checked={selectedText === text}
+                      onChange={() => setSelectedText(text)}
+                      className="mt-1 accent-yellow-400"
+                    />
+                    <label htmlFor={radioId} className={`text-sm px-4 py-2 rounded-2xl inline-block ${selectedText === text ? 'bg-yellow-100 text-yellow-900 border border-yellow-300' : 'bg-gray-100 text-gray-700'}`}>
+                      {text}
+                    </label>
+                  </div>
+                );
+              })}
+            </fieldset>
           </div>
           <div className="flex gap-2 w-full mt-auto justify-center pt-2 pb-2">
             <Button className="bg-gray-100 text-gray-900 hover:bg-gray-200 flex-1 font-semibold rounded-full py-2" variant="secondary" onClick={onClose}>Cancel</Button>

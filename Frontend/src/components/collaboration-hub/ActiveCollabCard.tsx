@@ -29,17 +29,24 @@ const statusColors: Record<string, string> = {
 function getDaysBetween(start: string, end: string) {
   const s = new Date(start);
   const e = new Date(end);
-  return Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0;
+  const diff = e.getTime() - s.getTime();
+  if (diff < 0) return 0;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function getDaysLeft(due: string) {
   const now = new Date();
   const d = new Date(due);
-  return Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (isNaN(d.getTime())) return 0;
+  const diff = d.getTime() - now.getTime();
+  // Allow negative for overdue, but if invalid, return 0
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function getTimelineProgress(start: string, due: string) {
   const total = getDaysBetween(start, due);
+  if (total === 0) return 0;
   const elapsed = getDaysBetween(start, new Date().toISOString().slice(0, 10));
   return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
 }
@@ -113,12 +120,23 @@ const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
           className="bg-gray-100 text-gray-900 hover:bg-gray-200 font-semibold rounded-full py-2" 
           variant="secondary"
           onClick={() => navigate(`/dashboard/collaborations/${id}`)}
+          aria-label="View collaboration details"
         >
           View Details
         </Button>
-        <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-full py-2">Message</Button>
+        <Button 
+          className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-full py-2"
+          aria-label="Send message to collaborator"
+        >
+          Message
+        </Button>
         {status !== "Completed" && (
-          <Button className="bg-green-100 text-green-700 hover:bg-green-200 font-semibold rounded-full py-2">Mark Complete</Button>
+          <Button 
+            className="bg-green-100 text-green-700 hover:bg-green-200 font-semibold rounded-full py-2"
+            aria-label="Mark collaboration as complete"
+          >
+            Mark Complete
+          </Button>
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@ export const mockCreatorMatches = [
   {
     id: 1,
     name: "TechReviewer",
-    avatar: "/placeholder.svg?height=96&width=96",
+    avatar: "https://via.placeholder.com/96",
     contentType: "Tech Reviews & Tutorials",
     matchPercentage: 98,
     audienceMatch: "Very High",
@@ -22,7 +22,7 @@ export const mockCreatorMatches = [
   {
     id: 2,
     name: "GadgetGuru",
-    avatar: "/placeholder.svg?height=96&width=96",
+    avatar: "https://via.placeholder.com/96",
     contentType: "Unboxing & First Impressions",
     matchPercentage: 92,
     audienceMatch: "High",
@@ -39,7 +39,7 @@ export const mockCreatorMatches = [
   {
     id: 3,
     name: "TechTalker",
-    avatar: "/placeholder.svg?height=96&width=96",
+    avatar: "https://via.placeholder.com/96",
     contentType: "Tech News & Commentary",
     matchPercentage: 87,
     audienceMatch: "Good",

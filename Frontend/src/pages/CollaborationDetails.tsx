@@ -38,6 +38,12 @@ import {
   X
 } from "lucide-react";
 import { activeCollabsMock } from "../components/collaboration-hub/activeCollabsMockData";
+import CollaborationOverviewTab from "../components/collaboration-hub/CollaborationOverviewTab";
+import CollaborationMessagesTab from "../components/collaboration-hub/CollaborationMessagesTab";
+import CollaborationTimelineTab from "../components/collaboration-hub/CollaborationTimelineTab";
+import CollaboratorSidebar from "../components/collaboration-hub/CollaboratorSidebar";
+import CollaborationQuickActions from "../components/collaboration-hub/CollaborationQuickActions";
+import CollaborationProjectStats from "../components/collaboration-hub/CollaborationProjectStats";
 
 interface Message {
   id: number;
@@ -216,7 +222,6 @@ export default function CollaborationDetails() {
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       // In a real app, this would send the message to the backend
-      console.log("Sending message:", newMessage);
       setNewMessage("");
     }
   };
@@ -268,15 +273,12 @@ export default function CollaborationDetails() {
     // Example API call structure:
     // const transformedMessage = await transformMessageStyle(newMessage, style);
     // setNewMessage(transformedMessage);
-    
-    console.log(`Applying ${style} style to message:`, newMessage);
   };
 
   const handleCustomStyle = () => {
     if (customStyle.trim()) {
       // TODO: Implement custom style transformation
       // This would use the custom style description to guide the AI transformation
-      console.log(`Applying custom style "${customStyle}" to message:`, newMessage);
       setCustomStyle("");
       setShowStyleOptions(false);
     }
@@ -290,8 +292,6 @@ export default function CollaborationDetails() {
   const handleSaveUpdate = () => {
     // TODO: Implement API call to save the updated latest update
     // This would update the collaboration's latest update in the backend
-    console.log("Saving updated latest update:", editedUpdate);
-    
     // For now, we'll just close the edit mode
     // In a real app, you would update the collaboration object here
     setIsEditingUpdate(false);
@@ -401,143 +401,18 @@ export default function CollaborationDetails() {
                 <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
               </TabsList>
-
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
-                {/* Collaboration Summary */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Collaboration Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Project Details</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Start Date:</span>
-                            <span className="font-medium">{collaboration.startDate}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Due Date:</span>
-                            <span className="font-medium">{collaboration.dueDate}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Content Type:</span>
-                            <span className="font-medium">{collaboration.collaborator.contentType}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Progress</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Deliverables:</span>
-                            <span className="font-medium">{collaboration.deliverables.completed}/{collaboration.deliverables.total}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Messages:</span>
-                            <span className="font-medium">{collaboration.messages}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Last Activity:</span>
-                            <span className="font-medium">{collaboration.lastActivity}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900">Latest Update</h4>
-                        {!isEditingUpdate && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleEditUpdate}
-                            className="h-6 px-2 text-xs"
-                          >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
-                          </Button>
-                        )}
-                      </div>
-                      
-                      {isEditingUpdate ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            value={editedUpdate}
-                            onChange={(e) => setEditedUpdate(e.target.value)}
-                            className="min-h-[80px]"
-                            placeholder="Enter the latest update..."
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={handleSaveUpdate}
-                              className="text-xs"
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleCancelEdit}
-                              className="text-xs"
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
-                          {collaboration.latestUpdate}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Progress Tracking */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Progress Tracking
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Timeline Progress</span>
-                        <span className="font-medium">65%</span>
-                      </div>
-                      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-3 bg-blue-500 rounded-full" style={{ width: "65%" }} />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Deliverables Progress</span>
-                        <span className="font-medium">{Math.round((collaboration.deliverables.completed / collaboration.deliverables.total) * 100)}%</span>
-                      </div>
-                      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-3 bg-green-500 rounded-full" 
-                          style={{ width: `${(collaboration.deliverables.completed / collaboration.deliverables.total) * 100}%` }} 
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* AI Project Overview & Recommendations */}
+                <CollaborationOverviewTab
+                  collaboration={collaboration}
+                  isEditingUpdate={isEditingUpdate}
+                  editedUpdate={editedUpdate}
+                  handleEditUpdate={handleEditUpdate}
+                  handleSaveUpdate={handleSaveUpdate}
+                  handleCancelEdit={handleCancelEdit}
+                  setEditedUpdate={setEditedUpdate}
+                />
+                {/* AI Project Overview & Recommendations remains inline for now */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -597,95 +472,23 @@ export default function CollaborationDetails() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
               {/* Messages Tab */}
               <TabsContent value="messages" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" />
-                      Messages
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 mb-4">
-                      {mockMessages.map((message) => (
-                        <div key={message.id} className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-xs lg:max-w-md ${message.isOwn ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'} rounded-lg p-3`}>
-                            <div className="text-sm font-medium mb-1">{message.sender}</div>
-                            <div className="text-sm">{message.content}</div>
-                            <div className={`text-xs mt-2 ${message.isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
-                              {message.timestamp}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <Separator className="my-4" />
-                    
-                    {/* AI Message Style Enhancement */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">Message Style</h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowStyleOptions(!showStyleOptions)}
-                          className="text-xs"
-                        >
-                          {messageStyles.find(s => s.value === messageStyle)?.label || "Professional"}
-                        </Button>
-                      </div>
-                      
-                      {showStyleOptions && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
-                          <div className="grid grid-cols-2 gap-2 mb-3">
-                            {messageStyles.map((style) => (
-                              <Button
-                                key={style.value}
-                                variant={messageStyle === style.value ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => handleStyleChange(style.value)}
-                                className="text-xs justify-start"
-                              >
-                                {style.label}
-                              </Button>
-                            ))}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="Enter custom style (e.g., 'encouraging', 'direct')"
-                              value={customStyle}
-                              onChange={(e) => setCustomStyle(e.target.value)}
-                              className="flex-1 text-xs"
-                              onKeyPress={(e) => e.key === 'Enter' && handleCustomStyle()}
-                            />
-                            <Button size="sm" onClick={handleCustomStyle} className="text-xs">
-                              Apply
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Textarea
-                        placeholder="Type your message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        className="flex-1"
-                        rows={2}
-                      />
-                      <Button onClick={handleSendMessage} className="px-4">
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <CollaborationMessagesTab
+                  mockMessages={mockMessages}
+                  messageStyles={messageStyles}
+                  messageStyle={messageStyle}
+                  showStyleOptions={showStyleOptions}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  handleSendMessage={handleSendMessage}
+                  setShowStyleOptions={setShowStyleOptions}
+                  handleStyleChange={handleStyleChange}
+                  customStyle={customStyle}
+                  setCustomStyle={setCustomStyle}
+                  handleCustomStyle={handleCustomStyle}
+                />
               </TabsContent>
-
               {/* Deliverables Tab */}
               <TabsContent value="deliverables" className="space-y-4">
                 <Card>
@@ -754,186 +557,24 @@ export default function CollaborationDetails() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
               {/* Timeline Tab */}
               <TabsContent value="timeline" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
-                        Project Timeline
-                      </CardTitle>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={handleViewContract}
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="h-4 w-4" />
-                        View Contract
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {mockMilestones.map((milestone, index) => (
-                        <div key={milestone.id} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-4 h-4 rounded-full ${
-                              milestone.status === 'completed' ? 'bg-green-500' :
-                              milestone.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300'
-                            }`} />
-                            {index < mockMilestones.length - 1 && (
-                              <div className="w-0.5 h-12 bg-gray-200 mt-2" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900">{milestone.title}</h4>
-                              <Badge className={getMilestoneStatusColor(milestone.status)}>
-                                {milestone.status.replace('-', ' ')}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-2">{milestone.description}</p>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-500">Due: {milestone.dueDate}</span>
-                              {milestone.status === 'in-progress' && (
-                                <span className="text-blue-600 font-medium">{milestone.progress}% complete</span>
-                              )}
-                            </div>
-                            {milestone.status === 'in-progress' && (
-                              <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
-                                <div 
-                                  className="h-2 bg-blue-500 rounded-full" 
-                                  style={{ width: `${milestone.progress}%` }} 
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <CollaborationTimelineTab
+                  mockMilestones={mockMilestones}
+                  handleViewContract={handleViewContract}
+                  contractUrl={contractUrl}
+                  collaboration={collaboration}
+                  getMilestoneStatusColor={getMilestoneStatusColor}
+                />
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Collaborator Profile */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Collaborator</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={collaboration.collaborator.avatar} alt={collaboration.collaborator.name} />
-                    <AvatarFallback className="bg-gray-200">
-                      {collaboration.collaborator.name.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{collaboration.collaborator.name}</h4>
-                    <p className="text-sm text-gray-600">{collaboration.collaborator.contentType}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Star className="h-4 w-4" />
-                    <span>4.8/5 rating</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>500K+ followers</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Activity className="h-4 w-4" />
-                    <span>95% completion rate</span>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Button className="w-full" size="sm">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Message
-                  </Button>
-                  <Button variant="outline" className="w-full" size="sm">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Collaboration
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start" 
-                  size="sm"
-                  onClick={handleViewContract}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Contract
-                </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Details
-                </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Profile
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Project Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">65%</div>
-                    <div className="text-xs text-gray-600">Timeline</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {Math.round((collaboration.deliverables.completed / collaboration.deliverables.total) * 100)}%
-                    </div>
-                    <div className="text-xs text-gray-600">Deliverables</div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Days Remaining:</span>
-                    <span className="font-medium">3 days</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Files Shared:</span>
-                    <span className="font-medium">5</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CollaboratorSidebar collaboration={collaboration} />
+            <CollaborationQuickActions handleViewContract={handleViewContract} />
+            <CollaborationProjectStats collaboration={collaboration} />
           </div>
         </div>
       </main>
