@@ -26,8 +26,25 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, onClose, onSend, matc
   if (!open) return null;
   const profile = mockProfileDetails;
   const totalIdeas = mockCollabIdeas.length;
+  if (totalIdeas === 0) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20">
+        <div className="bg-white rounded-2xl shadow-xl w-auto min-w-[320px] max-w-full mx-2 p-0 sm:p-0 relative flex flex-col sm:flex-row overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="connect-modal-title">
+          <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 z-10" onClick={onClose} aria-label="Close">×</button>
+          <div className="flex flex-col items-center justify-center p-8 w-full">
+            <h2 id="connect-modal-title" className="text-xl font-bold text-gray-900 mb-2">No Collaboration Ideas</h2>
+            <p className="text-gray-600 mb-4">There are currently no AI-generated collaboration ideas available.</p>
+            <Button onClick={onClose}>Close</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const startIdx = (ideasPage * IDEAS_PER_PAGE) % totalIdeas;
-  const ideasToShow = Array.from({ length: IDEAS_PER_PAGE }, (_, i) => mockCollabIdeas[(startIdx + i) % totalIdeas]);
+  const ideasToShow = Array.from({ length: Math.min(totalIdeas, IDEAS_PER_PAGE) }, (_, i) => mockCollabIdeas[(startIdx + i) % totalIdeas]);
 
   const handleNextIdeas = () => {
     setIdeasPage((prev) => prev + 1);
@@ -72,12 +89,16 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, onClose, onSend, matc
           <div className="mb-4">
             <div className="font-semibold text-sm mb-2">AI-Generated Collaboration Ideas</div>
             <ul className="space-y-2">
-              {ideasToShow.map((idea, idx) => (
-                <li key={idx} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                  <div className="font-semibold text-gray-800">{idea.title}</div>
-                  <div className="text-xs text-gray-600">{idea.description}</div>
-                </li>
-              ))}
+              {ideasToShow.length === 0 ? (
+                <li className="text-gray-500 text-sm">No collaboration ideas available.</li>
+              ) : (
+                ideasToShow.map((idea, idx) => (
+                  <li key={idx} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <div className="font-semibold text-gray-800">{idea.title}</div>
+                    <div className="text-xs text-gray-600">{idea.description}</div>
+                  </li>
+                ))
+              )}
             </ul>
             {totalIdeas > IDEAS_PER_PAGE && (
               <div className="flex justify-center mt-3">
