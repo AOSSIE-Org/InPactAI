@@ -183,16 +183,16 @@ const CollabRequests: React.FC = () => {
                 <span>Avg Views: <b>{req.stats.avgViews}</b></span>
               </div>
               <div className="flex gap-3 mt-4">
-                <Button size="sm" className="flex items-center gap-1 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" onClick={() => handleAccept(req.id)}>
+                <Button size="sm" className="flex items-center gap-1 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" onClick={() => handleAccept(req.id)} aria-label="Accept collaboration request">
                   <CheckCircle className="h-4 w-4" /> Accept
                 </Button>
-                <Button size="sm" className="flex items-center gap-1 bg-red-100 text-red-800 hover:bg-red-200 border border-red-200" onClick={() => handleDeny(req.id)}>
+                <Button size="sm" className="flex items-center gap-1 bg-red-100 text-red-800 hover:bg-red-200 border border-red-200" onClick={() => handleDeny(req.id)} aria-label="Deny collaboration request">
                   <XCircle className="h-4 w-4" /> Deny
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center gap-1" onClick={() => handleMessage(req.id)}>
+                <Button size="sm" variant="outline" className="flex items-center gap-1" onClick={() => handleMessage(req.id)} aria-label="Message sender">
                   <MessageSquare className="h-4 w-4" /> Message
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center gap-1" >
+                <Button size="sm" variant="outline" className="flex items-center gap-1" aria-label="Email sender">
                   <Mail className="h-4 w-4" /> Email
                 </Button>
               </div>
