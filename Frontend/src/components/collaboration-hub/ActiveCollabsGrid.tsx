@@ -26,11 +26,13 @@ const ActiveCollabsGrid: React.FC = () => {
     <div className="w-full max-w-4xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div className="flex gap-2 items-center">
-          <span className="font-semibold text-gray-700">Status:</span>
+          <label htmlFor="statusFilter" className="font-semibold text-gray-700">Status:</label>
           <select
+            id="statusFilter"
             className="border rounded px-2 py-1 text-sm"
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
+            aria-label="Filter collaborations by status"
           >
             {statusOptions.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
@@ -38,11 +40,13 @@ const ActiveCollabsGrid: React.FC = () => {
           </select>
         </div>
         <div className="flex gap-2 items-center">
-          <span className="font-semibold text-gray-700">Sort by:</span>
+          <label htmlFor="sortBy" className="font-semibold text-gray-700">Sort by:</label>
           <select
+            id="sortBy"
             className="border rounded px-2 py-1 text-sm"
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
+            aria-label="Sort collaborations by criteria"
           >
             {sortOptions.map(opt => (
               <option key={opt} value={opt}>{opt}</option>

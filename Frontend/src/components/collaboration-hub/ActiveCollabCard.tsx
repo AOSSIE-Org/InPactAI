@@ -117,7 +117,7 @@ const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
       </div>
       <div className="flex gap-2 mt-2">
         <Button 
-          className="bg-gray-100 text-gray-900 hover:bg-gray-200 font-semibold rounded-full py-2" 
+          className="bg-gray-100 text-gray-900 hover:bg-gray-200 font-semibold rounded-full py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
           variant="secondary"
           onClick={() => navigate(`/dashboard/collaborations/${id}`)}
           aria-label="View collaboration details"
@@ -125,14 +125,14 @@ const ActiveCollabCard: React.FC<ActiveCollabCardProps> = ({
           View Details
         </Button>
         <Button 
-          className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-full py-2"
+          className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-full py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           aria-label="Send message to collaborator"
         >
           Message
         </Button>
         {status !== "Completed" && (
           <Button 
-            className="bg-green-100 text-green-700 hover:bg-green-200 font-semibold rounded-full py-2"
+            className="bg-green-100 text-green-700 hover:bg-green-200 font-semibold rounded-full py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
             aria-label="Mark collaboration as complete"
           >
             Mark Complete
