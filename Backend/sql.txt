@@ -253,7 +253,7 @@ CREATE INDEX IF NOT EXISTS idx_collab_updates_author ON public.collaboration_upd
 -- Create notifications table
 CREATE TABLE public.notifications (
   id uuid not null default extensions.uuid_generate_v4 (),
-  user_id text null,
+  user_id uuid null,
   type text null,
   title text null,
   message text null,
