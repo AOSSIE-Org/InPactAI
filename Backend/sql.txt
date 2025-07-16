@@ -41,12 +41,19 @@ INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amou
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 400.00, 'pending', NOW());
 
 -- Create chat_list table
+-- NOTE: To prevent duplicate chat threads with swapped user IDs, enforce in application logic that user1_id < user2_id before insertion (canonical ordering for UUIDs).
 CREATE TABLE chat_list (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user1_id UUID NOT NULL REFERENCES users(id),
   user2_id UUID NOT NULL REFERENCES users(id),
   last_message_time TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_chat UNIQUE (user1_id, user2_id)
+);
+
+-- Prevent duplicate chat threads regardless of user order
+CREATE UNIQUE INDEX unique_chat_pair ON chat_list (
+  LEAST(user1_id, user2_id),
+  GREATEST(user1_id, user2_id)
 );
 
 -- Create chat_messages table
@@ -85,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_insights_cache_expires ON public.ai_insights_c
 -- Create brands table
 CREATE TABLE public.brands (
   id uuid not null default gen_random_uuid (),
-  user_id character varying null,
+  user_id uuid null,
   brand_name character varying not null,
   logo_url text null,
   website_url character varying null,
@@ -133,7 +140,7 @@ CREATE TABLE public.collaboration_deliverables (
   title character varying(255) not null,
   description text null,
   status character varying(50) null default 'pending'::character varying,
-  assigned_to character varying(255) null,
+  assigned_to uuid null,
   due_date timestamp with time zone null,
   completed_at timestamp with time zone null,
   created_at timestamp with time zone null default now(),
@@ -232,7 +239,7 @@ CREATE INDEX IF NOT EXISTS idx_collab_requests_status ON public.collaboration_re
 CREATE TABLE public.collaboration_updates (
   id uuid not null default gen_random_uuid (),
   collaboration_id uuid null,
-  author_id character varying(255) null,
+  author_id uuid null,
   content text not null,
   created_at timestamp with time zone null default now(),
   constraint collaboration_updates_pkey primary key (id),
@@ -260,8 +267,8 @@ CREATE TABLE public.notifications (
 
 -- Create social_profiles table
 CREATE TABLE public.social_profiles (
-  id serial not null,
-  user_id character varying null,
+  id uuid not null default gen_random_uuid(),
+  user_id uuid null,
   platform character varying not null,
   username character varying null,
   followers integer null,
