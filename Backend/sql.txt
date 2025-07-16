@@ -172,7 +172,7 @@ CREATE INDEX IF NOT EXISTS idx_collab_deliverables_status ON public.collaboratio
 CREATE TABLE public.collaboration_messages (
   id uuid not null default gen_random_uuid (),
   collaboration_id uuid null,
-  sender_id character varying(255) null,
+  sender_id uuid null,
   content text not null,
   message_style character varying(50) null default 'professional'::character varying,
   ai_enhanced boolean null default false,
@@ -252,7 +252,7 @@ CREATE INDEX IF NOT EXISTS idx_collab_updates_author ON public.collaboration_upd
 
 -- Create notifications table
 CREATE TABLE public.notifications (
-  id uuid not null default extensions.uuid_generate_v4 (),
+  id uuid not null default gen_random_uuid(),
   user_id uuid null,
   type text null,
   title text null,
