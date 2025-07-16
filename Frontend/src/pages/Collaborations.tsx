@@ -1,24 +1,33 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { ModeToggle } from "../components/mode-toggle"
-import { UserNav } from "../components/user-nav"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { BarChart3, Briefcase, FileText, LayoutDashboard, MessageSquare, Rocket, Search, Users } from "lucide-react"
-import {Link} from "react-router-dom"
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
-import { Badge } from "../components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { Label } from "../components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { ModeToggle } from "../components/mode-toggle";
+import { UserNav } from "../components/user-nav";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { BarChart3, Briefcase, FileText, LayoutDashboard, MessageSquare, Rocket, Search, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Label } from "../components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import CreatorMatchGrid from "../components/collaboration-hub/CreatorMatchGrid";
 import { mockCreatorMatches } from "../components/dashboard/creator-collaborations";
 import ActiveCollabsGrid from "../components/collaboration-hub/ActiveCollabsGrid";
-import React from "react";
 import CollabRequests from "../components/collaboration-hub/CollabRequests";
 import { useCollaborationState } from "../hooks/useCollaborationState";
-import { mockCollabIdeas, mockRequestTexts } from "../components/collaboration-hub/mockProfileData";
 import NewCollaborationModal from "../components/collaboration-hub/NewCollaborationModal";
 import CreatorSearchModal from "../components/collaboration-hub/CreatorSearchModal";
+
+interface CollaborationData {
+  title: string;
+  description: string;
+  creatorId: string;
+  [key: string]: unknown;
+}
+
+interface Creator {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
 
 export default function CollaborationsPage({ showHeader = true }: { showHeader?: boolean }) {
   const {
@@ -34,12 +43,12 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
     activeFiltersCount,
   } = useCollaborationState();
 
-  const handleNewCollabSubmit = (data: any) => {
+  const handleNewCollabSubmit = (data: CollaborationData) => {
     console.log("New collaboration request submitted:", data);
     // Handle the submission logic here
   };
 
-  const handleCreatorConnect = (creator: any) => {
+  const handleCreatorConnect = (creator: Creator) => {
     console.log("Connecting with creator:", creator);
     // Handle the connection logic here
   };
@@ -48,7 +57,7 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
       {showHeader && (
         <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container flex h-16 items-center">
-            <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
+            <Link to="/" className="flex items-center space-x-2 mr-6 ml-6">
               <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
               <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
             </Link>
@@ -170,10 +179,14 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
                   className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
                   onClick={resetFilters}
                   disabled={!hasActiveFilters}
+                  aria-label="Reset all filters"
                 >
                   Reset Filters
                 </Button>
-                <Button className="flex-1 bg-purple-600 text-white hover:bg-purple-700">
+                <Button 
+                  className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
+                  aria-label="Apply selected filters"
+                >
                   Apply Filters
                 </Button>
               </div>
@@ -203,7 +216,29 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
                     </div>
                     <div className="text-yellow-900 text-sm">Our AI analyzes your content style, audience demographics, and engagement patterns to find your ideal collaborators.</div>
                   </div>
-                  <Button className="bg-yellow-400 text-white hover:bg-yellow-500">Refresh Matches</Button>
+                  <Button 
+                    className="bg-yellow-400 text-white hover:bg-yellow-500"
+                    aria-label="Refresh AI matches"
+                  >
+                    Refresh Matches
+                  </Button>
+                </div>
+                {/* Action Buttons */}
+                <div className="flex justify-end mb-4 gap-2">
+                  <Button 
+                    className="bg-purple-600 text-white hover:bg-purple-700" 
+                    onClick={openNewCollaborationModal}
+                    aria-label="Create new collaboration request"
+                  >
+                    + New Collaboration Request
+                  </Button>
+                  <Button 
+                    className="bg-blue-600 text-white hover:bg-blue-700" 
+                    onClick={openAiSearchModal}
+                    aria-label="Search for creators using AI"
+                  >
+                    Find Creators with AI
+                  </Button>
                 </div>
                 {/* Creator Match Grid with Pagination */}
                 <div className="w-full">
@@ -211,38 +246,34 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
                 </div>
                 {/* View More Recommendations Button */}
                 <div className="flex justify-center mt-6">
-                  <Button className="bg-gray-100 text-gray-900 hover:bg-gray-200">View More Recommendations</Button>
+                  <Button 
+                    className="bg-gray-100 text-gray-900 hover:bg-gray-200"
+                    aria-label="Load more creator recommendations"
+                  >
+                    View More Recommendations
+                  </Button>
                 </div>
               </TabsContent>
               <TabsContent value="active" className="space-y-4 pt-4">
                 <ActiveCollabsGrid />
               </TabsContent>
               <TabsContent value="requests" className="space-y-4 pt-4">
-                <div className="flex justify-end mb-4 gap-2">
-                  <Button className="bg-purple-600 text-white hover:bg-purple-700" onClick={openNewCollaborationModal}>
-                    + New Collaboration Request
-                  </Button>
-                  <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={openAiSearchModal}>
-                    Find Creators with AI
-                  </Button>
-                </div>
                 <CollabRequests />
-                
-                {/* New Collaboration Modal */}
-                <NewCollaborationModal 
-                  open={modals.newCollaboration}
-                  onClose={closeNewCollaborationModal}
-                  onSubmit={handleNewCollabSubmit}
-                />
-                
-                {/* AI Creator Search Modal */}
-                <CreatorSearchModal 
-                  open={modals.aiSearch}
-                  onClose={closeAiSearchModal}
-                  onConnect={handleCreatorConnect}
-                />
               </TabsContent>
             </Tabs>
+            
+            {/* Global Modals - accessible from any tab */}
+            <NewCollaborationModal 
+              open={modals.newCollaboration}
+              onClose={closeNewCollaborationModal}
+              onSubmit={handleNewCollabSubmit}
+            />
+            
+            <CreatorSearchModal 
+              open={modals.aiSearch}
+              onClose={closeAiSearchModal}
+              onConnect={handleCreatorConnect}
+            />
           </div>
         </div>
       </main>
