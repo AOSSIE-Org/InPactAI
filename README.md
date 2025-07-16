@@ -178,6 +178,22 @@ npm run dev
 uvicorn main:app --reload
 ```
 
+#### 5. Create Supabase Storage Buckets (Required for Media Uploads)
+
+To store brand logos and user profile images, you must create two storage buckets in your Supabase project:
+
+1. **brand-logos**
+2. **profile-pictures**
+
+**How to create buckets:**
+- Go to your Supabase project dashboard.
+- In the left sidebar, click on **Storage**.
+- Click **New bucket**.
+- Enter the bucket name (either 'brand-logos' or 'profile-pictures') and create it.
+- Repeat for the second bucket.
+
+These buckets are required for uploading and serving brand logos and user profile pictures in the app.
+
 ## Data Population
 
 To populate the database with initial data, follow these steps:

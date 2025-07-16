@@ -59,6 +59,10 @@ class ChatService:
                 f"user:{user_id}:last_seen", user.last_seen.isoformat(), ex=600
             )
 
+    def get_canonical_user_pair(self, user1_id: str, user2_id: str):
+        """Return user IDs in canonical (sorted) order for chat_list."""
+        return (user1_id, user2_id) if user1_id < user2_id else (user2_id, user1_id)
+
     async def send_message(
         self,
         sender_id: str,
@@ -76,14 +80,13 @@ class ChatService:
                 status_code=400, detail="Cannot send message to yourself"
             )
 
+        # Canonical ordering for chat_list
+        user1_id, user2_id = self.get_canonical_user_pair(sender_id, receiver_id)
+
         # Find or create chat list
         chat_list = await db.execute(
             select(ChatList).where(
-                ((ChatList.user1_id == sender_id) & (ChatList.user2_id == receiver_id))
-                | (
-                    (ChatList.user1_id == receiver_id)
-                    & (ChatList.user2_id == sender_id)
-                )
+                (ChatList.user1_id == user1_id) & (ChatList.user2_id == user2_id)
             )
         )
         chat_list = chat_list.scalar_one_or_none()
@@ -91,7 +94,7 @@ class ChatService:
         is_chat_list_exists = chat_list is not None
 
         if not chat_list:
-            chat_list = ChatList(user1_id=sender_id, user2_id=receiver_id)
+            chat_list = ChatList(user1_id=user1_id, user2_id=user2_id)
             db.add(chat_list)
             await db.commit()
 
@@ -401,7 +404,6 @@ class ChatService:
             raise HTTPException(status_code=400, detail="Message text is required")
 
         receiver = await db.execute(select(User).where(User.username == username))
-
         receiver = receiver.scalar_one_or_none()
         if not receiver:
             raise HTTPException(status_code=404, detail="Receiver not found")
@@ -410,15 +412,18 @@ class ChatService:
                 status_code=400, detail="Cannot send message to yourself"
             )
 
+        # Canonical ordering for chat_list
+        user1_id, user2_id = self.get_canonical_user_pair(user_id, receiver.id)
+
         chat_list = await db.execute(
             select(ChatList).where(
-                ((ChatList.user1_id == user_id) & (ChatList.user2_id == receiver.id))
-                | ((ChatList.user1_id == receiver.id) & (ChatList.user2_id == user_id))
+                (ChatList.user1_id == user1_id) & (ChatList.user2_id == user2_id)
             )
         )
+        chat_list = chat_list.scalar_one_or_none()
         if chat_list:
             return {
-                "chatListId": chat_list.scalar_one().id,
+                "chatListId": chat_list.id,
                 "isChatListExists": True,
             }
 
