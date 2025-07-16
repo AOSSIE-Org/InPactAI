@@ -21,6 +21,12 @@ const steps = [
   "Review & Submit",
 ];
 
+// Define which steps are essential for matching
+const essentialSteps = {
+  creator: [0, 1, 2, 3], // Role, Personal Details, Platform Selection, Platform Details
+  brand: [0, 1, 2] // Brand Details, Contact Information, Platforms
+};
+
 // const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY; // No longer needed in frontend
 
 type BrandData = {
@@ -645,14 +651,52 @@ export default function Onboarding() {
     setExitError("");
     
     try {
-      
-      
       if (exitAction === 'logout') {
         await logout();
         // Note: logout() should handle navigation, so we don't close dialog here
         // The AuthContext logout function should redirect to home page
       } else if (exitAction === 'skip') {
-        console.log("Skipping onboarding...");
+        console.log("Skipping non-essential onboarding fields...");
+        
+        // Only allow skipping if essential fields are completed
+        if (role === "creator") {
+          // For creators, essential fields are: role, personal details, platform selection, platform details, pricing
+          const essentialFieldsComplete = role && 
+            personal.name && personal.email && personal.age && personal.gender && 
+            personal.category && personal.country && 
+            selectedPlatforms.length > 0;
+          
+          if (!essentialFieldsComplete) {
+            setExitError("Please complete the essential fields (Personal Details, Platform Selection, and Platform Details) before skipping. These are required for creator matching.");
+            return;
+          }
+          
+          // Allow skipping pricing and profile picture (non-essential for basic matching)
+          if (step < 4) { // Before pricing step
+            setExitError("Please complete platform details before skipping. This information is essential for creator matching.");
+            return;
+          }
+          
+        } else if (role === "brand") {
+          // For brands, essential fields are: brand details, contact info, platforms
+          const essentialFieldsComplete = brandData.brand_name && 
+            brandData.website_url && brandData.industry && brandData.company_size && 
+            brandData.location && brandData.description &&
+            brandData.contact_person && brandData.contact_email &&
+            brandData.platforms.length > 0;
+          
+          if (!essentialFieldsComplete) {
+            setExitError("Please complete the essential fields (Brand Details, Contact Information, and Platform Selection) before skipping. These are required for brand matching.");
+            return;
+          }
+          
+          // Allow skipping social links and collaboration preferences (non-essential for basic matching)
+          if (brandStep < 2) { // Before social links step
+            setExitError("Please complete platform selection before skipping. This information is essential for brand matching.");
+            return;
+          }
+        }
+        
         // Save current progress to localStorage for later
         const progressData = {
           step,
@@ -664,7 +708,8 @@ export default function Onboarding() {
           profilePic: null, // Can't save file to localStorage
           brandStep,
           brandData: { ...brandData, logo: null }, // Can't save file to localStorage
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          skipped: true // Mark as skipped for later completion
         };
         localStorage.setItem('onboarding_progress', JSON.stringify(progressData));
         
@@ -675,7 +720,7 @@ export default function Onboarding() {
           navigate('/dashboard');
         }
         
-        // Close dialog after navigation
+        // Close dialog
         setShowExitDialog(false);
         setExitAction(null);
       }
@@ -1177,8 +1222,9 @@ export default function Onboarding() {
               <button
                 onClick={() => handleExitRequest('skip')}
                 className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium transition-colors"
+                title="Skip remaining non-essential fields after completing required information"
               >
-                Skip for now
+                Skip remaining fields
               </button>
             )}
             <button
@@ -1198,6 +1244,7 @@ export default function Onboarding() {
                 const isActive = idx === brandStep;
                 const isCompleted = idx < brandStep;
                 const isClickable = idx < brandStep;
+                const isEssential = essentialSteps.brand.includes(idx);
                 return (
                   <div 
                     key={label} 
@@ -1217,7 +1264,10 @@ export default function Onboarding() {
                       isActive ? "text-purple-600" : 
                       isCompleted ? "text-green-600" :
                       "text-gray-400"
-                    }`}>{label}</div>
+                    }`}>
+                      {label}
+                      {isEssential && <span className="text-red-500 ml-1">*</span>}
+                    </div>
                   </div>
                 );
               })
@@ -1225,6 +1275,7 @@ export default function Onboarding() {
                 const isActive = idx === step;
                 const isCompleted = idx < step;
                 const isClickable = idx < step;
+                const isEssential = essentialSteps.creator.includes(idx);
                 return (
                   <div 
                     key={label} 
@@ -1244,10 +1295,18 @@ export default function Onboarding() {
                       isActive ? "text-purple-600" : 
                       isCompleted ? "text-green-600" :
                       "text-gray-400"
-                    }`}>{label}</div>
+                    }`}>
+                      {label}
+                      {isEssential && <span className="text-red-500 ml-1">*</span>}
+                    </div>
                   </div>
                 );
               })}
+        </div>
+        
+        {/* Legend for essential fields */}
+        <div className="text-xs text-gray-500 mb-4 text-center">
+          <span className="text-red-500">*</span> Essential fields required for matching
         </div>
 
         {/* Step Content */}
@@ -1355,7 +1414,7 @@ export default function Onboarding() {
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               {exitAction === 'logout' 
                 ? 'Are you sure you want to logout? Your onboarding progress will be saved and you can continue later.' 
-                : 'Are you sure you want to skip the onboarding? You can complete it later from your dashboard, but some features may be limited until then.'}
+                : 'Are you sure you want to skip the remaining non-essential fields? Essential fields for matching must be completed first. You can complete the remaining fields later from your dashboard.'}
             </p>
             
             {/* Error message */}
