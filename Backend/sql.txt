@@ -39,3 +39,263 @@ INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amou
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 500.00, 'completed', NOW()),
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 300.00, 'completed', NOW()),
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 400.00, 'pending', NOW());
+
+-- Create chat_list table
+CREATE TABLE chat_list (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user1_id UUID NOT NULL REFERENCES users(id),
+  user2_id UUID NOT NULL REFERENCES users(id),
+  last_message_time TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_chat UNIQUE (user1_id, user2_id)
+);
+
+-- Create chat_messages table
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id UUID NOT NULL REFERENCES users(id),
+  receiver_id UUID NOT NULL REFERENCES users(id),
+  message TEXT NOT NULL,
+  status VARCHAR(20) DEFAULT 'sent',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  chat_list_id UUID NOT NULL REFERENCES chat_list(id)
+);
+
+-- Create trending_niches table
+CREATE TABLE trending_niches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  insight TEXT,
+  global_activity INTEGER,
+  fetched_at DATE NOT NULL
+);
+
+-- Create ai_insights_cache table
+CREATE TABLE public.ai_insights_cache (
+  id uuid not null default gen_random_uuid (),
+  cache_key character varying(255) not null,
+  insights_data jsonb not null,
+  expires_at timestamp with time zone not null,
+  created_at timestamp with time zone null default now(),
+  constraint ai_insights_cache_pkey primary key (id),
+  constraint ai_insights_cache_cache_key_key unique (cache_key)
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_ai_insights_cache_expires ON public.ai_insights_cache USING btree (expires_at) TABLESPACE pg_default;
+
+-- Create brands table
+CREATE TABLE public.brands (
+  id uuid not null default gen_random_uuid (),
+  user_id character varying null,
+  brand_name character varying not null,
+  logo_url text null,
+  website_url character varying null,
+  industry character varying null,
+  company_size character varying null,
+  location character varying null,
+  description text null,
+  contact_person character varying not null,
+  contact_email character varying not null,
+  contact_phone character varying null,
+  role character varying null,
+  instagram_url character varying null,
+  facebook_url character varying null,
+  twitter_url character varying null,
+  linkedin_url character varying null,
+  youtube_url character varying null,
+  collaboration_types jsonb null,
+  preferred_creator_categories jsonb null,
+  brand_values jsonb null,
+  preferred_tone jsonb null,
+  created_at timestamp with time zone null default now(),
+  platforms jsonb null,
+  constraint brands_pkey primary key (id),
+  constraint brands_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+-- Create collaboration_analytics table
+CREATE TABLE public.collaboration_analytics (
+  id uuid not null default gen_random_uuid (),
+  collaboration_id uuid null,
+  metric_name character varying(100) not null,
+  metric_value jsonb not null,
+  recorded_at timestamp with time zone null default now(),
+  constraint collaboration_analytics_pkey primary key (id),
+  constraint collaboration_analytics_collaboration_id_fkey foreign KEY (collaboration_id) references collaborations (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_collab_analytics_collab ON public.collaboration_analytics USING btree (collaboration_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_analytics_metric ON public.collaboration_analytics USING btree (metric_name) TABLESPACE pg_default;
+
+-- Create collaboration_deliverables table
+CREATE TABLE public.collaboration_deliverables (
+  id uuid not null default gen_random_uuid (),
+  collaboration_id uuid null,
+  title character varying(255) not null,
+  description text null,
+  status character varying(50) null default 'pending'::character varying,
+  assigned_to character varying(255) null,
+  due_date timestamp with time zone null,
+  completed_at timestamp with time zone null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint collaboration_deliverables_pkey primary key (id),
+  constraint collaboration_deliverables_assigned_to_fkey foreign KEY (assigned_to) references users (id) on delete set null,
+  constraint collaboration_deliverables_collaboration_id_fkey foreign KEY (collaboration_id) references collaborations (id) on delete CASCADE,
+  constraint collaboration_deliverables_status_check check (
+    (
+      (status)::text = any (
+        (
+          array[
+            'pending'::character varying,
+            'in_progress'::character varying,
+            'completed'::character varying,
+            'cancelled'::character varying
+          ]
+        )::text[]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_collab_deliverables_collab ON public.collaboration_deliverables USING btree (collaboration_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_deliverables_assigned ON public.collaboration_deliverables USING btree (assigned_to) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_deliverables_status ON public.collaboration_deliverables USING btree (status) TABLESPACE pg_default;
+
+-- Create collaboration_messages table
+CREATE TABLE public.collaboration_messages (
+  id uuid not null default gen_random_uuid (),
+  collaboration_id uuid null,
+  sender_id character varying(255) null,
+  content text not null,
+  message_style character varying(50) null default 'professional'::character varying,
+  ai_enhanced boolean null default false,
+  created_at timestamp with time zone null default now(),
+  constraint collaboration_messages_pkey primary key (id),
+  constraint collaboration_messages_collaboration_id_fkey foreign KEY (collaboration_id) references collaborations (id) on delete CASCADE,
+  constraint collaboration_messages_sender_id_fkey foreign KEY (sender_id) references users (id) on delete CASCADE,
+  constraint collaboration_messages_message_style_check check (
+    (
+      (message_style)::text = any (
+        (
+          array[
+            'professional'::character varying,
+            'casual'::character varying,
+            'encouraging'::character varying,
+            'direct'::character varying,
+            'friendly'::character varying
+          ]
+        )::text[]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_collab_messages_collab ON public.collaboration_messages USING btree (collaboration_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_messages_sender ON public.collaboration_messages USING btree (sender_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_messages_created ON public.collaboration_messages USING btree (created_at) TABLESPACE pg_default;
+
+-- Create collaboration_requests table
+CREATE TABLE public.collaboration_requests (
+  id uuid not null default gen_random_uuid (),
+  sender_id character varying(255) null,
+  receiver_id character varying(255) null,
+  collaboration_id uuid null,
+  status character varying(50) null default 'pending'::character varying,
+  proposal jsonb not null default '{}'::jsonb,
+  ai_analysis jsonb null default '{}'::jsonb,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint collaboration_requests_pkey primary key (id),
+  constraint collaboration_requests_collaboration_id_fkey foreign KEY (collaboration_id) references collaborations (id) on delete CASCADE,
+  constraint collaboration_requests_receiver_id_fkey foreign KEY (receiver_id) references users (id) on delete CASCADE,
+  constraint collaboration_requests_sender_id_fkey foreign KEY (sender_id) references users (id) on delete CASCADE,
+  constraint collaboration_requests_status_check check (
+    (
+      (status)::text = any (
+        (
+          array[
+            'pending'::character varying,
+            'accepted'::character varying,
+            'declined'::character varying
+          ]
+        )::text[]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_collab_requests_sender ON public.collaboration_requests USING btree (sender_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_requests_receiver ON public.collaboration_requests USING btree (receiver_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_requests_status ON public.collaboration_requests USING btree (status) TABLESPACE pg_default;
+
+-- Create collaboration_updates table
+CREATE TABLE public.collaboration_updates (
+  id uuid not null default gen_random_uuid (),
+  collaboration_id uuid null,
+  author_id character varying(255) null,
+  content text not null,
+  created_at timestamp with time zone null default now(),
+  constraint collaboration_updates_pkey primary key (id),
+  constraint collaboration_updates_author_id_fkey foreign KEY (author_id) references users (id) on delete CASCADE,
+  constraint collaboration_updates_collaboration_id_fkey foreign KEY (collaboration_id) references collaborations (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_collab_updates_collab ON public.collaboration_updates USING btree (collaboration_id) TABLESPACE pg_default;
+CREATE INDEX IF NOT EXISTS idx_collab_updates_author ON public.collaboration_updates USING btree (author_id) TABLESPACE pg_default;
+
+-- Create notifications table
+CREATE TABLE public.notifications (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  user_id text null,
+  type text null,
+  title text null,
+  message text null,
+  link text null,
+  is_read boolean null default false,
+  created_at timestamp with time zone null default timezone ('utc'::text, now()),
+  category text null,
+  constraint notifications_pkey primary key (id),
+  constraint notifications_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+-- Create social_profiles table
+CREATE TABLE public.social_profiles (
+  id serial not null,
+  user_id character varying null,
+  platform character varying not null,
+  username character varying null,
+  followers integer null,
+  posts integer null,
+  channel_id character varying null,
+  channel_name character varying null,
+  profile_image text null,
+  subscriber_count integer null,
+  total_views integer null,
+  video_count integer null,
+  per_post_cost numeric null,
+  per_story_cost numeric null,
+  per_reel_cost numeric null,
+  per_video_cost numeric null,
+  per_short_cost numeric null,
+  per_community_post_cost numeric null,
+  has_manager boolean null,
+  manager_name character varying null,
+  manager_email character varying null,
+  manager_phone character varying null,
+  created_at timestamp with time zone null default now(),
+  per_post_cost_currency character varying null,
+  per_story_cost_currency character varying null,
+  per_reel_cost_currency character varying null,
+  per_video_cost_currency character varying null,
+  per_short_cost_currency character varying null,
+  per_community_post_cost_currency character varying null,
+  fb_post_cost_currency character varying null,
+  tiktok_video_cost_currency character varying null,
+  per_in_video_placement_cost numeric null,
+  per_in_video_placement_cost_currency character varying null,
+  channel_url text null,
+  pricing jsonb null,
+  constraint social_profiles_pkey primary key (id),
+  constraint social_profiles_user_platform_unique unique (user_id, platform),
+  constraint social_profiles_user_id_fkey foreign KEY (user_id) references users (id)
+) TABLESPACE pg_default;

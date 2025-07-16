@@ -25,6 +25,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/vite": "^4.0.16",
+    "ai": "^4.3.17",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
