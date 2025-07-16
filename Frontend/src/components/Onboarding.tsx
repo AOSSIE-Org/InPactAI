@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Info } from "lucide-react";
+import { Info, LogOut, X, ArrowLeft, AlertCircle } from "lucide-react";
 import { supabase } from "../utils/supabase";
 
 const platforms = [
@@ -20,6 +20,12 @@ const steps = [
   "Profile Picture",
   "Review & Submit",
 ];
+
+// Define which steps are essential for matching
+const essentialSteps = {
+  creator: [0, 1, 2, 3], // Role, Personal Details, Platform Selection, Platform Details
+  brand: [0, 1, 2] // Brand Details, Contact Information, Platforms
+};
 
 // const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY; // No longer needed in frontend
 
@@ -65,7 +71,7 @@ const brandInitialState: BrandData = {
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState("");
   const [personal, setPersonal] = useState({ name: "", email: "", age: "", gender: "", country: "", category: "", otherCategory: "" });
@@ -85,6 +91,12 @@ export default function Onboarding() {
   const [brandData, setBrandData] = useState<BrandData>(brandInitialState);
   const [brandLogoPreview, setBrandLogoPreview] = useState<string | null>(null);
   const [brandError, setBrandError] = useState("");
+  
+  // New state for navigation improvements
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [exitAction, setExitAction] = useState<'logout' | 'skip' | null>(null);
+  const [exitLoading, setExitLoading] = useState(false);
+  const [exitError, setExitError] = useState("");
 
   // Prefill name and email from Google user if available
   useEffect(() => {
@@ -628,6 +640,140 @@ export default function Onboarding() {
     if (step > 0) setStep(step - 1);
   };
 
+  // New handler functions for navigation improvements
+  const handleExitRequest = (action: 'logout' | 'skip') => {
+    setExitAction(action);
+    setShowExitDialog(true);
+  };
+
+  const handleExitConfirm = async () => {
+    setExitLoading(true);
+    setExitError("");
+    
+    try {
+      if (exitAction === 'logout') {
+        await logout();
+        // Note: logout() should handle navigation, so we don't close dialog here
+        // The AuthContext logout function should redirect to home page
+      } else if (exitAction === 'skip') {
+        console.log("Skipping non-essential onboarding fields...");
+        
+        // Only allow skipping if essential fields are completed
+        if (role === "creator") {
+          // For creators, essential fields are: role, personal details, platform selection, platform details, pricing
+          const essentialFieldsComplete = role && 
+            personal.name && personal.email && personal.age && personal.gender && 
+            personal.category && personal.country && 
+            selectedPlatforms.length > 0;
+          
+          if (!essentialFieldsComplete) {
+            setExitError("Please complete the essential fields (Personal Details, Platform Selection, and Platform Details) before skipping. These are required for creator matching.");
+            return;
+          }
+          
+          // Allow skipping pricing and profile picture (non-essential for basic matching)
+          if (step < 4) { // Before pricing step
+            setExitError("Please complete platform details before skipping. This information is essential for creator matching.");
+            return;
+          }
+          
+        } else if (role === "brand") {
+          // For brands, essential fields are: brand details, contact info, platforms
+          const essentialFieldsComplete = brandData.brand_name && 
+            brandData.website_url && brandData.industry && brandData.company_size && 
+            brandData.location && brandData.description &&
+            brandData.contact_person && brandData.contact_email &&
+            brandData.platforms.length > 0;
+          
+          if (!essentialFieldsComplete) {
+            setExitError("Please complete the essential fields (Brand Details, Contact Information, and Platform Selection) before skipping. These are required for brand matching.");
+            return;
+          }
+          
+          // Allow skipping social links and collaboration preferences (non-essential for basic matching)
+          if (brandStep < 2) { // Before social links step
+            setExitError("Please complete platform selection before skipping. This information is essential for brand matching.");
+            return;
+          }
+        }
+        
+        // Save current progress to localStorage for later
+        const progressData = {
+          step,
+          role,
+          personal,
+          selectedPlatforms,
+          platformDetails,
+          pricing,
+          profilePic: null, // Can't save file to localStorage
+          brandStep,
+          brandData: { ...brandData, logo: null }, // Can't save file to localStorage
+          timestamp: Date.now(),
+          skipped: true // Mark as skipped for later completion
+        };
+        localStorage.setItem('onboarding_progress', JSON.stringify(progressData));
+        
+        // Navigate to appropriate dashboard
+        if (role === "brand") {
+          navigate('/brand/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+        
+        // Close dialog
+        setShowExitDialog(false);
+        setExitAction(null);
+      }
+    } catch (error) {
+      console.error("Error in handleExitConfirm:", error);
+      setExitError(`Failed to ${exitAction}. Please try again.`);
+    } finally {
+      setExitLoading(false);
+    }
+  };
+
+  const handleExitCancel = () => {
+    setShowExitDialog(false);
+    setExitAction(null);
+    setExitLoading(false);
+    setExitError("");
+  };
+
+  const handleStepClick = (targetStep: number) => {
+    // Only allow going back to previously completed steps
+    const currentStep = role === "brand" ? brandStep : step;
+    if (targetStep < currentStep) {
+      if (role === "brand") {
+        setBrandStep(targetStep);
+      } else {
+        setStep(targetStep);
+      }
+    }
+  };
+
+  // Load saved progress on component mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('onboarding_progress');
+    if (savedProgress) {
+      try {
+        const data = JSON.parse(savedProgress);
+        // Only load if it's recent (within 24 hours)
+        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+          setStep(data.step || 0);
+          setRole(data.role || "");
+          setPersonal(data.personal || { name: "", email: "", age: "", gender: "", country: "", category: "", otherCategory: "" });
+          setSelectedPlatforms(data.selectedPlatforms || []);
+          setPlatformDetails(data.platformDetails || {});
+          setPricing(data.pricing || {});
+          setBrandStep(data.brandStep || 0);
+          setBrandData(data.brandData || brandInitialState);
+        }
+      } catch (error) {
+        console.error("Error loading saved progress:", error);
+      }
+    }
+  }, []);
+
   // Brand onboarding steps
   const brandSteps = [
     "Brand Details",
@@ -1065,17 +1211,104 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        {/* Stepper UI */}
+      <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 relative">
+        {/* Header with Logout and Skip Options */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-purple-600">InPact Onboarding</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {role && (
+              <button
+                onClick={() => handleExitRequest('skip')}
+                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium transition-colors"
+                title="Skip remaining non-essential fields after completing required information"
+              >
+                Skip remaining fields
+              </button>
+            )}
+            <button
+              onClick={() => handleExitRequest('logout')}
+              className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-medium transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Enhanced Stepper UI with clickable progress */}
         <div className="flex justify-between mb-8">
           {role === "brand"
-            ? brandSteps.map((label, idx) => (
-                <div key={label} className={`flex-1 text-center text-xs font-semibold ${idx === brandStep ? "text-purple-600" : "text-gray-400"}`}>{label}</div>
-              ))
-            : steps.map((label, idx) => (
-                <div key={label} className={`flex-1 text-center text-xs font-semibold ${idx === step ? "text-purple-600" : "text-gray-400"}`}>{label}</div>
-              ))}
+            ? brandSteps.map((label, idx) => {
+                const isActive = idx === brandStep;
+                const isCompleted = idx < brandStep;
+                const isClickable = idx < brandStep;
+                const isEssential = essentialSteps.brand.includes(idx);
+                return (
+                  <div 
+                    key={label} 
+                    className={`flex-1 text-center cursor-pointer transition-colors ${
+                      isClickable ? 'hover:text-purple-500' : ''
+                    }`}
+                    onClick={() => isClickable && handleStepClick(idx)}
+                  >
+                    <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center text-xs font-bold ${
+                      isActive ? 'bg-purple-600 text-white' : 
+                      isCompleted ? 'bg-green-500 text-white' : 
+                      'bg-gray-200 text-gray-400'
+                    }`}>
+                      {isCompleted ? '✓' : idx + 1}
+                    </div>
+                    <div className={`text-xs font-semibold ${
+                      isActive ? "text-purple-600" : 
+                      isCompleted ? "text-green-600" :
+                      "text-gray-400"
+                    }`}>
+                      {label}
+                      {isEssential && <span className="text-red-500 ml-1">*</span>}
+                    </div>
+                  </div>
+                );
+              })
+            : steps.map((label, idx) => {
+                const isActive = idx === step;
+                const isCompleted = idx < step;
+                const isClickable = idx < step;
+                const isEssential = essentialSteps.creator.includes(idx);
+                return (
+                  <div 
+                    key={label} 
+                    className={`flex-1 text-center cursor-pointer transition-colors ${
+                      isClickable ? 'hover:text-purple-500' : ''
+                    }`}
+                    onClick={() => isClickable && handleStepClick(idx)}
+                  >
+                    <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center text-xs font-bold ${
+                      isActive ? 'bg-purple-600 text-white' : 
+                      isCompleted ? 'bg-green-500 text-white' : 
+                      'bg-gray-200 text-gray-400'
+                    }`}>
+                      {isCompleted ? '✓' : idx + 1}
+                    </div>
+                    <div className={`text-xs font-semibold ${
+                      isActive ? "text-purple-600" : 
+                      isCompleted ? "text-green-600" :
+                      "text-gray-400"
+                    }`}>
+                      {label}
+                      {isEssential && <span className="text-red-500 ml-1">*</span>}
+                    </div>
+                  </div>
+                );
+              })}
         </div>
+        
+        {/* Legend for essential fields */}
+        <div className="text-xs text-gray-500 mb-4 text-center">
+          <span className="text-red-500">*</span> Essential fields required for matching
+        </div>
+
         {/* Step Content */}
         <div className="mb-8">
           {role === "brand" ? (
@@ -1099,22 +1332,27 @@ export default function Onboarding() {
             </>
           )}
         </div>
-        {/* Navigation */}
-        <div className="flex justify-between">
+
+        {/* Enhanced Navigation */}
+        <div className="flex justify-between items-center">
           {role === "brand" ? (
             <>
               <button
                 onClick={handleBrandBack}
                 disabled={brandStep === 0}
-                className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold disabled:opacity-50 hover:bg-gray-300 transition-colors"
               >
+                <ArrowLeft className="h-4 w-4" />
                 Back
               </button>
+              <div className="text-sm text-gray-500">
+                Step {brandStep + 1} of {brandSteps.length}
+              </div>
               {brandStep < brandSteps.length - 1 ? (
                 <button
                   onClick={handleBrandNext}
                   disabled={!!validateBrandStep()}
-                  className="px-6 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-50"
+                  className="px-6 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-50 hover:bg-purple-700 transition-colors"
                 >
                   Next
                 </button>
@@ -1125,10 +1363,14 @@ export default function Onboarding() {
               <button
                 onClick={handleBack}
                 disabled={step === 0}
-                className="px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold disabled:opacity-50 hover:bg-gray-300 transition-colors"
               >
+                <ArrowLeft className="h-4 w-4" />
                 Back
               </button>
+              <div className="text-sm text-gray-500">
+                Step {step + 1} of {steps.length}
+              </div>
               {step < steps.length - 1 ? (
                 <button
                   onClick={handleNext}
@@ -1140,7 +1382,7 @@ export default function Onboarding() {
                     (step === 4 && !!validatePricing()) ||
                     (step === 5 && !!profilePicError)
                   }
-                  className="px-6 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-50"
+                  className="px-6 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-50 hover:bg-purple-700 transition-colors"
                 >
                   Next
                 </button>
@@ -1148,7 +1390,7 @@ export default function Onboarding() {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50"
+                  className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50 hover:bg-green-700 transition-colors"
                 >
                   {submitting ? 'Submitting...' : 'Submit'}
                 </button>
@@ -1158,6 +1400,66 @@ export default function Onboarding() {
         </div>
         {brandError && <div className="text-red-500 text-sm mt-2">{brandError}</div>}
       </div>
+
+      {/* Exit Confirmation Dialog */}
+      {showExitDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="h-6 w-6 text-amber-500" />
+              <h3 className="text-lg font-semibold">
+                {exitAction === 'logout' ? 'Logout Confirmation' : 'Skip Onboarding'}
+              </h3>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              {exitAction === 'logout' 
+                ? 'Are you sure you want to logout? Your onboarding progress will be saved and you can continue later.' 
+                : 'Are you sure you want to skip the remaining non-essential fields? Essential fields for matching must be completed first. You can complete the remaining fields later from your dashboard.'}
+            </p>
+            
+            {/* Error message */}
+            {exitError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                {exitError}
+              </div>
+            )}
+            
+            {/* Loading indicator */}
+            {exitLoading && (
+              <div className="flex items-center gap-2 text-gray-600 mb-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                <span className="text-sm">
+                  {exitAction === 'logout' ? 'Logging out...' : 'Saving progress...'}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleExitCancel}
+                disabled={exitLoading}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExitConfirm}
+                disabled={exitLoading}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  exitAction === 'logout' 
+                    ? 'bg-red-600 text-white hover:bg-red-700' 
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {exitLoading 
+                  ? (exitAction === 'logout' ? 'Logging out...' : 'Saving...') 
+                  : (exitAction === 'logout' ? 'Logout' : 'Skip for now')
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
