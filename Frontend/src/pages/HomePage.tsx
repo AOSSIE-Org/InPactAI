@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import TiltedCard from '../components/TiltedCard'; // adjust the path if needed
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -333,47 +334,111 @@ function TrendingNichesSection() {
     </div>
   );
 }
-
+{/* Edited the cards for "why choose inpact ai? " */}
+{/* added under glow and 28 tiled hover effect-----by Praneet*/}
 function WhyChooseSection() {
   return (
-    <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
-      <div className="container mx-auto px-6 md:px-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Inpact AI?</h2>
-        <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-          Powerful tools for both brands and creators to connect, collaborate, and grow.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Brands Column */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100">
-            <div className="flex items-center gap-3 mb-4">
-              <Rocket className="h-8 w-8 text-purple-600" />
-              <span className="text-xl font-semibold text-purple-700">For Brands</span>
-            </div>
-            <ul className="space-y-4 text-gray-700 w-full">
-              <li className="flex items-start gap-3"><Handshake className="h-6 w-6 text-blue-500" /> AI-driven creator matching for your campaigns</li>
-              <li className="flex items-start gap-3"><BarChart3 className="h-6 w-6 text-green-500" /> Real-time performance analytics & ROI tracking</li>
-              <li className="flex items-start gap-3"><Layers className="h-6 w-6 text-pink-500" /> Smart pricing & budget optimization</li>
-              <li className="flex items-start gap-3"><MessageSquare className="h-6 w-6 text-orange-500" /> Streamlined communication & contract management</li>
-            </ul>
-          </div>
-          {/* Creators Column */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-semibold text-blue-700">For Creators</span>
-            </div>
-            <ul className="space-y-4 text-gray-700 w-full">
-              <li className="flex items-start gap-3"><TrendingUp className="h-6 w-6 text-purple-500" /> Get discovered by top brands in your niche</li>
-              <li className="flex items-start gap-3"><Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship deals & transparent payments</li>
-              <li className="flex items-start gap-3"><BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered content & contract assistant</li>
-              <li className="flex items-start gap-3"><Heart className="h-6 w-6 text-pink-500" /> Grow your audience & track your impact</li>
-            </ul>
+      <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
+        <div className="container mx-auto px-6 md:px-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
+            Why Choose Inpact AI?
+          </h2>
+          <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Powerful tools for both brands and creators to connect, collaborate, and grow.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* Tilted Card for Brands */}
+            <TiltedCard
+                containerHeight="100%"
+                containerWidth="100%"
+                imageHeight="100%"
+                imageWidth="100%"
+                rotateAmplitude={10}
+                scaleOnHover={1.05}
+                showTooltip={false}
+                showMobileWarning={false}
+                displayOverlayContent={false}
+            >
+              <div className="relative bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100 h-full after:absolute after:inset-0 after:rounded-2xl after:-z-10 after:blur-2xl after:opacity-28 after:bg-purple-500 after:shadow-[0_0_40px_10px_rgba(168,85,247,0.28)]">
+
+              {/* Under Glow */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80%] h-3 rounded-full blur-xl bg-purple-400 opacity-70 group-hover:opacity-100 transition duration-300" />
+
+                {/* Content */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Rocket className="h-8 w-8 text-purple-600" />
+                  <span className="text-xl font-semibold text-purple-700">For Brands</span>
+                </div>
+                <ul className="space-y-4 text-gray-700 w-full text-base">
+                  <li className="flex items-start gap-3">
+                    <Handshake className="h-6 w-6 text-blue-500" />
+                    <span>AI-driven creator matching for your campaigns</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <BarChart3 className="h-6 w-6 text-green-500" />
+                    <span>Real-time performance analytics & ROI tracking</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Layers className="h-6 w-6 text-pink-500" />
+                    <span>Smart pricing & budget optimization</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <MessageSquare className="h-6 w-6 text-orange-500" />
+                    <span>Streamlined communication & contract management</span>
+                  </li>
+                </ul>
+              </div>
+            </TiltedCard>
+
+            {/* Tilted Card for Creators */}
+            <TiltedCard
+                containerHeight="100%"
+                containerWidth="100%"
+                imageHeight="100%"
+                imageWidth="100%"
+                rotateAmplitude={10}
+                scaleOnHover={1.05}
+                showTooltip={false}
+                showMobileWarning={false}
+                displayOverlayContent={false}
+            >
+              <div className="relative bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100 h-full after:absolute after:inset-0 after:rounded-2xl after:-z-10 after:blur-2xl after:opacity-28 after:bg-blue-500 after:shadow-[0_0_40px_10px_rgba(59,130,246,0.28)]">
+
+              {/* Under Glow */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[80%] h-3 rounded-full blur-xl bg-blue-400 opacity-70 group-hover:opacity-100 transition duration-300" />
+
+                {/* Content */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Users className="h-8 w-8 text-blue-600" />
+                  <span className="text-xl font-semibold text-blue-700">For Creators</span>
+                </div>
+                <ul className="space-y-4 text-gray-700 w-full text-base">
+                  <li className="flex items-start gap-3">
+                    <TrendingUp className="h-6 w-6 text-purple-500" />
+                    <span>Get discovered by top brands in your niche</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Award className="h-6 w-6 text-yellow-500" />
+                    <span>Fair sponsorship deals & transparent payments</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <BookOpen className="h-6 w-6 text-indigo-500" />
+                    <span>AI-powered content & contract assistant</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Heart className="h-6 w-6 text-pink-500" />
+                    <span>Grow your audience & track your impact</span>
+                  </li>
+                </ul>
+              </div>
+            </TiltedCard>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 }
+{/* Edited the cards for "why choose inpact ai? " */}
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
@@ -896,41 +961,43 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
+        {/* Changed the footer all text with glow elements , for proper visibility------- By Praneet " */}
         <footer ref={footerRef} className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
           <div
-            className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
-              isFooterVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-20"
-            }`}
+              className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
+                  isFooterVisible
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-20"
+              }`}
           >
             <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="relative">
-                <Rocket className="h-6 w-6 text-purple-400" />
+                <Rocket className="h-6 w-6 text-purple-400 drop-shadow-[0_0_6px_rgba(192,132,252,0.7)]" />
                 <div className="absolute -inset-1 bg-purple-400/20 rounded-full blur-sm"></div>
               </div>
-              <span className="font-bold text-xl">Inpact</span>
+              <span className="font-bold text-xl text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]">Inpact</span>
             </div>
-            <p className="text-gray-400">
+            <p className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.4)]">
               Empowering creators to build meaningful partnerships and grow their businesses.
             </p>
-            <div className="mt-6 flex justify-center space-x-6 text-sm text-gray-400">
-              <Link to="/dashboard" className="hover:text-white transition-colors">
+            <div className="mt-6 flex justify-center space-x-6 text-sm text-white">
+              <Link to="/dashboard" className="hover:text-purple-300 transition-colors drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]">
                 Dashboard
               </Link>
-              <Link to="/dashboard/sponsorships" className="hover:text-white transition-colors">
+              <Link to="/dashboard/sponsorships" className="hover:text-purple-300 transition-colors drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]">
                 Opportunities
               </Link>
-              <Link to="/dashboard/analytics" className="hover:text-white transition-colors">
+              <Link to="/dashboard/analytics" className="hover:text-purple-300 transition-colors drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]">
                 Analytics
               </Link>
-              <Link to="/dashboard/messages" className="hover:text-white transition-colors">
+              <Link to="/dashboard/messages" className="hover:text-purple-300 transition-colors drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]">
                 Messages
               </Link>
             </div>
           </div>
         </footer>
+
       </main>
     </div>
   );
