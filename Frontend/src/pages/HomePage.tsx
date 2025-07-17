@@ -335,7 +335,7 @@ function TrendingNichesSection() {
   );
 }
 {/* Edited the cards for "why choose inpact ai? " */}
-{/* added under glow and 28 tiled hover effect-----by Praneet*/}
+{/* added under glow and 28 tiled hover effect*/}
 function WhyChooseSection() {
   return (
       <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
