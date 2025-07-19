@@ -12,7 +12,7 @@ from sqlalchemy import (
     TIMESTAMP,
 )
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.db.db import Base
 import uuid
 
@@ -160,3 +160,82 @@ class SponsorshipPayment(Base):
     brand = relationship(
         "User", foreign_keys=[brand_id], back_populates="brand_payments"
     )
+
+
+# ============================================================================
+# BRAND DASHBOARD MODELS
+# ============================================================================
+
+# Brand Profile Table (Extended brand information)
+class BrandProfile(Base):
+    __tablename__ = "brand_profiles"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    company_name = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    industry = Column(String, nullable=True)
+    contact_person = Column(String, nullable=True)
+    contact_email = Column(String, nullable=True)
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    user = relationship("User", backref="brand_profile")
+
+
+# Campaign Metrics Table (Performance tracking)
+class CampaignMetrics(Base):
+    __tablename__ = "campaign_metrics"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    campaign_id = Column(String, ForeignKey("sponsorships.id"), nullable=False)
+    impressions = Column(Integer, nullable=True)
+    clicks = Column(Integer, nullable=True)
+    conversions = Column(Integer, nullable=True)
+    revenue = Column(DECIMAL(10, 2), nullable=True)
+    engagement_rate = Column(Float, nullable=True)
+    recorded_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    campaign = relationship("Sponsorship", backref="metrics")
+
+
+# Contracts Table (Contract management)
+class Contract(Base):
+    __tablename__ = "contracts"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    sponsorship_id = Column(String, ForeignKey("sponsorships.id"), nullable=False)
+    creator_id = Column(String, ForeignKey("users.id"), nullable=False)
+    brand_id = Column(String, ForeignKey("users.id"), nullable=False)
+    contract_url = Column(String, nullable=True)
+    status = Column(String, default="draft")  # draft, signed, completed, cancelled
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    sponsorship = relationship("Sponsorship", backref="contracts")
+    creator = relationship("User", foreign_keys=[creator_id], backref="creator_contracts")
+    brand = relationship("User", foreign_keys=[brand_id], backref="brand_contracts")
+
+
+# Creator Matches Table (AI-powered matching)
+class CreatorMatch(Base):
+    __tablename__ = "creator_matches"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    brand_id = Column(String, ForeignKey("users.id"), nullable=False)
+    creator_id = Column(String, ForeignKey("users.id"), nullable=False)
+    match_score = Column(Float, nullable=True)
+    matched_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    brand = relationship("User", foreign_keys=[brand_id], backref="creator_matches")
+    creator = relationship("User", foreign_keys=[creator_id], backref="brand_matches")
