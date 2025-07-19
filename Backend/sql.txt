@@ -39,3 +39,75 @@ INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amou
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 500.00, 'completed', NOW()),
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 300.00, 'completed', NOW()),
   (gen_random_uuid(), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 400.00, 'pending', NOW());
+
+-- ============================================================================
+-- NEW TABLES FOR BRAND DASHBOARD FEATURES
+-- ============================================================================
+
+-- Create brand_profiles table
+CREATE TABLE IF NOT EXISTS brand_profiles (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    company_name TEXT,
+    website TEXT,
+    industry TEXT,
+    contact_person TEXT,
+    contact_email TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create campaign_metrics table
+CREATE TABLE IF NOT EXISTS campaign_metrics (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    campaign_id VARCHAR REFERENCES sponsorships(id) ON DELETE CASCADE,
+    impressions INT,
+    clicks INT,
+    conversions INT,
+    revenue NUMERIC(10,2),
+    engagement_rate FLOAT,
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create contracts table
+CREATE TABLE IF NOT EXISTS contracts (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    sponsorship_id VARCHAR REFERENCES sponsorships(id) ON DELETE CASCADE,
+    creator_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    brand_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    contract_url TEXT,
+    status TEXT DEFAULT 'draft', -- draft, signed, completed, cancelled
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create creator_matches table
+CREATE TABLE IF NOT EXISTS creator_matches (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    brand_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    creator_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    match_score FLOAT,
+    matched_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- SAMPLE DATA FOR NEW TABLES
+-- ============================================================================
+
+-- Insert into brand_profiles table
+INSERT INTO brand_profiles (id, user_id, company_name, website, industry, contact_person, contact_email, created_at) VALUES
+  (gen_random_uuid()::text, (SELECT id FROM users WHERE username = 'brand1'), 'TechCorp Inc.', 'https://techcorp.com', 'Technology', 'John Smith', 'john@techcorp.com', NOW());
+
+-- Insert into campaign_metrics table
+INSERT INTO campaign_metrics (id, campaign_id, impressions, clicks, conversions, revenue, engagement_rate, recorded_at) VALUES
+  (gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 50000, 2500, 125, 2500.00, 4.5, NOW()),
+  (gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 30000, 1500, 75, 1500.00, 3.8, NOW()),
+  (gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 40000, 2000, 100, 2000.00, 4.2, NOW());
+
+-- Insert into contracts table
+INSERT INTO contracts (id, sponsorship_id, creator_id, brand_id, contract_url, status, created_at) VALUES
+  (gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'), 'https://contracts.example.com/tech-contract.pdf', 'signed', NOW()),
+  (gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'), 'https://contracts.example.com/fashion-contract.pdf', 'draft', NOW());
+
+-- Insert into creator_matches table
+INSERT INTO creator_matches (id, brand_id, creator_id, match_score, matched_at) VALUES
+  (gen_random_uuid()::text, (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM users WHERE username = 'creator1'), 0.95, NOW()),
+  (gen_random_uuid()::text, (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM users WHERE username = 'creator2'), 0.87, NOW());
