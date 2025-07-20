@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from datetime import datetime
 
 class UserCreate(BaseModel):
@@ -172,3 +172,71 @@ class CreatorMatchAnalyticsResponse(BaseModel):
     audience_overlap: float
     engagement_rate: float
     estimated_reach: int
+
+
+# ============================================================================
+# ADDITIONAL SCHEMAS FOR EXISTING TABLES
+# ============================================================================
+
+# Application Management Schemas
+class SponsorshipApplicationResponse(BaseModel):
+    id: str
+    creator_id: str
+    sponsorship_id: str
+    post_id: Optional[str] = None
+    proposal: str
+    status: str
+    applied_at: datetime
+    creator: Optional[Dict] = None  # From users table
+    campaign: Optional[Dict] = None  # From sponsorships table
+
+    class Config:
+        from_attributes = True
+
+class ApplicationUpdateRequest(BaseModel):
+    status: str  # "accepted", "rejected", "pending"
+    notes: Optional[str] = None
+
+class ApplicationSummaryResponse(BaseModel):
+    total_applications: int
+    pending_applications: int
+    accepted_applications: int
+    rejected_applications: int
+    applications_by_campaign: Dict[str, int]
+    recent_applications: List[Dict]
+
+
+# Payment Management Schemas
+class PaymentResponse(BaseModel):
+    id: str
+    creator_id: str
+    brand_id: str
+    sponsorship_id: str
+    amount: float
+    status: str
+    transaction_date: datetime
+    creator: Optional[Dict] = None  # From users table
+    campaign: Optional[Dict] = None  # From sponsorships table
+
+    class Config:
+        from_attributes = True
+
+class PaymentStatusUpdate(BaseModel):
+    status: str  # "pending", "completed", "failed", "cancelled"
+
+class PaymentAnalyticsResponse(BaseModel):
+    total_payments: int
+    completed_payments: int
+    pending_payments: int
+    total_amount: float
+    average_payment: float
+    payments_by_month: Dict[str, float]
+
+
+# Campaign Metrics Management Schemas
+class CampaignMetricsUpdate(BaseModel):
+    impressions: Optional[int] = None
+    clicks: Optional[int] = None
+    conversions: Optional[int] = None
+    revenue: Optional[float] = None
+    engagement_rate: Optional[float] = None

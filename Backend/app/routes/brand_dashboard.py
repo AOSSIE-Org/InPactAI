@@ -12,7 +12,10 @@ from ..schemas.schema import (
     CampaignMetricsCreate, CampaignMetricsResponse,
     ContractCreate, ContractUpdate, ContractResponse,
     CreatorMatchResponse, DashboardOverviewResponse,
-    CampaignAnalyticsResponse, CreatorMatchAnalyticsResponse
+    CampaignAnalyticsResponse, CreatorMatchAnalyticsResponse,
+    SponsorshipApplicationResponse, ApplicationUpdateRequest, ApplicationSummaryResponse,
+    PaymentResponse, PaymentStatusUpdate, PaymentAnalyticsResponse,
+    CampaignMetricsUpdate
 )
 
 import os
@@ -623,4 +626,460 @@ async def update_contract_status(
         raise
     except Exception as e:
         logger.error(f"Error updating contract status: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ============================================================================
+# APPLICATION MANAGEMENT ROUTES
+# ============================================================================
+
+@router.get("/applications", response_model=List[SponsorshipApplicationResponse])
+async def get_brand_applications(brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get all applications for brand's campaigns
+    """
+    # Validate brand_id format
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Get brand's campaigns first
+        campaigns = safe_supabase_query(
+            lambda: supabase.table("sponsorships").select("*").eq("brand_id", brand_id).execute(),
+            "Failed to fetch campaigns"
+        )
+        
+        if not campaigns:
+            return []
+        
+        # Get applications for these campaigns
+        campaign_ids = [campaign["id"] for campaign in campaigns]
+        applications = safe_supabase_query(
+            lambda: supabase.table("sponsorship_applications").select("*").in_("sponsorship_id", campaign_ids).execute(),
+            "Failed to fetch applications"
+        )
+        
+        # Enhance applications with creator and campaign details
+        enhanced_applications = []
+        for application in applications:
+            # Get creator details
+            creator_result = supabase.table("users").select("*").eq("id", application["creator_id"]).execute()
+            creator = creator_result.data[0] if creator_result.data else None
+            
+            # Get campaign details
+            campaign_result = supabase.table("sponsorships").select("*").eq("id", application["sponsorship_id"]).execute()
+            campaign = campaign_result.data[0] if campaign_result.data else None
+            
+            enhanced_application = {
+                **application,
+                "creator": creator,
+                "campaign": campaign
+            }
+            enhanced_applications.append(enhanced_application)
+        
+        return enhanced_applications
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching brand applications: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/applications/{application_id}", response_model=SponsorshipApplicationResponse)
+async def get_application_details(application_id: str, brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get specific application details
+    """
+    # Validate IDs format
+    validate_uuid_format(application_id, "application_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Get application
+        application_result = supabase.table("sponsorship_applications").select("*").eq("id", application_id).execute()
+        if not application_result.data:
+            raise HTTPException(status_code=404, detail="Application not found")
+        
+        application = application_result.data[0]
+        
+        # Verify this application belongs to brand's campaign
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", application["sponsorship_id"]).eq("brand_id", brand_id).execute()
+        if not campaign_result.data:
+            raise HTTPException(status_code=403, detail="Access denied: Application not found in your campaigns")
+        
+        # Get creator details
+        creator_result = supabase.table("users").select("*").eq("id", application["creator_id"]).execute()
+        creator = creator_result.data[0] if creator_result.data else None
+        
+        # Get campaign details
+        campaign = campaign_result.data[0]
+        
+        enhanced_application = {
+            **application,
+            "creator": creator,
+            "campaign": campaign
+        }
+        
+        return enhanced_application
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching application details: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.put("/applications/{application_id}")
+async def update_application_status(
+    application_id: str, 
+    update_data: ApplicationUpdateRequest,
+    brand_id: str = Query(..., description="Brand user ID")
+):
+    """
+    Update application status (accept/reject)
+    """
+    # Validate IDs format
+    validate_uuid_format(application_id, "application_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Verify application belongs to brand's campaign
+        application_result = supabase.table("sponsorship_applications").select("*").eq("id", application_id).execute()
+        if not application_result.data:
+            raise HTTPException(status_code=404, detail="Application not found")
+        
+        application = application_result.data[0]
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", application["sponsorship_id"]).eq("brand_id", brand_id).execute()
+        if not campaign_result.data:
+            raise HTTPException(status_code=403, detail="Access denied: Application not found in your campaigns")
+        
+        # Update application status
+        update_payload = {"status": update_data.status}
+        if update_data.notes:
+            update_payload["notes"] = update_data.notes
+        
+        response = supabase.table("sponsorship_applications").update(update_payload).eq("id", application_id).execute()
+        
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=400, detail="Failed to update application")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating application status: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/applications/summary", response_model=ApplicationSummaryResponse)
+async def get_applications_summary(brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get applications summary and statistics
+    """
+    # Validate brand_id format
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Get all applications for brand's campaigns
+        applications = await get_brand_applications(brand_id)
+        
+        # Calculate summary
+        total_applications = len(applications)
+        pending_applications = len([app for app in applications if app["status"] == "pending"])
+        accepted_applications = len([app for app in applications if app["status"] == "accepted"])
+        rejected_applications = len([app for app in applications if app["status"] == "rejected"])
+        
+        # Group by campaign
+        applications_by_campaign = {}
+        for app in applications:
+            campaign_title = app.get("campaign", {}).get("title", "Unknown Campaign")
+            applications_by_campaign[campaign_title] = applications_by_campaign.get(campaign_title, 0) + 1
+        
+        # Recent applications (last 5)
+        recent_applications = applications[:5] if applications else []
+        
+        return ApplicationSummaryResponse(
+            total_applications=total_applications,
+            pending_applications=pending_applications,
+            accepted_applications=accepted_applications,
+            rejected_applications=rejected_applications,
+            applications_by_campaign=applications_by_campaign,
+            recent_applications=recent_applications
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching applications summary: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ============================================================================
+# PAYMENT MANAGEMENT ROUTES
+# ============================================================================
+
+@router.get("/payments", response_model=List[PaymentResponse])
+async def get_brand_payments(brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get all payments for brand
+    """
+    # Validate brand_id format
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        payments = safe_supabase_query(
+            lambda: supabase.table("sponsorship_payments").select("*").eq("brand_id", brand_id).execute(),
+            "Failed to fetch payments"
+        )
+        
+        # Enhance payments with creator and campaign details
+        enhanced_payments = []
+        for payment in payments:
+            # Get creator details
+            creator_result = supabase.table("users").select("*").eq("id", payment["creator_id"]).execute()
+            creator = creator_result.data[0] if creator_result.data else None
+            
+            # Get campaign details
+            campaign_result = supabase.table("sponsorships").select("*").eq("id", payment["sponsorship_id"]).execute()
+            campaign = campaign_result.data[0] if campaign_result.data else None
+            
+            enhanced_payment = {
+                **payment,
+                "creator": creator,
+                "campaign": campaign
+            }
+            enhanced_payments.append(enhanced_payment)
+        
+        return enhanced_payments
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching brand payments: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/payments/{payment_id}", response_model=PaymentResponse)
+async def get_payment_details(payment_id: str, brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get specific payment details
+    """
+    # Validate IDs format
+    validate_uuid_format(payment_id, "payment_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        payment_result = supabase.table("sponsorship_payments").select("*").eq("id", payment_id).eq("brand_id", brand_id).execute()
+        if not payment_result.data:
+            raise HTTPException(status_code=404, detail="Payment not found")
+        
+        payment = payment_result.data[0]
+        
+        # Get creator details
+        creator_result = supabase.table("users").select("*").eq("id", payment["creator_id"]).execute()
+        creator = creator_result.data[0] if creator_result.data else None
+        
+        # Get campaign details
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", payment["sponsorship_id"]).execute()
+        campaign = campaign_result.data[0] if campaign_result.data else None
+        
+        enhanced_payment = {
+            **payment,
+            "creator": creator,
+            "campaign": campaign
+        }
+        
+        return enhanced_payment
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching payment details: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.put("/payments/{payment_id}/status")
+async def update_payment_status(
+    payment_id: str,
+    status_update: PaymentStatusUpdate,
+    brand_id: str = Query(..., description="Brand user ID")
+):
+    """
+    Update payment status
+    """
+    # Validate IDs format
+    validate_uuid_format(payment_id, "payment_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Verify payment belongs to brand
+        payment_result = supabase.table("sponsorship_payments").select("*").eq("id", payment_id).eq("brand_id", brand_id).execute()
+        if not payment_result.data:
+            raise HTTPException(status_code=404, detail="Payment not found")
+        
+        # Update payment status
+        response = supabase.table("sponsorship_payments").update({"status": status_update.status}).eq("id", payment_id).execute()
+        
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=400, detail="Failed to update payment status")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating payment status: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/payments/analytics", response_model=PaymentAnalyticsResponse)
+async def get_payment_analytics(brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get payment analytics
+    """
+    # Validate brand_id format
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        payments = await get_brand_payments(brand_id)
+        
+        # Calculate analytics
+        total_payments = len(payments)
+        completed_payments = len([p for p in payments if p["status"] == "completed"])
+        pending_payments = len([p for p in payments if p["status"] == "pending"])
+        total_amount = sum(float(p["amount"]) for p in payments if p["status"] == "completed")
+        average_payment = total_amount / completed_payments if completed_payments > 0 else 0
+        
+        # Group by month (simplified)
+        payments_by_month = {}
+        for payment in payments:
+            if payment["status"] == "completed":
+                month = payment["transaction_date"][:7] if payment["transaction_date"] else "unknown"
+                payments_by_month[month] = payments_by_month.get(month, 0) + float(payment["amount"])
+        
+        return PaymentAnalyticsResponse(
+            total_payments=total_payments,
+            completed_payments=completed_payments,
+            pending_payments=pending_payments,
+            total_amount=total_amount,
+            average_payment=average_payment,
+            payments_by_month=payments_by_month
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching payment analytics: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ============================================================================
+# CAMPAIGN METRICS MANAGEMENT ROUTES
+# ============================================================================
+
+@router.post("/campaigns/{campaign_id}/metrics")
+async def add_campaign_metrics(
+    campaign_id: str,
+    metrics: CampaignMetricsUpdate,
+    brand_id: str = Query(..., description="Brand user ID")
+):
+    """
+    Add metrics to a campaign
+    """
+    # Validate IDs format
+    validate_uuid_format(campaign_id, "campaign_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Verify campaign belongs to brand
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", campaign_id).eq("brand_id", brand_id).execute()
+        if not campaign_result.data:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Create metrics record
+        metrics_id = generate_uuid()
+        t = current_timestamp()
+        
+        metrics_data = {
+            "id": metrics_id,
+            "campaign_id": campaign_id,
+            "impressions": metrics.impressions,
+            "clicks": metrics.clicks,
+            "conversions": metrics.conversions,
+            "revenue": metrics.revenue,
+            "engagement_rate": metrics.engagement_rate,
+            "recorded_at": t
+        }
+        
+        response = supabase.table("campaign_metrics").insert(metrics_data).execute()
+        
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=400, detail="Failed to add campaign metrics")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error adding campaign metrics: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/campaigns/{campaign_id}/metrics")
+async def get_campaign_metrics(campaign_id: str, brand_id: str = Query(..., description="Brand user ID")):
+    """
+    Get metrics for a specific campaign
+    """
+    # Validate IDs format
+    validate_uuid_format(campaign_id, "campaign_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Verify campaign belongs to brand
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", campaign_id).eq("brand_id", brand_id).execute()
+        if not campaign_result.data:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Get campaign metrics
+        metrics = safe_supabase_query(
+            lambda: supabase.table("campaign_metrics").select("*").eq("campaign_id", campaign_id).execute(),
+            "Failed to fetch campaign metrics"
+        )
+        
+        return metrics
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching campaign metrics: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.put("/campaigns/{campaign_id}/metrics/{metrics_id}")
+async def update_campaign_metrics(
+    campaign_id: str,
+    metrics_id: str,
+    metrics_update: CampaignMetricsUpdate,
+    brand_id: str = Query(..., description="Brand user ID")
+):
+    """
+    Update campaign metrics
+    """
+    # Validate IDs format
+    validate_uuid_format(campaign_id, "campaign_id")
+    validate_uuid_format(metrics_id, "metrics_id")
+    validate_uuid_format(brand_id, "brand_id")
+    
+    try:
+        # Verify campaign belongs to brand
+        campaign_result = supabase.table("sponsorships").select("*").eq("id", campaign_id).eq("brand_id", brand_id).execute()
+        if not campaign_result.data:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Update metrics
+        update_data = metrics_update.dict(exclude_unset=True)
+        response = supabase.table("campaign_metrics").update(update_data).eq("id", metrics_id).eq("campaign_id", campaign_id).execute()
+        
+        if response.data:
+            return response.data[0]
+        else:
+            raise HTTPException(status_code=404, detail="Metrics not found")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating campaign metrics: {e}")
         raise HTTPException(status_code=500, detail="Internal server error") 
