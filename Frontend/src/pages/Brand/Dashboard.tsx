@@ -373,7 +373,7 @@ export default function BrandDashboard() {
               e.currentTarget.style.width = "110%";
               e.currentTarget.style.transform = "translateX(-5%)";
               // Remove glass texture
-              const overlay = e.currentTarget.querySelector('[data-glass-overlay]');
+              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
               if (overlay) overlay.style.opacity = "0";
             }}
             onBlur={(e) => {
@@ -385,7 +385,7 @@ export default function BrandDashboard() {
               e.currentTarget.style.width = "100%";
               e.currentTarget.style.transform = "translateX(0)";
               // Restore glass texture
-              const overlay = e.currentTarget.querySelector('[data-glass-overlay]');
+              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
               if (overlay) overlay.style.opacity = "1";
             }}
             >

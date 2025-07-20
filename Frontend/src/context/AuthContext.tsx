@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       .eq("user_id", userToUse.id)
       .limit(1);
     
-    const hasOnboarding = (socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0);
+    const hasOnboarding = Boolean((socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0));
     
     // Get user role
     const { data: userData } = await supabase
