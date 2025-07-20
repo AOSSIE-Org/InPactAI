@@ -53,3 +53,5 @@ urllib3==2.3.0
 uvicorn==0.34.0
 websockets==14.2
 yarl==1.18.3
+groq==0.4.2
+openai==1.12.0
