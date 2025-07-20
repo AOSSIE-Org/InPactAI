@@ -6,6 +6,7 @@ from .models import models, chat
 from .routes.post import router as post_router
 from .routes.chat import router as chat_router
 from .routes.match import router as match_router
+from .routes.brand_dashboard import router as brand_dashboard_router
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
@@ -54,6 +55,7 @@ app.add_middleware(
 app.include_router(post_router)
 app.include_router(chat_router)
 app.include_router(match_router)
+app.include_router(brand_dashboard_router)
 app.include_router(ai.router)
 app.include_router(ai.youtube_router)
 
