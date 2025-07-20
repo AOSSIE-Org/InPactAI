@@ -599,39 +599,8 @@ export default function BrandDashboard() {
             </div>
           )}
 
-          {/* Dashboard Overview */}
-          {dashboardOverview && !loading && (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "16px",
-              maxWidth: "800px",
-              width: "100%",
-              marginBottom: "32px",
-            }}>
-              {[
-                { label: "Total Campaigns", value: dashboardOverview.total_campaigns, icon: "📊", color: "#3b82f6" },
-                { label: "Active Campaigns", value: dashboardOverview.active_campaigns, icon: "🚀", color: "#10b981" },
-                { label: "Total Revenue", value: `$${dashboardOverview.total_revenue.toLocaleString()}`, icon: "💰", color: "#f59e0b" },
-                { label: "Creators Matched", value: dashboardOverview.total_creators_matched, icon: "👥", color: "#8b5cf6" },
-              ].map((metric, index) => (
-                <div key={index} style={{
-                  background: "rgba(26, 26, 26, 0.6)",
-                  backdropFilter: "blur(20px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "12px",
-                  padding: "20px",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>{metric.icon}</div>
-                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
-                    {metric.value}
-                  </div>
-                  <div style={{ fontSize: "14px", color: "#a0a0a0" }}>{metric.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Metrics Cards */}
+          {/* Removed metrics cards grid here */}
 
           {/* Quick Actions */}
           <div style={{
