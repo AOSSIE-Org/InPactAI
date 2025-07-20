@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { brandApi, DashboardOverview, BrandProfile, Campaign, CreatorMatch, Application, Payment } from '../services/brandApi';
+import { aiApi } from '../services/aiApi';
 
 export const useBrandDashboard = () => {
   const { user } = useAuth();
@@ -173,7 +174,7 @@ export const useBrandDashboard = () => {
   const queryAI = useCallback(async (query: string) => {
     try {
       setAiLoading(true);
-      const response = await brandApi.queryAI(query);
+      const response = await aiApi.queryAI(query, brandId);
       setAiResponse(response);
       return response;
     } catch (err) {
@@ -182,7 +183,7 @@ export const useBrandDashboard = () => {
     } finally {
       setAiLoading(false);
     }
-  }, []);
+  }, [brandId]);
 
   // Search creators
   const searchCreators = useCallback(async (filters?: {

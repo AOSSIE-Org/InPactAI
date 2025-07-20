@@ -239,13 +239,7 @@ class BrandApiService {
     return this.makeRequest<any>(`/payments/analytics?brand_id=${brandId}`);
   }
 
-  // AI Query
-  async queryAI(query: string): Promise<any> {
-    return this.makeRequest<any>('/ai/query', {
-      method: 'POST',
-      body: JSON.stringify({ query }),
-    });
-  }
+
 }
 
 // Export singleton instance
