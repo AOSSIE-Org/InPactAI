@@ -558,7 +558,28 @@ export default function BrandDashboard() {
                 🤖 AI Response
               </div>
               <div style={{ color: "#e0e0e0", fontSize: "14px", lineHeight: "1.6" }}>
-                {searchResults.response || searchResults.message || JSON.stringify(searchResults)}
+                <div style={{ marginBottom: "12px" }}>
+                  <strong>Intent:</strong> {searchResults.intent}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <strong>Explanation:</strong> {searchResults.explanation}
+                </div>
+                {searchResults.follow_up_needed && searchResults.follow_up_question && (
+                  <div style={{ 
+                    background: "rgba(59, 130, 246, 0.1)", 
+                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginTop: "12px"
+                  }}>
+                    <strong>Follow-up Question:</strong> {searchResults.follow_up_question}
+                  </div>
+                )}
+                {searchResults.route && (
+                  <div style={{ marginTop: "12px", fontSize: "12px", color: "#a0a0a0" }}>
+                    <strong>Route:</strong> {searchResults.route}
+                  </div>
+                )}
               </div>
               <button 
                 onClick={() => setSearchResults(null)}
