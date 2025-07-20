@@ -15,7 +15,7 @@ from ..schemas.schema import (
     CampaignAnalyticsResponse, CreatorMatchAnalyticsResponse,
     SponsorshipApplicationResponse, ApplicationUpdateRequest, ApplicationSummaryResponse,
     PaymentResponse, PaymentStatusUpdate, PaymentAnalyticsResponse,
-    CampaignMetricsUpdate
+    CampaignMetricsUpdate, SponsorshipCreate
 )
 
 import os
