@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserNav } from "../../components/user-nav";
+import { useBrandDashboard } from "../../hooks/useBrandDashboard";
 
 const PRIMARY = "#0B00CF";
 const SECONDARY = "#300A6E";
@@ -18,6 +19,36 @@ export default function BrandDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+  
+  // Brand Dashboard Hook
+  const {
+    loading,
+    error,
+    dashboardOverview,
+    brandProfile,
+    campaigns,
+    creatorMatches,
+    applications,
+    payments,
+    aiResponse,
+    aiLoading,
+    queryAI,
+    refreshData,
+  } = useBrandDashboard();
+
+  // Handle AI Search
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    try {
+      const response = await queryAI(searchQuery);
+      setSearchResults(response);
+    } catch (error) {
+      console.error('AI Search error:', error);
+    }
+  };
 
   return (
     <div
@@ -405,9 +436,16 @@ export default function BrandDashboard() {
                 }} 
               />
               <Search size={20} color="#a0a0a0" style={{ position: "relative", zIndex: 1 }} />
-              <input
+                            <input
                 type="text"
                 placeholder="Ask anything about your brand campaigns, creator matches, or analytics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    handleAISearch();
+                  }
+                }}
                 style={{
                   flex: 1,
                   background: "transparent",
@@ -419,30 +457,160 @@ export default function BrandDashboard() {
                   zIndex: 1,
                 }}
               />
-              <button style={{
-                background: PRIMARY,
-                border: "none",
-                color: "#fff",
-                cursor: "pointer",
-                padding: "12px",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "background-color 0.2s ease",
-                width: "44px",
-                height: "44px",
-                position: "relative",
-                zIndex: 1,
-                flexShrink: 0,
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "#0a00b3"}
-              onMouseLeave={(e) => e.currentTarget.style.background = PRIMARY}
+              <button 
+                onClick={handleAISearch}
+                disabled={aiLoading || !searchQuery.trim()}
+                style={{
+                  background: aiLoading ? "#666" : PRIMARY,
+                  border: "none",
+                  color: "#fff",
+                  cursor: aiLoading ? "not-allowed" : "pointer",
+                  padding: "12px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background-color 0.2s ease",
+                  width: "44px",
+                  height: "44px",
+                  position: "relative",
+                  zIndex: 1,
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  if (!aiLoading) e.currentTarget.style.background = "#0a00b3";
+                }}
+                onMouseLeave={(e) => {
+                  if (!aiLoading) e.currentTarget.style.background = PRIMARY;
+                }}
               >
-                <Search size={18} />
+                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
               </button>
                           </div>
                         </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "32px",
+            }}>
+              <Loader2 size={32} className="animate-spin" style={{ color: PRIMARY }} />
+              <div style={{ color: "#a0a0a0", fontSize: "16px" }}>Loading your dashboard...</div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              borderRadius: "12px",
+              padding: "16px",
+              marginBottom: "32px",
+              maxWidth: "600px",
+              textAlign: "center",
+            }}>
+              <div style={{ color: "#ef4444", fontSize: "16px", marginBottom: "8px" }}>Error</div>
+              <div style={{ color: "#a0a0a0", fontSize: "14px" }}>{error}</div>
+              <button 
+                onClick={refreshData}
+                style={{
+                  background: PRIMARY,
+                  border: "none",
+                  color: "#fff",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  marginTop: "12px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* AI Search Results */}
+          {searchResults && (
+            <div style={{
+              background: "rgba(26, 26, 26, 0.6)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "16px",
+              padding: "24px",
+              marginBottom: "32px",
+              maxWidth: "800px",
+              width: "100%",
+            }}>
+              <div style={{ 
+                fontSize: "18px", 
+                fontWeight: 600, 
+                color: "#fff", 
+                marginBottom: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                🤖 AI Response
+              </div>
+              <div style={{ color: "#e0e0e0", fontSize: "14px", lineHeight: "1.6" }}>
+                {searchResults.response || searchResults.message || JSON.stringify(searchResults)}
+              </div>
+              <button 
+                onClick={() => setSearchResults(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  color: "#a0a0a0",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  marginTop: "16px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                Clear Results
+              </button>
+            </div>
+          )}
+
+          {/* Dashboard Overview */}
+          {dashboardOverview && !loading && (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "16px",
+              maxWidth: "800px",
+              width: "100%",
+              marginBottom: "32px",
+            }}>
+              {[
+                { label: "Total Campaigns", value: dashboardOverview.total_campaigns, icon: "📊", color: "#3b82f6" },
+                { label: "Active Campaigns", value: dashboardOverview.active_campaigns, icon: "🚀", color: "#10b981" },
+                { label: "Total Revenue", value: `$${dashboardOverview.total_revenue.toLocaleString()}`, icon: "💰", color: "#f59e0b" },
+                { label: "Creators Matched", value: dashboardOverview.total_creators_matched, icon: "👥", color: "#8b5cf6" },
+              ].map((metric, index) => (
+                <div key={index} style={{
+                  background: "rgba(26, 26, 26, 0.6)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  borderRadius: "12px",
+                  padding: "20px",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>{metric.icon}</div>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+                    {metric.value}
+                  </div>
+                  <div style={{ fontSize: "14px", color: "#a0a0a0" }}>{metric.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Quick Actions */}
           <div style={{
