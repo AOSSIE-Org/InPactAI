@@ -137,10 +137,10 @@ Be helpful and ask clarifying questions when needed."""
             
             # Call Groq LLM
             response = self.client.chat.completions.create(
-                model="llama3-8b-8192",  # Fast and cost-effective
+                model="moonshotai/kimi-k2-instruct",  # Updated to Kimi K2 instruct
                 messages=messages,
-                temperature=0.1,  # Low temperature for consistent routing
-                max_tokens=500
+                temperature=0.6,  # Updated temperature
+                max_tokens=1024  # Updated max tokens
             )
             
             # Parse the response

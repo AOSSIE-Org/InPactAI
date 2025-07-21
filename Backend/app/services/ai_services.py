@@ -19,7 +19,7 @@ def query_sponsorship_client(info):
     prompt = f"Extract key details about sponsorship and client interactions from the following:\n\n{info}\n\nRespond in JSON with 'sponsorship_details' and 'client_interaction_summary'."
 
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
-    payload = {"model": "llama3-8b-8192", "messages": [{"role": "user", "content": prompt}], "temperature": 0}
+    payload = {"model": "moonshotai/kimi-k2-instruct", "messages": [{"role": "user", "content": prompt}], "temperature": 0.6, "max_completion_tokens": 1024}
 
     try:
         response = requests.post(CHATGROQ_API_URL_CHAT, json=payload, headers=headers)
