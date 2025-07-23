@@ -8,6 +8,7 @@ import  SpotlightCard  from '../components/card';
 import Header from '../components/Header';
 import HowItWorks from '../components/howitworks';
 import Integrations from '../components/integration';
+import ParticleEffect from '../components/ParticleCanva';
 
 
 function Landing() {
@@ -29,6 +30,7 @@ function Landing() {
   };
   return (
     <div className="min-h-screen bg-black text-white">
+      <ParticleEffect />
             <Header/>
             {/* Hero Section */}
 
