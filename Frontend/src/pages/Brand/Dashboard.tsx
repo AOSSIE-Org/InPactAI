@@ -3,6 +3,7 @@ import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText,
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserNav } from "../../components/user-nav";
 import { useBrandDashboard } from "../../hooks/useBrandDashboard";
+import BrandChatAssistant from "../../components/chat/BrandChatAssistant";
 
 const PRIMARY = "#0B00CF";
 const SECONDARY = "#300A6E";
@@ -22,6 +23,10 @@ export default function BrandDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
   
+  // Chat state management
+  const [chatActive, setChatActive] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  
   // Brand Dashboard Hook
   const {
     loading,
@@ -38,16 +43,20 @@ export default function BrandDashboard() {
     refreshData,
   } = useBrandDashboard();
 
-  // Handle AI Search
+  // Handle AI Search - now triggers chat
   const handleAISearch = async () => {
     if (!searchQuery.trim()) return;
     
-    try {
-      const response = await queryAI(searchQuery);
-      setSearchResults(response);
-    } catch (error) {
-      console.error('AI Search error:', error);
-    }
+    // Activate chat and set initial query
+    setChatActive(true);
+    setSessionId(null); // Reset session for new conversation
+  };
+
+  // Handle chat close
+  const handleChatClose = () => {
+    setChatActive(false);
+    setSessionId(null);
+    setSearchQuery(""); // Clear search query
   };
 
   return (
@@ -349,325 +358,269 @@ export default function BrandDashboard() {
           alignItems: "center",
           justifyContent: "center",
         }}>
-          {/* INPACT AI Title with animated gradient */}
-          <h1 style={{
-            fontSize: "48px",
-            fontWeight: 700,
-            color: "#fff",
-            marginBottom: "48px",
-            letterSpacing: "-0.02em",
-            textAlign: "center",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}>
-            <span>INPACT</span>
-            <span style={{
-              background: "linear-gradient(90deg, #87CEEB 0%, #1E90FF 50%, #000080 100%)",
-              backgroundSize: "200% 200%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              animation: "gradientFlow 3s ease-in-out infinite",
-            }}>
-              AI
-                        </span>
-          </h1>
-
-          {/* Main Search */}
-          <div style={{
-            width: "100%",
-            maxWidth: "600px",
-            marginBottom: "48px",
-          }}>
-            <div style={{
-              background: "rgba(26, 26, 26, 0.6)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "50px",
-              padding: "16px 20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              transition: "all 0.3s ease",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-              position: "relative",
-              overflow: "hidden",
-              width: "100%",
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#87CEEB";
-              e.currentTarget.style.background = "rgba(26, 26, 26, 0.8)";
-              e.currentTarget.style.backdropFilter = "blur(10px)";
-              e.currentTarget.style.padding = "12px 16px";
-              e.currentTarget.style.gap = "8px";
-              e.currentTarget.style.width = "110%";
-              e.currentTarget.style.transform = "translateX(-5%)";
-              // Remove glass texture
-              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
-              if (overlay) overlay.style.opacity = "0";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
-              e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
-              e.currentTarget.style.backdropFilter = "blur(20px)";
-              e.currentTarget.style.padding = "16px 20px";
-              e.currentTarget.style.gap = "12px";
-              e.currentTarget.style.width = "100%";
-              e.currentTarget.style.transform = "translateX(0)";
-              // Restore glass texture
-              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
-              if (overlay) overlay.style.opacity = "1";
-            }}
-            >
-              {/* Glass texture overlay */}
-              <div 
-                data-glass-overlay
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
-                  borderRadius: "50px",
-                  pointerEvents: "none",
-                  transition: "opacity 0.3s ease",
-                }} 
-              />
-              <Search size={20} color="#a0a0a0" style={{ position: "relative", zIndex: 1 }} />
-                            <input
-                type="text"
-                placeholder="Ask anything about your brand campaigns, creator matches, or analytics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    handleAISearch();
-                  }
-                }}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: "16px",
-                  outline: "none",
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              />
-              <button 
-                onClick={handleAISearch}
-                disabled={aiLoading || !searchQuery.trim()}
-                style={{
-                  background: aiLoading ? "#666" : PRIMARY,
-                  border: "none",
-                  color: "#fff",
-                  cursor: aiLoading ? "not-allowed" : "pointer",
-                  padding: "12px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "background-color 0.2s ease",
-                  width: "44px",
-                  height: "44px",
-                  position: "relative",
-                  zIndex: 1,
-                  flexShrink: 0,
-                }}
-                onMouseEnter={(e) => {
-                  if (!aiLoading) e.currentTarget.style.background = "#0a00b3";
-                }}
-                onMouseLeave={(e) => {
-                  if (!aiLoading) e.currentTarget.style.background = PRIMARY;
-                }}
-              >
-                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-              </button>
-                          </div>
-                        </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "16px",
-              marginBottom: "32px",
-            }}>
-              <Loader2 size={32} className="animate-spin" style={{ color: PRIMARY }} />
-              <div style={{ color: "#a0a0a0", fontSize: "16px" }}>Loading your dashboard...</div>
-            </div>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <div style={{
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              borderRadius: "12px",
-              padding: "16px",
-              marginBottom: "32px",
-              maxWidth: "600px",
-              textAlign: "center",
-            }}>
-              <div style={{ color: "#ef4444", fontSize: "16px", marginBottom: "8px" }}>Error</div>
-              <div style={{ color: "#a0a0a0", fontSize: "14px" }}>{error}</div>
-              <button 
-                onClick={refreshData}
-                style={{
-                  background: PRIMARY,
-                  border: "none",
-                  color: "#fff",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  marginTop: "12px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                }}
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-
-          {/* AI Search Results */}
-          {searchResults && (
-            <div style={{
-              background: "rgba(26, 26, 26, 0.6)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "16px",
-              padding: "24px",
-              marginBottom: "32px",
-              maxWidth: "800px",
-              width: "100%",
-            }}>
-              <div style={{ 
-                fontSize: "18px", 
-                fontWeight: 600, 
-                color: "#fff", 
-                marginBottom: "16px",
+          {/* Show Chat Assistant when active */}
+          {chatActive ? (
+            <BrandChatAssistant
+              initialQuery={searchQuery}
+              onClose={handleChatClose}
+              sessionId={sessionId}
+              setSessionId={setSessionId}
+            />
+          ) : (
+            <>
+              {/* INPACT AI Title with animated gradient */}
+              <h1 style={{
+                fontSize: "48px",
+                fontWeight: 700,
+                color: "#fff",
+                marginBottom: "48px",
+                letterSpacing: "-0.02em",
+                textAlign: "center",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
               }}>
-                🤖 AI Response
-              </div>
-              <div style={{ color: "#e0e0e0", fontSize: "14px", lineHeight: "1.6" }}>
-                <div style={{ marginBottom: "12px" }}>
-                  <strong>Intent:</strong> {searchResults.intent}
-                </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <strong>Explanation:</strong> {searchResults.explanation}
-                </div>
-                {searchResults.follow_up_needed && searchResults.follow_up_question && (
-                  <div style={{ 
-                    background: "rgba(59, 130, 246, 0.1)", 
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    marginTop: "12px"
-                  }}>
-                    <strong>Follow-up Question:</strong> {searchResults.follow_up_question}
-                  </div>
-                )}
-                {searchResults.route && (
-                  <div style={{ marginTop: "12px", fontSize: "12px", color: "#a0a0a0" }}>
-                    <strong>Route:</strong> {searchResults.route}
-                  </div>
-                )}
-              </div>
-              <button 
-                onClick={() => setSearchResults(null)}
-                style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  color: "#a0a0a0",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  marginTop: "16px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                }}
-              >
-                Clear Results
-              </button>
-            </div>
-          )}
+                <span>INPACT</span>
+                <span style={{
+                  background: "linear-gradient(90deg, #87CEEB 0%, #1E90FF 50%, #000080 100%)",
+                  backgroundSize: "200% 200%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "gradientFlow 3s ease-in-out infinite",
+                }}>
+                  AI
+                </span>
+              </h1>
 
-          {/* Metrics Cards */}
-          {/* Removed metrics cards grid here */}
-
-          {/* Quick Actions */}
-          <div style={{
-            display: "flex",
-            gap: "12px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            maxWidth: "900px",
-          }}>
-            {[
-              { label: "Find Creators", icon: "👥", color: "#3b82f6" },
-              { label: "Campaign Stats", icon: "📊", color: "#10b981" },
-              { label: "Draft Contract", icon: "📄", color: "#f59e0b" },
-              { label: "Analytics", icon: "📈", color: "#8b5cf6" },
-              { label: "Messages", icon: "💬", color: "#ef4444" },
-            ].map((action, index) => (
-              <button
-                key={index}
-                style={{
+              {/* Main Search */}
+              <div style={{
+                width: "100%",
+                maxWidth: "600px",
+                marginBottom: "48px",
+              }}>
+                <div style={{
                   background: "rgba(26, 26, 26, 0.6)",
                   backdropFilter: "blur(20px)",
                   border: "1px solid rgba(255, 255, 255, 0.1)",
                   borderRadius: "50px",
-                  padding: "12px 20px",
-                  color: "#fff",
-                  cursor: "pointer",
+                  padding: "16px 20px",
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  fontSize: "14px",
-                  fontWeight: 500,
+                  gap: "12px",
                   transition: "all 0.3s ease",
-                  whiteSpace: "nowrap",
                   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
                   position: "relative",
                   overflow: "hidden",
+                  width: "100%",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
-                  e.currentTarget.style.borderColor = action.color;
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.3)";
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "#87CEEB";
+                  e.currentTarget.style.background = "rgba(26, 26, 26, 0.8)";
+                  e.currentTarget.style.backdropFilter = "blur(10px)";
+                  e.currentTarget.style.padding = "12px 16px";
+                  e.currentTarget.style.gap = "8px";
+                  e.currentTarget.style.width = "110%";
+                  e.currentTarget.style.transform = "translateX(-5%)";
+                  // Remove glass texture
+                  const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
+                  if (overlay) overlay.style.opacity = "0";
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
+                onBlur={(e) => {
                   e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.2)";
+                  e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
+                  e.currentTarget.style.backdropFilter = "blur(20px)";
+                  e.currentTarget.style.padding = "16px 20px";
+                  e.currentTarget.style.gap = "12px";
+                  e.currentTarget.style.width = "100%";
+                  e.currentTarget.style.transform = "translateX(0)";
+                  // Restore glass texture
+                  const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
+                  if (overlay) overlay.style.opacity = "1";
                 }}
-              >
-                {/* Glass texture overlay */}
-                <div style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
-                  borderRadius: "50px",
-                  pointerEvents: "none",
-                }} />
-                <span style={{ fontSize: "16px", position: "relative", zIndex: 1 }}>{action.icon}</span>
-                <span style={{ position: "relative", zIndex: 1 }}>{action.label}</span>
-              </button>
-                  ))}
+                >
+                  {/* Glass texture overlay */}
+                  <div 
+                    data-glass-overlay
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
+                      borderRadius: "50px",
+                      pointerEvents: "none",
+                      transition: "opacity 0.3s ease",
+                    }} 
+                  />
+                  <Search size={20} color="#a0a0a0" style={{ position: "relative", zIndex: 1 }} />
+                  <input
+                    type="text"
+                    placeholder="Ask anything about your brand campaigns, creator matches, or analytics..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        handleAISearch();
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: "16px",
+                      outline: "none",
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  />
+                  <button 
+                    onClick={handleAISearch}
+                    disabled={!searchQuery.trim()}
+                    style={{
+                      background: PRIMARY,
+                      border: "none",
+                      color: "#fff",
+                      cursor: "pointer",
+                      padding: "12px",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "background-color 0.2s ease",
+                      width: "44px",
+                      height: "44px",
+                      position: "relative",
+                      zIndex: 1,
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#0a00b3";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = PRIMARY;
+                    }}
+                  >
+                    <Search size={18} />
+                  </button>
                 </div>
               </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "16px",
+                  marginBottom: "32px",
+                }}>
+                  <Loader2 size={32} className="animate-spin" style={{ color: PRIMARY }} />
+                  <div style={{ color: "#a0a0a0", fontSize: "16px" }}>Loading your dashboard...</div>
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <div style={{
+                  background: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "32px",
+                  maxWidth: "600px",
+                  textAlign: "center",
+                }}>
+                  <div style={{ color: "#ef4444", fontSize: "16px", marginBottom: "8px" }}>Error</div>
+                  <div style={{ color: "#a0a0a0", fontSize: "14px" }}>{error}</div>
+                  <button 
+                    onClick={refreshData}
+                    style={{
+                      background: PRIMARY,
+                      border: "none",
+                      color: "#fff",
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      marginTop: "12px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div style={{
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                maxWidth: "900px",
+              }}>
+                {[
+                  { label: "Find Creators", icon: "👥", color: "#3b82f6" },
+                  { label: "Campaign Stats", icon: "📊", color: "#10b981" },
+                  { label: "Draft Contract", icon: "📄", color: "#f59e0b" },
+                  { label: "Analytics", icon: "📈", color: "#8b5cf6" },
+                  { label: "Messages", icon: "💬", color: "#ef4444" },
+                ].map((action, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      background: "rgba(26, 26, 26, 0.6)",
+                      backdropFilter: "blur(20px)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      borderRadius: "50px",
+                      padding: "12px 20px",
+                      color: "#fff",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      transition: "all 0.3s ease",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
+                      e.currentTarget.style.borderColor = action.color;
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
+                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.2)";
+                    }}
+                  >
+                    {/* Glass texture overlay */}
+                    <div style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
+                      borderRadius: "50px",
+                      pointerEvents: "none",
+                    }} />
+                    <span style={{ fontSize: "16px", position: "relative", zIndex: 1 }}>{action.icon}</span>
+                    <span style={{ position: "relative", zIndex: 1 }}>{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* CSS for gradient animation */}
