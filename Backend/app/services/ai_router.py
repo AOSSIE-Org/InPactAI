@@ -93,6 +93,8 @@ class AIRouter:
 Available API Routes:
 {routes_info}
 
+IMPORTANT: You MUST respond with valid JSON only. No additional text before or after the JSON.
+
 Your tasks:
 1. Understand the user's intent from their natural language query
 2. Identify which API route(s) should be called
@@ -100,7 +102,7 @@ Your tasks:
 4. If information is missing, ask follow-up questions
 5. Return a structured response with the action to take
 
-Response format:
+Response format (MUST be valid JSON):
 {{
     "intent": "what the user wants to do",
     "route": "route_name or null if follow_up_needed",
@@ -110,14 +112,21 @@ Response format:
     "explanation": "brief explanation of what you understood"
 }}
 
-Examples:
-- "Show me my dashboard" → dashboard_overview
-- "Find creators for my tech campaign" → creator_search with industry="tech"
-- "I want to create a new campaign" → campaigns with method="POST"
-- "What's my revenue this month?" → analytics_revenue
-- "Show me creator matches" → creator_matches
+Examples of valid responses:
 
-Be helpful and ask clarifying questions when needed."""
+Query: "Show me my dashboard"
+Response: {{"intent": "View dashboard overview", "route": "dashboard_overview", "parameters": {{}}, "follow_up_needed": false, "follow_up_question": null, "explanation": "User wants to see dashboard overview with metrics"}}
+
+Query: "Find creators in tech"
+Response: {{"intent": "Search for creators", "route": "creator_search", "parameters": {{"industry": "tech"}}, "follow_up_needed": false, "follow_up_question": null, "explanation": "User wants to find creators in tech industry"}}
+
+Query: "Show campaigns"
+Response: {{"intent": "List campaigns", "route": "campaigns", "parameters": {{}}, "follow_up_needed": false, "follow_up_question": null, "explanation": "User wants to see their campaigns"}}
+
+Query: "What's my revenue?"
+Response: {{"intent": "View revenue analytics", "route": "analytics_revenue", "parameters": {{}}, "follow_up_needed": false, "follow_up_question": null, "explanation": "User wants to see revenue analytics"}}
+
+Remember: Always return valid JSON, no extra text."""
 
     async def process_query(self, query: str, brand_id: str = None) -> Dict[str, Any]:
         """Process a natural language query and return routing information"""
@@ -135,31 +144,19 @@ Be helpful and ask clarifying questions when needed."""
                     "content": f"Note: The user's brand_id is {brand_id}. Use this for any endpoints that require it."
                 })
             
-            # Call Groq LLM
+            # Call Groq LLM with lower temperature for more consistent responses
             response = self.client.chat.completions.create(
                 model="moonshotai/kimi-k2-instruct",  # Updated to Kimi K2 instruct
                 messages=messages,
-                temperature=0.6,  # Updated temperature
+                temperature=0.1,  # Lower temperature for more consistent JSON output
                 max_tokens=1024  # Updated max tokens
             )
             
             # Parse the response
             llm_response = response.choices[0].message.content.strip()
             
-            # Try to parse JSON response
-            try:
-                parsed_response = json.loads(llm_response)
-            except json.JSONDecodeError:
-                # If JSON parsing fails, create a structured response
-                parsed_response = {
-                    "intent": "unknown",
-                    "route": None,
-                    "parameters": {},
-                    "follow_up_needed": True,
-                    "follow_up_question": "I didn't understand your request. Could you please rephrase it?",
-                    "explanation": "Failed to parse LLM response",
-                    "raw_response": llm_response
-                }
+            # Clean the response and try to parse JSON with retry logic
+            parsed_response = self._parse_json_with_retry(llm_response, query)
             
             # Validate and enhance the response
             enhanced_response = self._enhance_response(parsed_response, brand_id, query)
@@ -181,7 +178,7 @@ Be helpful and ask clarifying questions when needed."""
                 if "parameters" not in response:
                     response["parameters"] = {}
                 if "brand_id" not in response["parameters"]:
-                    response["parameters"]["brand_id"] = brand_id
+                    response["parameters"]["brand_id"] = str(brand_id)  # Ensure brand_id is string
         
         # Validate route exists
         if response.get("route") and response["route"] not in self.available_routes:
@@ -189,11 +186,150 @@ Be helpful and ask clarifying questions when needed."""
             response["follow_up_needed"] = True
             response["follow_up_question"] = f"I don't recognize that action. Available actions include: {', '.join(self.available_routes.keys())}"
         
+        # Ensure parameter types are correct (brand_id should be string)
+        if "parameters" in response:
+            if "brand_id" in response["parameters"]:
+                response["parameters"]["brand_id"] = str(response["parameters"]["brand_id"])
+        
         # Add metadata
         response["original_query"] = original_query
         response["timestamp"] = str(datetime.now())
         
         return response
+
+    def _clean_llm_response(self, response: str) -> str:
+        """Clean LLM response to extract valid JSON"""
+        # Remove markdown code blocks
+        if "```json" in response:
+            start = response.find("```json") + 7
+            end = response.find("```", start)
+            if end != -1:
+                response = response[start:end].strip()
+        elif "```" in response:
+            start = response.find("```") + 3
+            end = response.find("```", start)
+            if end != -1:
+                response = response[start:end].strip()
+        
+        # Remove any text before the first {
+        if "{" in response:
+            response = response[response.find("{"):]
+        
+        # Remove any text after the last }
+        if "}" in response:
+            response = response[:response.rfind("}") + 1]
+        
+        return response.strip()
+
+    def _parse_json_with_retry(self, llm_response: str, original_query: str) -> Dict[str, Any]:
+        """Parse JSON with multiple fallback strategies"""
+        # Strategy 1: Try direct JSON parsing
+        try:
+            return json.loads(llm_response)
+        except json.JSONDecodeError:
+            pass
+        
+        # Strategy 2: Clean and try again
+        cleaned_response = self._clean_llm_response(llm_response)
+        try:
+            return json.loads(cleaned_response)
+        except json.JSONDecodeError:
+            pass
+        
+        # Strategy 3: Try to extract JSON from the response
+        try:
+            # Look for JSON-like structure
+            import re
+            json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+            matches = re.findall(json_pattern, llm_response)
+            if matches:
+                return json.loads(matches[0])
+        except (json.JSONDecodeError, IndexError):
+            pass
+        
+        # Strategy 4: Create a fallback response based on simple keyword matching
+        fallback_response = self._create_fallback_response(original_query)
+        logger.warning(f"Failed to parse LLM response, using fallback: {llm_response[:100]}...")
+        return fallback_response
+
+    def _create_fallback_response(self, query: str) -> Dict[str, Any]:
+        """Create a fallback response based on keyword matching"""
+        query_lower = query.lower()
+        
+        # Simple keyword matching
+        if any(word in query_lower for word in ["dashboard", "overview", "summary"]):
+            return {
+                "intent": "View dashboard overview",
+                "route": "dashboard_overview",
+                "parameters": {},
+                "follow_up_needed": False,
+                "follow_up_question": None,
+                "explanation": "User wants to see dashboard overview"
+            }
+        elif any(word in query_lower for word in ["campaign", "campaigns"]):
+            return {
+                "intent": "List campaigns",
+                "route": "campaigns",
+                "parameters": {},
+                "follow_up_needed": False,
+                "follow_up_question": None,
+                "explanation": "User wants to see their campaigns"
+            }
+        elif any(word in query_lower for word in ["creator", "creators", "influencer"]):
+            if any(word in query_lower for word in ["search", "find", "look"]):
+                return {
+                    "intent": "Search for creators",
+                    "route": "creator_search",
+                    "parameters": {},
+                    "follow_up_needed": False,
+                    "follow_up_question": None,
+                    "explanation": "User wants to search for creators"
+                }
+            else:
+                return {
+                    "intent": "View creator matches",
+                    "route": "creator_matches",
+                    "parameters": {},
+                    "follow_up_needed": False,
+                    "follow_up_question": None,
+                    "explanation": "User wants to see creator matches"
+                }
+        elif any(word in query_lower for word in ["revenue", "money", "earnings", "income"]):
+            return {
+                "intent": "View revenue analytics",
+                "route": "analytics_revenue",
+                "parameters": {},
+                "follow_up_needed": False,
+                "follow_up_question": None,
+                "explanation": "User wants to see revenue analytics"
+            }
+        elif any(word in query_lower for word in ["performance", "analytics", "metrics"]):
+            return {
+                "intent": "View performance analytics",
+                "route": "analytics_performance",
+                "parameters": {},
+                "follow_up_needed": False,
+                "follow_up_question": None,
+                "explanation": "User wants to see performance analytics"
+            }
+        elif any(word in query_lower for word in ["contract", "contracts"]):
+            return {
+                "intent": "View contracts",
+                "route": "contracts",
+                "parameters": {},
+                "follow_up_needed": False,
+                "follow_up_question": None,
+                "explanation": "User wants to see their contracts"
+            }
+        else:
+            return {
+                "intent": "unknown",
+                "route": None,
+                "parameters": {},
+                "follow_up_needed": True,
+                "follow_up_question": "I didn't understand your request. Could you please rephrase it?",
+                "explanation": "Failed to parse LLM response, please try again with different wording"
+            }
 
     def get_route_info(self, route_name: str) -> Optional[Dict[str, Any]]:
         """Get information about a specific route"""
