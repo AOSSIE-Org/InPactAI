@@ -19,6 +19,9 @@ export interface AIQueryResponse {
   explanation: string;
   original_query: string;
   timestamp: string;
+  session_id?: string;
+  result?: any;
+  error?: string;
 }
 
 // AI API Service Class
@@ -50,15 +53,31 @@ class AIApiService {
     }
   }
 
-  // Process AI Query
-  async queryAI(query: string, brandId?: string): Promise<AIQueryResponse> {
+  // Process AI Query with session management
+  async queryAI(
+    query: string, 
+    brandId?: string, 
+    sessionId?: string
+  ): Promise<AIQueryResponse> {
     const requestBody: AIQueryRequest = { query };
     if (brandId) {
       requestBody.brand_id = brandId;
     }
+    if (sessionId) {
+      requestBody.context = { session_id: sessionId };
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (sessionId) {
+      headers['X-Session-ID'] = sessionId;
+    }
 
     return this.makeRequest<AIQueryResponse>('/query', {
       method: 'POST',
+      headers,
       body: JSON.stringify(requestBody),
     });
   }
