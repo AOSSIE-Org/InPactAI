@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User, Loader2 } from "lucide-react";
+import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User, Loader2, LayoutDashboard } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserNav } from "../../components/user-nav";
 import { useBrandDashboard } from "../../hooks/useBrandDashboard";
@@ -10,6 +10,7 @@ const SECONDARY = "#300A6E";
 const ACCENT = "#FF2D2B";
 
 const TABS = [
+  { label: "Dashboard", route: "/brand/dashboard/overview", icon: LayoutDashboard },
   { label: "Discover", route: "/brand/dashboard", icon: Home },
   { label: "Contracts", route: "/brand/contracts", icon: FileText },
   { label: "Messages", route: "/brand/messages", icon: MessageSquare },

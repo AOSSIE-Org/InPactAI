@@ -68,6 +68,11 @@ function App() {
               <Dashboard />
             </ProtectedRoute>
           } />
+          <Route path="/brand/dashboard/overview" element={
+            <ProtectedRoute>
+              <div>Brand Dashboard Overview (Coming Soon)</div>
+            </ProtectedRoute>
+          } />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
           <Route path="/creator/messages" element={<MessagesPage />} />
           <Route path="/onboarding" element={
