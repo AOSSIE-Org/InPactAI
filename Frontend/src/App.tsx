@@ -18,6 +18,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import Dashboard from "./pages/Brand/Dashboard";
+import DashboardOverview from "./pages/Brand/DashboardOverview";
 import BasicDetails from "./pages/BasicDetails";
 import Onboarding from "./components/Onboarding";
 
@@ -70,7 +71,7 @@ function App() {
           } />
           <Route path="/brand/dashboard/overview" element={
             <ProtectedRoute>
-              <div>Brand Dashboard Overview (Coming Soon)</div>
+              <DashboardOverview />
             </ProtectedRoute>
           } />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
