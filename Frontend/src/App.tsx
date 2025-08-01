@@ -74,6 +74,11 @@ function App() {
               <DashboardOverview />
             </ProtectedRoute>
           } />
+          <Route path="/brand/contracts" element={
+            <ProtectedRoute>
+              <Contracts />
+            </ProtectedRoute>
+          } />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
           <Route path="/creator/messages" element={<MessagesPage />} />
           <Route path="/onboarding" element={
