@@ -111,3 +111,506 @@ INSERT INTO contracts (id, sponsorship_id, creator_id, brand_id, contract_url, s
 INSERT INTO creator_matches (id, brand_id, creator_id, match_score, matched_at) VALUES
   (gen_random_uuid()::text, (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM users WHERE username = 'creator1'), 0.95, NOW()),
   (gen_random_uuid()::text, (SELECT id FROM users WHERE username = 'brand1'), (SELECT id FROM users WHERE username = 'creator2'), 0.87, NOW());
+
+
+-- ============================================================================
+-- ENHANCE EXISTING TABLES FOR DASHBOARD FUNCTIONALITY
+-- ============================================================================
+
+-- Add deadline field to sponsorships table
+ALTER TABLE sponsorships ADD COLUMN IF NOT EXISTS deadline TIMESTAMP WITH TIME ZONE;
+
+-- Add due date to sponsorship_payments table
+ALTER TABLE sponsorship_payments ADD COLUMN IF NOT EXISTS due_date TIMESTAMP WITH TIME ZONE;
+
+-- Add content type to user_posts table
+ALTER TABLE user_posts ADD COLUMN IF NOT EXISTS content_type VARCHAR(50) DEFAULT 'post';
+
+-- Add top markets to audience_insights table
+ALTER TABLE audience_insights ADD COLUMN IF NOT EXISTS top_markets JSONB;
+
+-- Add engagement tracking to campaign_metrics
+ALTER TABLE campaign_metrics ADD COLUMN IF NOT EXISTS total_engagements INTEGER DEFAULT 0;
+
+-- ============================================================================
+-- UPDATE EXISTING DATA WITH SAMPLE VALUES
+-- ============================================================================
+
+-- Update sponsorships with sample deadlines
+UPDATE sponsorships 
+SET deadline = created_at + INTERVAL '30 days'
+WHERE deadline IS NULL;
+
+-- Update payments with sample due dates
+UPDATE sponsorship_payments 
+SET due_date = transaction_date + INTERVAL '7 days'
+WHERE due_date IS NULL;
+
+-- Update posts with content types
+UPDATE user_posts 
+SET content_type = CASE 
+    WHEN title ILIKE '%video%' OR title ILIKE '%youtube%' THEN 'video'
+    WHEN title ILIKE '%story%' THEN 'story'
+    WHEN title ILIKE '%image%' OR title ILIKE '%photo%' THEN 'image'
+    ELSE 'post'
+END
+WHERE content_type IS NULL;
+
+-- Update audience insights with sample top markets
+UPDATE audience_insights 
+SET top_markets = '{"United States": 45, "United Kingdom": 25, "Canada": 15, "Australia": 15}'
+WHERE top_markets IS NULL;
+
+-- Update campaign metrics with engagement data
+UPDATE campaign_metrics 
+SET total_engagements = clicks + conversions
+WHERE total_engagements IS NULL;
+
+-- ============================================================================
+-- SAMPLE DATA FOR DASHBOARD TESTING
+-- ============================================================================
+
+-- Insert additional sample campaigns with deadlines (only if brand exists)
+INSERT INTO sponsorships (id, brand_id, title, description, required_audience, budget, engagement_minimum, status, deadline, created_at)
+SELECT 
+  gen_random_uuid(),
+  brand.id,
+  'Summer Collection Launch',
+  'Launch campaign for summer fashion collection',
+  '{"age": ["18-34"], "location": ["USA", "UK"]}',
+  8000.00,
+  4.5,
+  'open',
+  NOW() + INTERVAL '15 days',
+  NOW()
+FROM users brand
+WHERE brand.username = 'brand1'
+LIMIT 1;
+
+INSERT INTO sponsorships (id, brand_id, title, description, required_audience, budget, engagement_minimum, status, deadline, created_at)
+SELECT 
+  gen_random_uuid(),
+  brand.id,
+  'Tech Review Series',
+  'Series of tech product reviews',
+  '{"age": ["18-30"], "location": ["USA", "Canada"]}',
+  6000.00,
+  4.2,
+  'open',
+  NOW() + INTERVAL '20 days',
+  NOW()
+FROM users brand
+WHERE brand.username = 'brand1'
+LIMIT 1;
+
+INSERT INTO sponsorships (id, brand_id, title, description, required_audience, budget, engagement_minimum, status, deadline, created_at)
+SELECT 
+  gen_random_uuid(),
+  brand.id,
+  'Fitness Challenge',
+  '30-day fitness challenge campaign',
+  '{"age": ["18-40"], "location": ["USA", "Australia"]}',
+  4000.00,
+  3.8,
+  'pending',
+  NOW() + INTERVAL '30 days',
+  NOW()
+FROM users brand
+WHERE brand.username = 'brand1'
+LIMIT 1;
+
+-- Insert additional payments with due dates (only if users exist)
+INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amount, status, due_date, transaction_date)
+SELECT 
+  gen_random_uuid(),
+  creator.id,
+  brand.id,
+  sponsorship.id,
+  1200.00,
+  'pending',
+  NOW() + INTERVAL '5 days',
+  NOW()
+FROM users creator, users brand, sponsorships sponsorship
+WHERE creator.username = 'creator1' 
+  AND brand.username = 'brand1' 
+  AND sponsorship.title = 'Summer Collection Launch'
+LIMIT 1;
+
+INSERT INTO sponsorship_payments (id, creator_id, brand_id, sponsorship_id, amount, status, due_date, transaction_date)
+SELECT 
+  gen_random_uuid(),
+  creator.id,
+  brand.id,
+  sponsorship.id,
+  800.00,
+  'pending',
+  NOW() + INTERVAL '3 days',
+  NOW()
+FROM users creator, users brand, sponsorships sponsorship
+WHERE creator.username = 'creator2' 
+  AND brand.username = 'brand1' 
+  AND sponsorship.title = 'Tech Review Series'
+LIMIT 1;
+
+-- Insert additional posts with content types (only if users exist)
+INSERT INTO user_posts (id, user_id, title, content, post_url, category, content_type, engagement_metrics, created_at)
+SELECT 
+  gen_random_uuid(),
+  creator.id,
+  'Summer Fashion Haul Video',
+  'Complete summer fashion haul video',
+  'https://example.com/summer-haul',
+  'Fashion',
+  'video',
+  '{"likes": 800, "comments": 150, "shares": 80}',
+  NOW()
+FROM users creator
+WHERE creator.username = 'creator1'
+LIMIT 1;
+
+INSERT INTO user_posts (id, user_id, title, content, post_url, category, content_type, engagement_metrics, created_at)
+SELECT 
+  gen_random_uuid(),
+  creator.id,
+  'Tech Review Story',
+  'Quick tech review in story format',
+  'https://example.com/tech-story',
+  'Tech',
+  'story',
+  '{"likes": 400, "comments": 60, "shares": 30}',
+  NOW()
+FROM users creator
+WHERE creator.username = 'creator2'
+LIMIT 1;
+
+INSERT INTO user_posts (id, user_id, title, content, post_url, category, content_type, engagement_metrics, created_at)
+SELECT 
+  gen_random_uuid(),
+  creator.id,
+  'Fitness Motivation Image',
+  'Motivational fitness post',
+  'https://example.com/fitness-motivation',
+  'Fitness',
+  'image',
+  '{"likes": 600, "comments": 90, "shares": 45}',
+  NOW()
+FROM users creator
+WHERE creator.username = 'creator1'
+LIMIT 1;
+
+-- Insert additional campaign metrics (only if campaigns exist)
+INSERT INTO campaign_metrics (id, campaign_id, impressions, clicks, conversions, revenue, engagement_rate, total_engagements, recorded_at)
+SELECT 
+  gen_random_uuid(),
+  sponsorship.id,
+  120000,
+  6000,
+  300,
+  6000.00,
+  5.0,
+  6300,
+  NOW()
+FROM sponsorships sponsorship
+WHERE sponsorship.title = 'Summer Collection Launch'
+LIMIT 1;
+
+INSERT INTO campaign_metrics (id, campaign_id, impressions, clicks, conversions, revenue, engagement_rate, total_engagements, recorded_at)
+SELECT 
+  gen_random_uuid(),
+  sponsorship.id,
+  80000,
+  4000,
+  200,
+  4000.00,
+  5.25,
+  4200,
+  NOW()
+FROM sponsorships sponsorship
+WHERE sponsorship.title = 'Tech Review Series'
+LIMIT 1;
+
+INSERT INTO campaign_metrics (id, campaign_id, impressions, clicks, conversions, revenue, engagement_rate, total_engagements, recorded_at)
+SELECT 
+  gen_random_uuid(),
+  sponsorship.id,
+  60000,
+  3000,
+  150,
+  3000.00,
+  5.25,
+  3150,
+  NOW()
+FROM sponsorships sponsorship
+WHERE sponsorship.title = 'Fitness Challenge'
+LIMIT 1;
+
+-- ============================================================================
+-- VERIFICATION QUERIES
+-- ============================================================================
+
+-- Check sponsorships with deadlines
+SELECT title, deadline, status FROM sponsorships WHERE deadline IS NOT NULL;
+
+-- Check payments with due dates
+SELECT amount, due_date, status FROM sponsorship_payments WHERE due_date IS NOT NULL;
+
+-- Check posts with content types
+SELECT title, content_type, category FROM user_posts WHERE content_type IS NOT NULL;
+
+-- Check audience insights with top markets
+SELECT user_id, top_markets FROM audience_insights WHERE top_markets IS NOT NULL;
+
+-- Check campaign metrics with engagement data
+SELECT campaign_id, impressions, total_engagements, engagement_rate FROM campaign_metrics WHERE total_engagements > 0; 
+
+-- ============================================================================
+-- ADD CREATOR MATCHES FOR ANALYTICS TESTING
+-- ============================================================================
+
+-- Get the brand ID
+DO $$
+DECLARE
+    brand_id_val VARCHAR;
+    creator1_id_val VARCHAR;
+    creator2_id_val VARCHAR;
+BEGIN
+    -- Get brand1 ID
+    SELECT id INTO brand_id_val FROM users WHERE username = 'brand1' LIMIT 1;
+    
+    -- Get creator IDs
+    SELECT id INTO creator1_id_val FROM users WHERE username = 'creator1' LIMIT 1;
+    SELECT id INTO creator2_id_val FROM users WHERE username = 'creator2' LIMIT 1;
+    
+    -- Insert creator matches if they don't exist
+    IF brand_id_val IS NOT NULL AND creator1_id_val IS NOT NULL THEN
+        INSERT INTO creator_matches (id, brand_id, creator_id, match_score, matched_at)
+        SELECT 
+            gen_random_uuid()::text,
+            brand_id_val,
+            creator1_id_val,
+            0.95,
+            NOW()
+        WHERE NOT EXISTS (
+            SELECT 1 FROM creator_matches 
+            WHERE brand_id = brand_id_val AND creator_id = creator1_id_val
+        );
+    END IF;
+    
+    IF brand_id_val IS NOT NULL AND creator2_id_val IS NOT NULL THEN
+        INSERT INTO creator_matches (id, brand_id, creator_id, match_score, matched_at)
+        SELECT 
+            gen_random_uuid()::text,
+            brand_id_val,
+            creator2_id_val,
+            0.87,
+            NOW()
+        WHERE NOT EXISTS (
+            SELECT 1 FROM creator_matches 
+            WHERE brand_id = brand_id_val AND creator_id = creator2_id_val
+        );
+    END IF;
+    
+    RAISE NOTICE 'Creator matches added for brand: %', brand_id_val;
+END $$;
+
+-- Verify the creator matches
+SELECT 
+    cm.id,
+    b.username as brand_username,
+    c.username as creator_username,
+    cm.match_score,
+    cm.matched_at
+FROM creator_matches cm
+JOIN users b ON cm.brand_id = b.id
+JOIN users c ON cm.creator_id = c.id
+WHERE b.username = 'brand1'; 
+
+-- ============================================================================
+-- UPDATE AUDIENCE INSIGHTS WITH BETTER GEOGRAPHIC DATA
+-- ============================================================================
+
+-- Update existing audience insights with top_markets data
+UPDATE audience_insights 
+SET top_markets = '{"United States": 45, "United Kingdom": 25, "Canada": 15, "Australia": 15}'
+WHERE user_id IN (SELECT id FROM users WHERE username = 'creator1');
+
+UPDATE audience_insights 
+SET top_markets = '{"India": 40, "United States": 30, "Canada": 20, "United Kingdom": 10}'
+WHERE user_id IN (SELECT id FROM users WHERE username = 'creator2');
+
+-- Add more diverse audience insights for better analytics
+INSERT INTO audience_insights (id, user_id, audience_age_group, audience_location, engagement_rate, average_views, time_of_attention, price_expectation, top_markets, created_at)
+SELECT 
+  gen_random_uuid(),
+  u.id,
+  '{"18-24": 60, "25-34": 40}',
+  '{"USA": 50, "UK": 30, "Canada": 20}',
+  4.2,
+  8500,
+  110,
+  480.00,
+  '{"United States": 50, "United Kingdom": 30, "Canada": 20}',
+  NOW()
+FROM users u
+WHERE u.username = 'brand1'
+AND NOT EXISTS (
+  SELECT 1 FROM audience_insights WHERE user_id = u.id
+);
+
+-- Verify the updates
+SELECT 
+  ai.user_id,
+  u.username,
+  ai.top_markets,
+  ai.engagement_rate
+FROM audience_insights ai
+JOIN users u ON ai.user_id = u.id
+WHERE u.username IN ('creator1', 'creator2', 'brand1'); 
+
+-- ============================================================================
+-- ENHANCED CONTRACTS DATABASE SCHEMA
+-- ============================================================================
+
+-- ============================================================================
+-- 1. ENHANCE EXISTING CONTRACTS TABLE
+-- ============================================================================
+
+-- Add missing columns to existing contracts table
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS contract_title TEXT;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS contract_type TEXT DEFAULT 'one-time';
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS terms_and_conditions JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_terms JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS deliverables JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS start_date DATE;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS end_date DATE;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS total_budget NUMERIC(10,2);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_schedule JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS legal_compliance JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS signature_data JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS version_history JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT now();
+
+-- ============================================================================
+-- 2. CONTRACT TEMPLATES TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_templates (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    template_name TEXT NOT NULL,
+    template_type TEXT NOT NULL, -- 'one-time', 'ongoing', 'performance-based'
+    industry TEXT,
+    terms_template JSONB,
+    payment_terms_template JSONB,
+    deliverables_template JSONB,
+    created_by VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+    is_public BOOLEAN DEFAULT false,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 3. CONTRACT MILESTONES TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_milestones (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    milestone_name TEXT NOT NULL,
+    description TEXT,
+    due_date DATE NOT NULL,
+    payment_amount NUMERIC(10,2) NOT NULL,
+    status TEXT DEFAULT 'pending', -- pending, completed, overdue, cancelled
+    completion_criteria JSONB,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 4. CONTRACT DELIVERABLES TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_deliverables (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    deliverable_type TEXT NOT NULL, -- 'post', 'video', 'story', 'review', 'live'
+    description TEXT,
+    platform TEXT NOT NULL, -- 'instagram', 'youtube', 'tiktok', 'twitter', 'facebook'
+    requirements JSONB,
+    due_date DATE NOT NULL,
+    status TEXT DEFAULT 'pending', -- pending, in_progress, submitted, approved, rejected
+    content_url TEXT,
+    approval_status TEXT DEFAULT 'pending', -- pending, approved, rejected, needs_revision
+    approval_notes TEXT,
+    submitted_at TIMESTAMP WITH TIME ZONE,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 5. CONTRACT PAYMENTS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_payments (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    milestone_id VARCHAR REFERENCES contract_milestones(id) ON DELETE SET NULL,
+    amount NUMERIC(10,2) NOT NULL,
+    payment_type TEXT NOT NULL, -- 'advance', 'milestone', 'final', 'bonus'
+    status TEXT DEFAULT 'pending', -- pending, paid, overdue, cancelled, failed
+    due_date DATE NOT NULL,
+    paid_date TIMESTAMP WITH TIME ZONE,
+    payment_method TEXT, -- 'bank_transfer', 'paypal', 'stripe', 'escrow'
+    transaction_id TEXT,
+    payment_notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 6. CONTRACT COMMENTS/NEGOTIATIONS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_comments (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    user_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    comment_type TEXT DEFAULT 'general', -- 'negotiation', 'approval', 'general', 'revision'
+    is_internal BOOLEAN DEFAULT false,
+    parent_comment_id VARCHAR REFERENCES contract_comments(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 7. CONTRACT ANALYTICS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_analytics (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    performance_metrics JSONB, -- engagement_rate, reach, impressions, clicks
+    engagement_data JSONB, -- likes, comments, shares, saves
+    revenue_generated NUMERIC(10,2) DEFAULT 0,
+    roi_percentage FLOAT DEFAULT 0,
+    cost_per_engagement NUMERIC(10,2) DEFAULT 0,
+    cost_per_click NUMERIC(10,2) DEFAULT 0,
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- ============================================================================
+-- 8. CONTRACT NOTIFICATIONS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS contract_notifications (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    user_id VARCHAR REFERENCES users(id) ON DELETE CASCADE,
+    notification_type TEXT NOT NULL, -- 'milestone_due', 'payment_received', 'deliverable_submitted', 'contract_expiring'
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+); 
