@@ -9,6 +9,8 @@ from .routes.match import router as match_router
 from .routes.brand_dashboard import router as brand_dashboard_router
 from .routes.ai_query import router as ai_query_router
 from .routes.contracts import router as contracts_router
+from .routes.contracts_ai import router as contracts_ai_router
+from .routes.contracts_generation import router as contracts_generation_router
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
@@ -60,6 +62,8 @@ app.include_router(match_router)
 app.include_router(brand_dashboard_router)
 app.include_router(ai_query_router)
 app.include_router(contracts_router)
+app.include_router(contracts_ai_router)
+app.include_router(contracts_generation_router)
 app.include_router(ai.router)
 app.include_router(ai.youtube_router)
 
