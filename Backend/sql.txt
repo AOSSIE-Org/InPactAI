@@ -614,3 +614,249 @@ CREATE TABLE IF NOT EXISTS contract_notifications (
     is_read BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 ); 
+
+-- ============================================================================
+-- SAMPLE DATA FOR CONTRACTS TABLES
+-- ============================================================================
+
+-- Get existing user IDs for sample data
+DO $$
+DECLARE
+    brand1_id_val VARCHAR;
+    creator1_id_val VARCHAR;
+    creator2_id_val VARCHAR;
+    sponsorship1_id_val VARCHAR;
+    contract1_id_val VARCHAR;
+    contract2_id_val VARCHAR;
+    contract3_id_val VARCHAR;
+BEGIN
+    -- Get user IDs
+    SELECT id INTO brand1_id_val FROM users WHERE username = 'brand1' LIMIT 1;
+    SELECT id INTO creator1_id_val FROM users WHERE username = 'creator1' LIMIT 1;
+    SELECT id INTO creator2_id_val FROM users WHERE username = 'creator2' LIMIT 1;
+    SELECT id INTO sponsorship1_id_val FROM sponsorships WHERE title = 'Tech Sponsorship' LIMIT 1;
+
+    -- Insert sample contracts
+    INSERT INTO contracts (id, sponsorship_id, creator_id, brand_id, contract_title, contract_type, terms_and_conditions, payment_terms, deliverables, start_date, end_date, total_budget, payment_schedule, legal_compliance, status, created_at)
+    VALUES
+        (gen_random_uuid()::text, sponsorship1_id_val, creator1_id_val, brand1_id_val, 'Tech Watch Campaign Contract', 'one-time', 
+         '{"content_guidelines": "Must mention product features", "disclosure_requirements": "Clear FTC compliance"}',
+         '{"payment_schedule": "50% upfront, 50% on completion", "late_fees": "5% per week"}',
+         '{"deliverables": ["2 Instagram posts", "1 YouTube video", "3 TikTok videos"]}',
+         '2024-01-15', '2024-02-15', 2500.00,
+         '{"advance": 1250.00, "final": 1250.00}',
+         '{"ftc_compliance": true, "disclosure_required": true}',
+         'signed', NOW()),
+        
+        (gen_random_uuid()::text, NULL, creator2_id_val, brand1_id_val, 'Fashion Collaboration Contract', 'ongoing',
+         '{"content_guidelines": "Fashion-forward styling", "brand_guidelines": "Must use brand hashtags"}',
+         '{"payment_schedule": "Monthly payments", "performance_bonus": "10% for high engagement"}',
+         '{"deliverables": ["4 Instagram posts per month", "2 Stories per week", "1 Reel per month"]}',
+         '2024-01-01', '2024-06-30', 6000.00,
+         '{"monthly": 1000.00}',
+         '{"ftc_compliance": true, "disclosure_required": true}',
+         'active', NOW()),
+        
+        (gen_random_uuid()::text, NULL, creator1_id_val, brand1_id_val, 'Gaming Setup Review Contract', 'one-time',
+         '{"content_guidelines": "Honest review required", "disclosure_requirements": "Sponsored content disclosure"}',
+         '{"payment_schedule": "100% on completion", "bonus": "200 for high engagement"}',
+         '{"deliverables": ["1 detailed review video", "2 social media posts", "1 blog post"]}',
+         '2024-02-01', '2024-03-01', 1500.00,
+         '{"final": 1500.00}',
+         '{"ftc_compliance": true, "disclosure_required": true}',
+         'draft', NOW())
+    RETURNING id INTO contract1_id_val;
+
+    -- Get contract IDs for further data insertion
+    SELECT id INTO contract1_id_val FROM contracts WHERE contract_title = 'Tech Watch Campaign Contract' LIMIT 1;
+    SELECT id INTO contract2_id_val FROM contracts WHERE contract_title = 'Fashion Collaboration Contract' LIMIT 1;
+    SELECT id INTO contract3_id_val FROM contracts WHERE contract_title = 'Gaming Setup Review Contract' LIMIT 1;
+
+    -- Insert contract templates
+    INSERT INTO contract_templates (id, template_name, template_type, industry, terms_template, payment_terms_template, deliverables_template, created_by, is_public, is_active, created_at)
+    VALUES
+        (gen_random_uuid()::text, 'Standard Influencer Contract', 'one-time', 'General',
+         '{"content_guidelines": "Brand guidelines must be followed", "disclosure_requirements": "FTC compliance required"}',
+         '{"payment_schedule": "50% upfront, 50% on completion", "late_fees": "5% per week"}',
+         '{"deliverables": ["2-3 social media posts", "1 video content", "Stories coverage"]}',
+         brand1_id_val, true, true, NOW()),
+        
+        (gen_random_uuid()::text, 'Ongoing Collaboration Contract', 'ongoing', 'Fashion',
+         '{"content_guidelines": "Fashion-forward content", "brand_guidelines": "Use brand hashtags"}',
+         '{"payment_schedule": "Monthly payments", "performance_bonus": "10% for high engagement"}',
+         '{"deliverables": ["4 posts per month", "2 stories per week", "1 reel per month"]}',
+         brand1_id_val, true, true, NOW()),
+        
+        (gen_random_uuid()::text, 'Tech Review Contract', 'one-time', 'Technology',
+         '{"content_guidelines": "Honest review required", "disclosure_requirements": "Sponsored content disclosure"}',
+         '{"payment_schedule": "100% on completion", "bonus": "200 for high engagement"}',
+         '{"deliverables": ["1 review video", "2 social posts", "1 blog post"]}',
+         brand1_id_val, true, true, NOW());
+
+    -- Insert contract milestones
+    INSERT INTO contract_milestones (id, contract_id, milestone_name, description, due_date, payment_amount, status, completion_criteria, created_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val, 'Content Creation', 'Create initial content drafts', '2024-01-25', 1250.00, 'completed',
+         '{"drafts_submitted": true, "brand_approval": true}', NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, 'Content Publication', 'Publish all content across platforms', '2024-02-10', 1250.00, 'pending',
+         '{"all_posts_published": true, "engagement_metrics": "minimum 5% engagement"}', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, 'January Content', 'Complete January content deliverables', '2024-01-31', 1000.00, 'completed',
+         '{"4_posts_published": true, "stories_completed": true}', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, 'February Content', 'Complete February content deliverables', '2024-02-29', 1000.00, 'in_progress',
+         '{"4_posts_published": true, "stories_completed": true}', NOW());
+
+    -- Insert contract deliverables
+    INSERT INTO contract_deliverables (id, contract_id, deliverable_type, description, platform, requirements, due_date, status, content_url, approval_status, created_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val, 'post', 'Instagram post featuring the tech watch', 'instagram',
+         '{"image_requirements": "High quality", "caption_requirements": "Include product features", "hashtags": ["#tech", "#watch"]}',
+         '2024-01-30', 'approved', 'https://instagram.com/p/example1', 'approved', NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, 'video', 'YouTube review video of the tech watch', 'youtube',
+         '{"video_length": "5-10 minutes", "content_requirements": "Honest review with pros and cons", "thumbnail_requirements": "Eye-catching design"}',
+         '2024-02-05', 'submitted', 'https://youtube.com/watch?v=example1', 'pending', NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, 'story', 'Instagram stories showcasing the watch', 'instagram',
+         '{"story_count": "3-5 stories", "content_requirements": "Behind the scenes and product features"}',
+         '2024-02-08', 'in_progress', NULL, 'pending', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, 'post', 'Fashion collaboration post', 'instagram',
+         '{"image_requirements": "Fashion-forward styling", "caption_requirements": "Include brand hashtags"}',
+         '2024-01-15', 'approved', 'https://instagram.com/p/example2', 'approved', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, 'story', 'Fashion stories', 'instagram',
+         '{"story_count": "2 stories", "content_requirements": "Styling tips and product features"}',
+         '2024-01-20', 'approved', 'https://instagram.com/stories/example2', 'approved', NOW());
+
+    -- Insert contract payments
+    INSERT INTO contract_payments (id, contract_id, milestone_id, amount, payment_type, status, due_date, paid_date, payment_method, transaction_id, payment_notes, created_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val, (SELECT id FROM contract_milestones WHERE milestone_name = 'Content Creation' LIMIT 1),
+         1250.00, 'advance', 'paid', '2024-01-15', '2024-01-15', 'bank_transfer', 'TXN001', 'Advance payment for content creation', NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, (SELECT id FROM contract_milestones WHERE milestone_name = 'Content Publication' LIMIT 1),
+         1250.00, 'final', 'pending', '2024-02-10', NULL, NULL, NULL, 'Final payment upon completion', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, (SELECT id FROM contract_milestones WHERE milestone_name = 'January Content' LIMIT 1),
+         1000.00, 'milestone', 'paid', '2024-01-31', '2024-01-31', 'paypal', 'TXN002', 'January content payment', NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, (SELECT id FROM contract_milestones WHERE milestone_name = 'February Content' LIMIT 1),
+         1000.00, 'milestone', 'pending', '2024-02-29', NULL, NULL, NULL, 'February content payment', NOW());
+
+    -- Insert contract comments
+    INSERT INTO contract_comments (id, contract_id, user_id, comment, comment_type, is_internal, created_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val, brand1_id_val, 'Great initial content! Please ensure FTC disclosure is clearly visible.', 'approval', false, NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, creator1_id_val, 'Thank you! I\'ll make sure the disclosure is prominent in all content.', 'general', false, NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, brand1_id_val, 'Love the fashion content! The engagement is exceeding expectations.', 'general', false, NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, creator2_id_val, 'Thank you! I\'m excited to continue this collaboration.', 'general', false, NOW()),
+        
+        (gen_random_uuid()::text, contract3_id_val, brand1_id_val, 'Please review the gaming setup thoroughly and provide honest feedback.', 'negotiation', false, NOW());
+
+    -- Insert contract analytics
+    INSERT INTO contract_analytics (id, contract_id, performance_metrics, engagement_data, revenue_generated, roi_percentage, cost_per_engagement, cost_per_click, recorded_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val,
+         '{"engagement_rate": 6.2, "reach": 15000, "impressions": 25000, "clicks": 1200}',
+         '{"likes": 1800, "comments": 450, "shares": 200, "saves": 300}',
+         3500.00, 140.0, 0.83, 2.08, NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val,
+         '{"engagement_rate": 8.5, "reach": 22000, "impressions": 35000, "clicks": 1800}',
+         '{"likes": 2800, "comments": 600, "shares": 350, "saves": 450}',
+         4800.00, 180.0, 0.71, 1.78, NOW()),
+        
+        (gen_random_uuid()::text, contract3_id_val,
+         '{"engagement_rate": 4.8, "reach": 8000, "impressions": 12000, "clicks": 600}',
+         '{"likes": 900, "comments": 200, "shares": 100, "saves": 150}',
+         1200.00, 80.0, 1.25, 2.50, NOW());
+
+    -- Insert contract notifications
+    INSERT INTO contract_notifications (id, contract_id, user_id, notification_type, title, message, is_read, created_at)
+    VALUES
+        (gen_random_uuid()::text, contract1_id_val, creator1_id_val, 'milestone_due', 'Milestone Due', 'Content Publication milestone is due in 3 days', false, NOW()),
+        
+        (gen_random_uuid()::text, contract1_id_val, brand1_id_val, 'deliverable_submitted', 'Content Submitted', 'New content has been submitted for review', false, NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, creator2_id_val, 'payment_received', 'Payment Received', 'January content payment has been processed', true, NOW()),
+        
+        (gen_random_uuid()::text, contract2_id_val, brand1_id_val, 'milestone_due', 'Milestone Due', 'February Content milestone is due in 5 days', false, NOW()),
+        
+        (gen_random_uuid()::text, contract3_id_val, creator1_id_val, 'contract_expiring', 'Contract Expiring', 'Gaming Setup Review contract expires in 10 days', false, NOW());
+
+    RAISE NOTICE 'Sample contract data inserted successfully';
+END $$;
+
+-- Verify the sample data
+SELECT 
+    c.contract_title,
+    c.status,
+    c.total_budget,
+    u1.username as creator,
+    u2.username as brand
+FROM contracts c
+JOIN users u1 ON c.creator_id = u1.id
+JOIN users u2 ON c.brand_id = u2.id;
+
+SELECT 
+    ct.template_name,
+    ct.template_type,
+    ct.industry,
+    u.username as created_by
+FROM contract_templates ct
+LEFT JOIN users u ON ct.created_by = u.id;
+
+SELECT 
+    cm.milestone_name,
+    cm.status,
+    cm.payment_amount,
+    c.contract_title
+FROM contract_milestones cm
+JOIN contracts c ON cm.contract_id = c.id;
+
+SELECT 
+    cd.deliverable_type,
+    cd.platform,
+    cd.status,
+    cd.approval_status,
+    c.contract_title
+FROM contract_deliverables cd
+JOIN contracts c ON cd.contract_id = c.id;
+
+SELECT 
+    cp.amount,
+    cp.payment_type,
+    cp.status,
+    c.contract_title
+FROM contract_payments cp
+JOIN contracts c ON cp.contract_id = c.id;
+
+SELECT 
+    cc.comment,
+    cc.comment_type,
+    u.username as user,
+    c.contract_title
+FROM contract_comments cc
+JOIN users u ON cc.user_id = u.id
+JOIN contracts c ON cc.contract_id = c.id;
+
+SELECT 
+    ca.revenue_generated,
+    ca.roi_percentage,
+    c.contract_title
+FROM contract_analytics ca
+JOIN contracts c ON ca.contract_id = c.id;
+
+SELECT 
+    cn.notification_type,
+    cn.title,
+    cn.is_read,
+    c.contract_title
+FROM contract_notifications cn
+JOIN contracts c ON cn.contract_id = c.id; 
