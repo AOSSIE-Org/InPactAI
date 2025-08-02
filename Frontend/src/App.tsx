@@ -21,6 +21,7 @@ import Dashboard from "./pages/Brand/Dashboard";
 import DashboardOverview from "./pages/Brand/DashboardOverview";
 import BasicDetails from "./pages/BasicDetails";
 import Onboarding from "./components/Onboarding";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +77,9 @@ function App() {
           } />
           <Route path="/brand/contracts" element={
             <ProtectedRoute>
-              <Contracts />
+              <ErrorBoundary>
+                <Contracts />
+              </ErrorBoundary>
             </ProtectedRoute>
           } />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
