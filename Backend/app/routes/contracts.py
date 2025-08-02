@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
+if not url or not key:
+    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
 supabase: Client = create_client(url, key)
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
@@ -28,8 +30,8 @@ class ContractBase(BaseModel):
     terms_and_conditions: Optional[Dict[str, Any]] = None
     payment_terms: Optional[Dict[str, Any]] = None
     deliverables: Optional[Dict[str, Any]] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
     total_budget: Optional[float] = None
     payment_schedule: Optional[Dict[str, Any]] = None
     legal_compliance: Optional[Dict[str, Any]] = None
@@ -43,8 +45,8 @@ class ContractUpdate(BaseModel):
     terms_and_conditions: Optional[Dict[str, Any]] = None
     payment_terms: Optional[Dict[str, Any]] = None
     deliverables: Optional[Dict[str, Any]] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
     total_budget: Optional[float] = None
     payment_schedule: Optional[Dict[str, Any]] = None
     legal_compliance: Optional[Dict[str, Any]] = None
@@ -54,8 +56,8 @@ class ContractResponse(ContractBase):
     id: str
     contract_url: Optional[str] = None
     status: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    created_at: str
+    updated_at: Optional[str] = None
 
 class ContractTemplateBase(BaseModel):
     template_name: str
@@ -73,13 +75,13 @@ class ContractTemplateResponse(ContractTemplateBase):
     id: str
     created_by: Optional[str] = None
     is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
 
 class MilestoneBase(BaseModel):
     milestone_name: str
     description: Optional[str] = None
-    due_date: date
+    due_date: str
     payment_amount: float
     completion_criteria: Optional[Dict[str, Any]] = None
 
@@ -89,7 +91,7 @@ class MilestoneCreate(MilestoneBase):
 class MilestoneUpdate(BaseModel):
     milestone_name: Optional[str] = None
     description: Optional[str] = None
-    due_date: Optional[date] = None
+    due_date: Optional[str] = None
     payment_amount: Optional[float] = None
     status: Optional[str] = None
     completion_criteria: Optional[Dict[str, Any]] = None
@@ -98,16 +100,16 @@ class MilestoneResponse(MilestoneBase):
     id: str
     contract_id: str
     status: str
-    completed_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    completed_at: Optional[str] = None
+    created_at: str
+    updated_at: str
 
 class DeliverableBase(BaseModel):
     deliverable_type: str
     description: Optional[str] = None
     platform: str
     requirements: Optional[Dict[str, Any]] = None
-    due_date: date
+    due_date: str
 
 class DeliverableCreate(DeliverableBase):
     pass
@@ -117,7 +119,7 @@ class DeliverableUpdate(BaseModel):
     description: Optional[str] = None
     platform: Optional[str] = None
     requirements: Optional[Dict[str, Any]] = None
-    due_date: Optional[date] = None
+    due_date: Optional[str] = None
     status: Optional[str] = None
     content_url: Optional[str] = None
     approval_status: Optional[str] = None
@@ -130,15 +132,15 @@ class DeliverableResponse(DeliverableBase):
     content_url: Optional[str] = None
     approval_status: str
     approval_notes: Optional[str] = None
-    submitted_at: Optional[datetime] = None
-    approved_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    submitted_at: Optional[str] = None
+    approved_at: Optional[str] = None
+    created_at: str
+    updated_at: str
 
 class PaymentBase(BaseModel):
     amount: float
     payment_type: str
-    due_date: date
+    due_date: str
     payment_method: Optional[str] = None
     payment_notes: Optional[str] = None
 
@@ -149,7 +151,7 @@ class PaymentUpdate(BaseModel):
     amount: Optional[float] = None
     payment_type: Optional[str] = None
     status: Optional[str] = None
-    due_date: Optional[date] = None
+    due_date: Optional[str] = None
     paid_date: Optional[datetime] = None
     payment_method: Optional[str] = None
     transaction_id: Optional[str] = None
@@ -160,10 +162,10 @@ class PaymentResponse(PaymentBase):
     contract_id: str
     milestone_id: Optional[str] = None
     status: str
-    paid_date: Optional[datetime] = None
+    paid_date: Optional[str] = None
     transaction_id: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
 
 class CommentBase(BaseModel):
     comment: str
@@ -178,7 +180,7 @@ class CommentResponse(CommentBase):
     id: str
     contract_id: str
     user_id: str
-    created_at: datetime
+    created_at: str
 
 class AnalyticsResponse(BaseModel):
     id: str
@@ -189,7 +191,7 @@ class AnalyticsResponse(BaseModel):
     roi_percentage: float = 0
     cost_per_engagement: float = 0
     cost_per_click: float = 0
-    recorded_at: datetime
+    recorded_at: str
 
 class NotificationResponse(BaseModel):
     id: str
@@ -199,7 +201,7 @@ class NotificationResponse(BaseModel):
     title: str
     message: str
     is_read: bool
-    created_at: datetime
+    created_at: str
 
 # ============================================================================
 # CONTRACT CRUD OPERATIONS
@@ -219,8 +221,8 @@ async def create_contract(contract: ContractCreate):
             "terms_and_conditions": contract.terms_and_conditions,
             "payment_terms": contract.payment_terms,
             "deliverables": contract.deliverables,
-            "start_date": contract.start_date.isoformat() if contract.start_date else None,
-            "end_date": contract.end_date.isoformat() if contract.end_date else None,
+            "start_date": contract.start_date,
+            "end_date": contract.end_date,
             "total_budget": contract.total_budget,
             "payment_schedule": contract.payment_schedule,
             "legal_compliance": contract.legal_compliance,
@@ -261,6 +263,53 @@ async def get_contracts(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching contracts: {str(e)}")
+
+@router.get("/search")
+async def search_contracts(
+    query: str = Query(..., description="Search term"),
+    brand_id: Optional[str] = Query(None, description="Filter by brand ID"),
+    creator_id: Optional[str] = Query(None, description="Filter by creator ID"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    limit: int = Query(20, description="Number of results to return")
+):
+    """Search contracts by title, description, or other fields"""
+    try:
+        # Get all contracts first (since Supabase doesn't support OR conditions easily)
+        search_query = supabase.table("contracts").select("*")
+        
+        # Add filters
+        if brand_id:
+            search_query = search_query.eq("brand_id", brand_id)
+        if creator_id:
+            search_query = search_query.eq("creator_id", creator_id)
+        if status:
+            search_query = search_query.eq("status", status)
+            
+        result = search_query.execute()
+        contracts = result.data
+        
+        # Filter by search term in multiple fields
+        query_lower = query.lower()
+        filtered_contracts = []
+        
+        for contract in contracts:
+            # Search in contract_title, creator_id, brand_id
+            contract_title = (contract.get("contract_title") or "").lower()
+            creator_id = (contract.get("creator_id") or "").lower()
+            brand_id = (contract.get("brand_id") or "").lower()
+            
+            if (query_lower in contract_title or 
+                query_lower in creator_id or 
+                query_lower in brand_id):
+                filtered_contracts.append(contract)
+        
+        # Apply limit
+        limited_contracts = filtered_contracts[:limit]
+        
+        return [ContractResponse(**contract) for contract in limited_contracts]
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching contracts: {str(e)}")
 
 @router.get("/{contract_id}", response_model=ContractResponse)
 async def get_contract(contract_id: str):
@@ -740,35 +789,5 @@ async def get_contracts_overview(brand_id: Optional[str] = None, creator_id: Opt
         raise HTTPException(status_code=500, detail=f"Error fetching contract statistics: {str(e)}")
 
 # ============================================================================
-# CONTRACT SEARCH
-# ============================================================================
-
-@router.get("/search")
-async def search_contracts(
-    query: str = Query(..., description="Search term"),
-    brand_id: Optional[str] = Query(None, description="Filter by brand ID"),
-    creator_id: Optional[str] = Query(None, description="Filter by creator ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    limit: int = Query(20, description="Number of results to return")
-):
-    """Search contracts by title, description, or other fields"""
-    try:
-        # Build search query
-        search_query = supabase.table("contracts").select("*")
-        
-        # Add filters
-        if brand_id:
-            search_query = search_query.eq("brand_id", brand_id)
-        if creator_id:
-            search_query = search_query.eq("creator_id", creator_id)
-        if status:
-            search_query = search_query.eq("status", status)
-            
-        # Add text search (this is a simplified version - you might want to use full-text search)
-        # For now, we'll search in contract_title
-        result = search_query.ilike("contract_title", f"%{query}%").limit(limit).execute()
-        
-        return [ContractResponse(**contract) for contract in result.data]
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error searching contracts: {str(e)}") 
+# CONTRACT SEARCH - ENDPOINT MOVED ABOVE /{contract_id} ROUTE
+# ============================================================================ 
