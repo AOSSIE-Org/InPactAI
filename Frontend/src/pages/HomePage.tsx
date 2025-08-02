@@ -113,6 +113,7 @@ const successStories = [
     story: "Sarah's authentic tech reviews helped TechFlow launch their new smartphone with record-breaking pre-orders.",
     avatar: "/avatars/sarah.jpg",
     platform: "YouTube",
+    platformIcon: "/youtube.png",
   },
   {
     creator: "Marcus Rodriguez",
@@ -123,6 +124,7 @@ const successStories = [
     story: "Marcus's workout challenges with FitFuel products generated over 10M views and 50K+ app downloads.",
     avatar: "/avatars/marcus.jpg",
     platform: "Instagram",
+    platformIcon: "/instagram.png",
   },
   {
     creator: "Emma Thompson",
@@ -133,6 +135,18 @@ const successStories = [
     story: "Emma's sustainable fashion content helped EcoStyle become the top eco-friendly brand in their category.",
     avatar: "/avatars/emma.jpg",
     platform: "TikTok",
+    platformIcon: "/tiktok.png",
+  },
+  {
+    creator: "Alex Johnson",
+    niche: "Business & Tech",
+    followers: "650K",
+    brand: "TechCorp",
+    result: "150% lead generation",
+    story: "Alex's LinkedIn content helped TechCorp establish thought leadership and generate high-quality B2B leads.",
+    avatar: "/avatars/alex.jpg",
+    platform: "LinkedIn",
+    platformIcon: "/linkedin.png",
   },
 ];
 
@@ -865,7 +879,11 @@ export default function HomePage() {
                         {story.followers}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Star className="h-4 w-4 text-yellow-500" />
+                        <img 
+                          src={story.platformIcon} 
+                          alt={story.platform}
+                          className="h-4 w-4"
+                        />
                         {story.platform}
                       </span>
                     </div>

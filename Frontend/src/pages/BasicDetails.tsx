@@ -128,31 +128,45 @@ export default function BasicDetails() {
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <Instagram className="h-5 w-5 text-pink-600" />
+          <img src="/instagram.png" alt="Instagram" className="h-5 w-5" />
           Instagram Handle
         </Label>
         <Input placeholder="@username" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <Youtube className="h-5 w-5 text-red-600" />
+          <img src="/youtube.png" alt="YouTube" className="h-5 w-5" />
           YouTube Channel
         </Label>
         <Input placeholder="Channel URL" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <Twitter className="h-5 w-5 text-blue-400" />
+          <img src="/twitter.png" alt="Twitter" className="h-5 w-5" />
           Twitter Handle
         </Label>
         <Input placeholder="@username" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <TikTok className="h-5 w-5" />
+          <img src="/tiktok.png" alt="TikTok" className="h-5 w-5" />
           TikTok Username
         </Label>
         <Input placeholder="@username" className="border border-gray-300" />
+      </div>
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <img src="/facebook.png" alt="Facebook" className="h-5 w-5" />
+          Facebook Page
+        </Label>
+        <Input placeholder="Page URL" className="border border-gray-300" />
+      </div>
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <img src="/linkedin.png" alt="LinkedIn" className="h-5 w-5" />
+          LinkedIn Profile
+        </Label>
+        <Input placeholder="Profile URL" className="border border-gray-300" />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
@@ -195,7 +209,9 @@ export default function BasicDetails() {
             <SelectItem value="instagram">Instagram</SelectItem>
             <SelectItem value="youtube">YouTube</SelectItem>
             <SelectItem value="tiktok">TikTok</SelectItem>
+            <SelectItem value="facebook">Facebook</SelectItem>
             <SelectItem value="twitter">Twitter</SelectItem>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -310,7 +326,9 @@ export default function BasicDetails() {
             <SelectItem value="instagram">Instagram</SelectItem>
             <SelectItem value="youtube">YouTube</SelectItem>
             <SelectItem value="tiktok">TikTok</SelectItem>
+            <SelectItem value="facebook">Facebook</SelectItem>
             <SelectItem value="twitter">Twitter</SelectItem>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
           </SelectContent>
         </Select>
       </div>

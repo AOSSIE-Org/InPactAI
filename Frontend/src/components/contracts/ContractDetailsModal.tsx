@@ -10,8 +10,6 @@ import {
   AlertCircle,
   TrendingUp,
   Eye,
-  Edit,
-  Download,
   MessageSquare,
   BarChart3,
   CreditCard,
@@ -21,24 +19,23 @@ import {
 
 interface Contract {
   id: string;
-  title: string;
-  creator: string;
-  brand: string;
+  sponsorship_id?: string;
+  creator_id: string;
+  brand_id: string;
+  contract_title?: string;
+  contract_type: string;
+  terms_and_conditions?: any;
+  payment_terms?: any;
+  deliverables?: any;
+  start_date?: string;
+  end_date?: string;
+  total_budget?: number;
+  payment_schedule?: any;
+  legal_compliance?: any;
+  contract_url?: string;
   status: string;
-  type: string;
-  budget: number;
-  startDate: string;
-  endDate: string;
-  progress: number;
-  milestones: number;
-  completedMilestones: number;
-  deliverables: number;
-  completedDeliverables: number;
-  payments: Array<{
-    amount: number;
-    status: string;
-    date: string;
-  }>;
+  created_at: string;
+  updated_at?: string;
 }
 
 interface ContractDetailsModalProps {
@@ -83,12 +80,200 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Eye },
+    { id: 'terms', label: 'Terms & Conditions', icon: FileText },
     { id: 'milestones', label: 'Milestones', icon: Target },
     { id: 'deliverables', label: 'Deliverables', icon: FileText },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'comments', label: 'Comments', icon: MessageSquare }
   ];
+
+  const renderTerms = () => (
+    <div style={{ display: 'grid', gap: '24px' }}>
+      {/* Terms & Conditions */}
+      <div style={{
+        background: 'rgba(42, 42, 42, 0.6)',
+        borderRadius: '12px',
+        padding: '20px',
+        border: '1px solid rgba(42, 42, 42, 0.8)'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Terms & Conditions</h3>
+        {contract.terms_and_conditions ? (
+          <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#fff' }}>
+            {typeof contract.terms_and_conditions === 'string' ? (
+              <pre style={{ 
+                whiteSpace: 'pre-wrap', 
+                fontFamily: 'inherit',
+                margin: 0,
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {contract.terms_and_conditions}
+              </pre>
+            ) : (
+              <div style={{ 
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {Object.entries(contract.terms_and_conditions).map(([key, value]) => (
+                  <div key={key} style={{ marginBottom: '12px' }}>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#6366f1',
+                      marginBottom: '4px',
+                      textTransform: 'capitalize'
+                    }}>
+                      {key.replace(/_/g, ' ')}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+                      {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px 20px',
+            color: '#a0a0a0',
+            fontSize: '16px'
+          }}>
+            <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+            <p>No terms and conditions have been set for this contract.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Payment Terms */}
+      <div style={{
+        background: 'rgba(42, 42, 42, 0.6)',
+        borderRadius: '12px',
+        padding: '20px',
+        border: '1px solid rgba(42, 42, 42, 0.8)'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Payment Terms</h3>
+        {contract.payment_terms ? (
+          <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#fff' }}>
+            {typeof contract.payment_terms === 'string' ? (
+              <pre style={{ 
+                whiteSpace: 'pre-wrap', 
+                fontFamily: 'inherit',
+                margin: 0,
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {contract.payment_terms}
+              </pre>
+            ) : (
+              <div style={{ 
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {Object.entries(contract.payment_terms).map(([key, value]) => (
+                  <div key={key} style={{ marginBottom: '12px' }}>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#6366f1',
+                      marginBottom: '4px',
+                      textTransform: 'capitalize'
+                    }}>
+                      {key.replace(/_/g, ' ')}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+                      {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px 20px',
+            color: '#a0a0a0',
+            fontSize: '16px'
+          }}>
+            <DollarSign size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+            <p>No payment terms have been set for this contract.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Legal Compliance */}
+      <div style={{
+        background: 'rgba(42, 42, 42, 0.6)',
+        borderRadius: '12px',
+        padding: '20px',
+        border: '1px solid rgba(42, 42, 42, 0.8)'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Legal Compliance</h3>
+        {contract.legal_compliance ? (
+          <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#fff' }}>
+            {typeof contract.legal_compliance === 'string' ? (
+              <pre style={{ 
+                whiteSpace: 'pre-wrap', 
+                fontFamily: 'inherit',
+                margin: 0,
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {contract.legal_compliance}
+              </pre>
+            ) : (
+              <div style={{ 
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 42, 42, 0.8)'
+              }}>
+                {Object.entries(contract.legal_compliance).map(([key, value]) => (
+                  <div key={key} style={{ marginBottom: '12px' }}>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#6366f1',
+                      marginBottom: '4px',
+                      textTransform: 'capitalize'
+                    }}>
+                      {key.replace(/_/g, ' ')}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+                      {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px 20px',
+            color: '#a0a0a0',
+            fontSize: '16px'
+          }}>
+            <CheckCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+            <p>No legal compliance information has been set for this contract.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const renderOverview = () => (
     <div style={{ display: 'grid', gap: '24px' }}>
@@ -103,7 +288,7 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Contract Title</div>
-            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.title}</div>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.contract_title || `Contract ${contract.id.slice(0, 8)}`}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Status</div>
@@ -121,19 +306,19 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Creator</div>
-            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.creator}</div>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.creator_id}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Brand</div>
-            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.brand}</div>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>{contract.brand_id}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Contract Type</div>
-            <div style={{ fontSize: '16px', fontWeight: '600', textTransform: 'capitalize' }}>{contract.type}</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', textTransform: 'capitalize' }}>{contract.contract_type}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Total Budget</div>
-            <div style={{ fontSize: '16px', fontWeight: '600' }}>${contract.budget.toLocaleString()}</div>
+            <div style={{ fontSize: '16px', fontWeight: '600' }}>${(contract.total_budget || 0).toLocaleString()}</div>
           </div>
         </div>
       </div>
@@ -148,8 +333,8 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Progress Overview</h3>
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '14px', color: '#a0a0a0' }}>Overall Progress</span>
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>{contract.progress}%</span>
+            <span style={{ fontSize: '14px', color: '#a0a0a0' }}>Contract Status</span>
+            <span style={{ fontSize: '14px', fontWeight: '600', textTransform: 'capitalize' }}>{contract.status}</span>
           </div>
           <div style={{
             width: '100%',
@@ -159,9 +344,9 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
             overflow: 'hidden'
           }}>
             <div style={{
-              width: `${contract.progress}%`,
+              width: '100%',
               height: '100%',
-              background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
+              background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)',
               borderRadius: '4px',
               transition: 'width 0.3s ease'
             }} />
@@ -169,15 +354,15 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
           <div>
-            <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Milestones</div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Created</div>
             <div style={{ fontSize: '16px', fontWeight: '600' }}>
-              {contract.completedMilestones}/{contract.milestones}
+              {new Date(contract.created_at).toLocaleDateString()}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Deliverables</div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginBottom: '4px' }}>Last Updated</div>
             <div style={{ fontSize: '16px', fontWeight: '600' }}>
-              {contract.completedDeliverables}/{contract.deliverables}
+              {contract.updated_at ? new Date(contract.updated_at).toLocaleDateString() : 'Never'}
             </div>
           </div>
         </div>
@@ -196,14 +381,14 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
             <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '14px', fontWeight: '600' }}>Contract Start</div>
-              <div style={{ fontSize: '12px', color: '#a0a0a0' }}>{contract.startDate}</div>
+              <div style={{ fontSize: '12px', color: '#a0a0a0' }}>{contract.start_date || 'Not set'}</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '8px', height: '8px', background: '#f59e0b', borderRadius: '50%' }}></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '14px', fontWeight: '600' }}>Contract End</div>
-              <div style={{ fontSize: '12px', color: '#a0a0a0' }}>{contract.endDate}</div>
+              <div style={{ fontSize: '12px', color: '#a0a0a0' }}>{contract.end_date || 'Not set'}</div>
             </div>
           </div>
         </div>
@@ -213,7 +398,8 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
 
   const renderMilestones = () => (
     <div style={{ display: 'grid', gap: '16px' }}>
-      {contract.milestones > 0 && (
+      {/* Milestones section - will be implemented when we add milestones API */}
+      {false && (
         <div style={{
           background: 'rgba(42, 42, 42, 0.6)',
           borderRadius: '12px',
@@ -304,7 +490,12 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
                 </div>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: '600' }}>{deliverable}</div>
-                  <div style={{ fontSize: '12px', color: '#a0a0a0' }}>
+                  <div style={{ fontSize: '12px', color: '#a0a0a0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img 
+                      src={index === 0 ? '/youtube.png' : '/instagram.png'} 
+                      alt={index === 0 ? 'YouTube' : 'Instagram'}
+                      style={{ width: '16px', height: '16px' }}
+                    />
                     {index === 0 ? 'YouTube' : 'Instagram'} • Due in {index === 0 ? '15' : index === 1 ? '20' : '25'} days
                   </div>
                 </div>
@@ -334,7 +525,8 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
       }}>
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Payment History</h3>
         <div style={{ display: 'grid', gap: '12px' }}>
-          {contract.payments.map((payment, index) => (
+          {/* Payments section - will be implemented when we add payments API */}
+        {false && contract.payments && contract.payments.map((payment, index) => (
             <div key={index} style={{
               display: 'flex',
               alignItems: 'center',
@@ -522,6 +714,7 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview': return renderOverview();
+      case 'terms': return renderTerms();
       case 'milestones': return renderMilestones();
       case 'deliverables': return renderDeliverables();
       case 'payments': return renderPayments();
@@ -566,54 +759,22 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
           justifyContent: 'space-between'
         }}>
           <div>
-            <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '4px' }}>{contract.title}</h2>
-            <p style={{ fontSize: '14px', color: '#a0a0a0' }}>{contract.creator} • {contract.brand}</p>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '4px' }}>{contract.contract_title || `Contract ${contract.id.slice(0, 8)}`}</h2>
+            <p style={{ fontSize: '14px', color: '#a0a0a0' }}>{contract.creator_id} • {contract.brand_id}</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button style={{
-              padding: '8px 16px',
-              background: 'rgba(99, 102, 241, 0.2)',
-              border: '1px solid rgba(99, 102, 241, 0.3)',
-              borderRadius: '8px',
-              color: '#6366f1',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
-              <Edit size={16} />
-              Edit
-            </button>
-            <button style={{
-              padding: '8px 16px',
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px',
               background: 'rgba(42, 42, 42, 0.6)',
               border: '1px solid rgba(42, 42, 42, 0.8)',
               borderRadius: '8px',
               color: '#fff',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
-              <Download size={16} />
-              Export
-            </button>
-            <button
-              onClick={onClose}
-              style={{
-                padding: '8px',
-                background: 'rgba(42, 42, 42, 0.6)',
-                border: '1px solid rgba(42, 42, 42, 0.8)',
-                borderRadius: '8px',
-                color: '#fff',
-                cursor: 'pointer'
-              }}
-            >
-              <X size={20} />
-            </button>
-          </div>
+              cursor: 'pointer'
+            }}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Tabs */}
