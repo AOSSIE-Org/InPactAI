@@ -27,7 +27,7 @@ if not url or not key:
 supabase: Client = create_client(url, key)
 
 # Define Router
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["users", "posts", "sponsorships"])
 
 # Helper Functions
 def generate_uuid():
@@ -58,6 +58,20 @@ async def create_user(user: UserCreate):
 async def get_users():
     result = supabase.table("users").select("*").execute()
     return result
+
+@router.get("/users/{user_id}")
+async def get_user(user_id: str):
+    try:
+        result = supabase.table("users").select("*").eq("id", user_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        return result.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching user: {str(e)}")
 
 # ========== AUDIENCE INSIGHTS ROUTES ==========
 @router.post("/audience-insights/")
