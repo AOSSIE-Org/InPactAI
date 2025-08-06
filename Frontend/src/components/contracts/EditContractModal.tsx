@@ -54,9 +54,36 @@ const EditContractModal: React.FC<EditContractModalProps> = ({
     revision_policy: ''
   });
 
+  // Jurisdiction and dispute resolution data
+  const [jurisdictionData, setJurisdictionData] = useState({
+    jurisdiction: '',
+    dispute_resolution: '',
+    custom_jurisdiction: '',
+    custom_dispute_resolution: ''
+  });
+
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Jurisdiction options
+  const jurisdictions = [
+    { value: "california", label: "California, USA", laws: ["California Civil Code", "Federal Trade Commission Act", "California Consumer Privacy Act"] },
+    { value: "newyork", label: "New York, USA", laws: ["New York Civil Practice Law", "Federal Trade Commission Act", "New York Consumer Protection"] },
+    { value: "mumbai", label: "Mumbai, India", laws: ["Indian Contract Act, 1872", "Information Technology Act, 2000", "Consumer Protection Act, 2019"] },
+    { value: "london", label: "London, UK", laws: ["English Contract Law", "Consumer Rights Act 2015", "Data Protection Act 2018"] },
+    { value: "toronto", label: "Toronto, Canada", laws: ["Ontario Consumer Protection Act", "Personal Information Protection Act", "Competition Act"] },
+    { value: "singapore", label: "Singapore", laws: ["Singapore Contract Law", "Personal Data Protection Act", "Consumer Protection Act"] },
+    { value: "sydney", label: "Sydney, Australia", laws: ["Australian Consumer Law", "Privacy Act 1988", "Competition and Consumer Act"] },
+    { value: "custom", label: "Custom Jurisdiction", laws: [] }
+  ];
+
+  const disputeResolutionOptions = [
+    { value: "arbitration", label: "Binding Arbitration", description: "Disputes resolved through arbitration" },
+    { value: "mediation", label: "Mediation", description: "Disputes resolved through mediation first" },
+    { value: "court", label: "Court Proceedings", description: "Disputes resolved in local courts" },
+    { value: "custom", label: "Custom Resolution", description: "Specify custom dispute resolution" }
+  ];
 
   // Populate form when contract changes
   useEffect(() => {
@@ -105,6 +132,16 @@ const EditContractModal: React.FC<EditContractModalProps> = ({
           revision_policy: contract.deliverables.revision_policy || ''
         });
       }
+
+      // Populate jurisdiction data
+      if (contract.terms_and_conditions && typeof contract.terms_and_conditions === 'object') {
+        setJurisdictionData({
+          jurisdiction: contract.terms_and_conditions.jurisdiction || '',
+          dispute_resolution: contract.terms_and_conditions.dispute_resolution || '',
+          custom_jurisdiction: contract.terms_and_conditions.custom_jurisdiction || '',
+          custom_dispute_resolution: contract.terms_and_conditions.custom_dispute_resolution || ''
+        });
+      }
     }
   }, [contract]);
 
@@ -137,6 +174,13 @@ const EditContractModal: React.FC<EditContractModalProps> = ({
     }));
   };
 
+  const handleJurisdictionChange = (field: string, value: string) => {
+    setJurisdictionData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contract) return;
@@ -158,15 +202,53 @@ const EditContractModal: React.FC<EditContractModalProps> = ({
         Object.entries(deliverablesData).filter(([_, value]) => value.trim() !== '')
       );
 
+      const cleanJurisdictionData = Object.fromEntries(
+        Object.entries(jurisdictionData).filter(([_, value]) => value && value.trim() !== '')
+      );
+
+      // Only include terms_and_conditions if there's actual data
+      let termsAndConditions = undefined;
+      if (Object.keys(cleanTermsData).length > 0 || Object.keys(cleanJurisdictionData).length > 0) {
+        termsAndConditions = { ...cleanTermsData, ...cleanJurisdictionData };
+      }
+
       const updateData = {
         ...formData,
         total_budget: formData.total_budget ? parseFloat(formData.total_budget) : undefined,
-        terms_and_conditions: Object.keys(cleanTermsData).length > 0 ? cleanTermsData : undefined,
+        terms_and_conditions: termsAndConditions,
         payment_terms: Object.keys(cleanPaymentData).length > 0 ? cleanPaymentData : undefined,
         deliverables: Object.keys(cleanDeliverablesData).length > 0 ? cleanDeliverablesData : undefined,
       };
 
-      const updatedContract = await contractsApi.updateContract(contract.id, updateData);
+      // Remove undefined values to avoid issues
+      const finalUpdateData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, value]) => value !== undefined && value !== null)
+      );
+
+      // Additional validation to ensure data is properly formatted
+      if (finalUpdateData.terms_and_conditions) {
+        // Remove empty strings from terms_and_conditions
+        finalUpdateData.terms_and_conditions = Object.fromEntries(
+          Object.entries(finalUpdateData.terms_and_conditions).filter(([_, value]) => 
+            value !== undefined && value !== null && value !== ''
+          )
+        );
+      }
+
+      // Ensure total_budget is a number if present
+      if (finalUpdateData.total_budget !== undefined) {
+        finalUpdateData.total_budget = Number(finalUpdateData.total_budget);
+        if (isNaN(finalUpdateData.total_budget)) {
+          delete finalUpdateData.total_budget;
+        }
+      }
+
+      console.log('Updating contract with data:', finalUpdateData);
+      console.log('Jurisdiction data:', cleanJurisdictionData);
+      console.log('Terms and conditions:', termsAndConditions);
+      console.log('JSON stringified data:', JSON.stringify(finalUpdateData, null, 2));
+
+      const updatedContract = await contractsApi.updateContract(contract.id, finalUpdateData);
       onContractUpdated(updatedContract);
       onClose();
     } catch (err) {
@@ -833,6 +915,134 @@ const EditContractModal: React.FC<EditContractModalProps> = ({
                   placeholder="e.g., 2 rounds of revisions included"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Jurisdiction and Dispute Resolution Section */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#fff' }}>
+              Legal Framework
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#a0a0a0' }}>
+                  Governing Jurisdiction <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  value={jurisdictionData.jurisdiction}
+                  onChange={(e) => handleJurisdictionChange('jurisdiction', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    background: 'rgba(42, 42, 42, 0.6)',
+                    border: '1px solid rgba(42, 42, 42, 0.8)',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontSize: '12px'
+                  }}
+                >
+                  <option value="">Select jurisdiction</option>
+                  {jurisdictions.map((jurisdiction) => (
+                    <option key={jurisdiction.value} value={jurisdiction.value}>
+                      {jurisdiction.label}
+                    </option>
+                  ))}
+                </select>
+                {jurisdictionData.jurisdiction && jurisdictionData.jurisdiction !== "custom" && (
+                  <div style={{ fontSize: '10px', color: '#a0a0a0', marginTop: '4px' }}>
+                    <p style={{ fontWeight: '600' }}>Applicable Laws:</p>
+                    <ul style={{ listStyle: 'disc', paddingLeft: '16px', marginTop: '2px' }}>
+                      {jurisdictions.find(j => j.value === jurisdictionData.jurisdiction)?.laws.map((law, index) => (
+                        <li key={index}>{law}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {jurisdictionData.jurisdiction === "custom" && (
+                  <div style={{ fontSize: '10px', color: '#3b82f6', marginTop: '4px' }}>
+                    <p style={{ fontWeight: '600' }}>ℹ️ Custom jurisdiction selected. Please provide specific details below.</p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#a0a0a0' }}>
+                  Dispute Resolution <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  value={jurisdictionData.dispute_resolution}
+                  onChange={(e) => handleJurisdictionChange('dispute_resolution', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    background: 'rgba(42, 42, 42, 0.6)',
+                    border: '1px solid rgba(42, 42, 42, 0.8)',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontSize: '12px'
+                  }}
+                >
+                  <option value="">Select resolution method</option>
+                  {disputeResolutionOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {jurisdictionData.dispute_resolution === "custom" && (
+                  <div style={{ fontSize: '10px', color: '#3b82f6', marginTop: '4px' }}>
+                    <p style={{ fontWeight: '600' }}>ℹ️ Custom dispute resolution selected. Please provide specific details below.</p>
+                  </div>
+                )}
+              </div>
+
+              {jurisdictionData.jurisdiction === "custom" && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#a0a0a0' }}>
+                    Custom Jurisdiction Details
+                  </label>
+                  <textarea
+                    value={jurisdictionData.custom_jurisdiction}
+                    onChange={(e) => handleJurisdictionChange('custom_jurisdiction', e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      background: 'rgba(42, 42, 42, 0.6)',
+                      border: '1px solid rgba(42, 42, 42, 0.8)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      resize: 'vertical'
+                    }}
+                    placeholder="Specify your custom jurisdiction and applicable laws..."
+                  />
+                </div>
+              )}
+
+              {jurisdictionData.dispute_resolution === "custom" && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#a0a0a0' }}>
+                    Custom Dispute Resolution
+                  </label>
+                  <textarea
+                    value={jurisdictionData.custom_dispute_resolution}
+                    onChange={(e) => handleJurisdictionChange('custom_dispute_resolution', e.target.value)}
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      background: 'rgba(42, 42, 42, 0.6)',
+                      border: '1px solid rgba(42, 42, 42, 0.8)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      resize: 'vertical'
+                    }}
+                    placeholder="Specify your custom dispute resolution procedure..."
+                  />
+                </div>
+              )}
             </div>
           </div>
 
