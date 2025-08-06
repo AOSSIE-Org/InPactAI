@@ -133,19 +133,39 @@ async function apiCall<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
 
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      if (response.status === 0) {
+        throw new Error('Backend server is not available. Please try again later.');
+      }
+      if (response.status >= 500) {
+        // Try to get more specific error information
+        try {
+          const errorData = await response.json();
+          throw new Error(`Server error: ${errorData.detail || response.statusText}`);
+        } catch {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+      }
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Backend server is not available. Please try again later.');
+    }
+    throw error;
   }
-
-  return response.json();
 }
 
 // Contract CRUD Operations
