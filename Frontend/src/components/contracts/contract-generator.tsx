@@ -7,11 +7,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Download, FileText, Loader2, Sparkles } from "lucide-react"
+import { Download, FileText, Loader2, Sparkles, Globe, Scale } from "lucide-react"
 
 export function ContractGenerator() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isGenerated, setIsGenerated] = useState(false)
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState("")
+  const [disputeResolution, setDisputeResolution] = useState("")
 
   const handleGenerate = () => {
     setIsGenerating(true)
@@ -21,6 +23,23 @@ export function ContractGenerator() {
       setIsGenerated(true)
     }, 2000)
   }
+
+  // Governing laws options
+  const jurisdictions = [
+    { value: "california", label: "California, USA", laws: ["California Civil Code", "Federal Trade Commission Act", "California Consumer Privacy Act"] },
+    { value: "newyork", label: "New York, USA", laws: ["New York Civil Practice Law", "Federal Trade Commission Act", "New York Consumer Protection"] },
+    { value: "mumbai", label: "Mumbai, India", laws: ["Indian Contract Act, 1872", "Information Technology Act, 2000", "Consumer Protection Act, 2019"] },
+    { value: "london", label: "London, UK", laws: ["English Contract Law", "Consumer Rights Act 2015", "Data Protection Act 2018"] },
+    { value: "toronto", label: "Toronto, Canada", laws: ["Ontario Consumer Protection Act", "Personal Information Protection Act", "Competition Act"] },
+    { value: "custom", label: "Custom Jurisdiction", laws: [] }
+  ]
+
+  const disputeResolutionOptions = [
+    { value: "arbitration", label: "Binding Arbitration", description: "Disputes resolved through arbitration" },
+    { value: "mediation", label: "Mediation", description: "Disputes resolved through mediation first" },
+    { value: "court", label: "Court Proceedings", description: "Disputes resolved in local courts" },
+    { value: "custom", label: "Custom Resolution", description: "Specify custom dispute resolution" }
+  ]
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -75,6 +94,73 @@ export function ContractGenerator() {
           <div className="space-y-2">
             <Label htmlFor="deliverables">Deliverables</Label>
             <Textarea id="deliverables" placeholder="Describe the content or services you'll provide" rows={3} />
+          </div>
+
+          {/* Governing Laws Section */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <Scale className="h-4 w-4" />
+              <Label className="text-base font-semibold">Governing Laws & Jurisdiction</Label>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="jurisdiction">Primary Jurisdiction</Label>
+              <Select value={selectedJurisdiction} onValueChange={setSelectedJurisdiction}>
+                <SelectTrigger id="jurisdiction">
+                  <SelectValue placeholder="Select jurisdiction" />
+                </SelectTrigger>
+                <SelectContent>
+                  {jurisdictions.map((jurisdiction) => (
+                    <SelectItem key={jurisdiction.value} value={jurisdiction.value}>
+                      <div className="flex items-center space-x-2">
+                        <Globe className="h-3 w-3" />
+                        <span>{jurisdiction.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedJurisdiction && selectedJurisdiction !== "custom" && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  <p className="font-medium">Applicable Laws:</p>
+                  <ul className="list-disc pl-4 mt-1">
+                    {jurisdictions.find(j => j.value === selectedJurisdiction)?.laws.map((law, index) => (
+                      <li key={index}>{law}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dispute-resolution">Dispute Resolution</Label>
+              <Select value={disputeResolution} onValueChange={setDisputeResolution}>
+                <SelectTrigger id="dispute-resolution">
+                  <SelectValue placeholder="Select dispute resolution method" />
+                </SelectTrigger>
+                <SelectContent>
+                  {disputeResolutionOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div>
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {disputeResolution === "custom" && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-dispute">Custom Dispute Resolution</Label>
+                <Textarea 
+                  id="custom-dispute" 
+                  placeholder="Specify your custom dispute resolution procedure..."
+                  rows={2}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -137,6 +223,23 @@ export function ContractGenerator() {
                   <p className="text-muted-foreground">Payment Schedule: 50% upon signing, 50% upon completion.</p>
                   <p className="text-muted-foreground mt-4">3. TERM</p>
                   <p>This Agreement shall commence on the Effective Date and continue for 30 days.</p>
+                  
+                  {/* Governing Laws Section in Generated Contract */}
+                  {selectedJurisdiction && (
+                    <>
+                      <p className="text-muted-foreground mt-4">4. GOVERNING LAW</p>
+                      <p>This Agreement shall be governed by and construed in accordance with the laws of {jurisdictions.find(j => j.value === selectedJurisdiction)?.label}.</p>
+                      
+                      <p className="text-muted-foreground mt-4">5. DISPUTE RESOLUTION</p>
+                      <p>
+                        {disputeResolution === "arbitration" && "Any disputes arising from this Agreement shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association."}
+                        {disputeResolution === "mediation" && "Any disputes arising from this Agreement shall first be submitted to mediation, and if not resolved, shall be resolved through binding arbitration."}
+                        {disputeResolution === "court" && "Any disputes arising from this Agreement shall be resolved in the courts of the jurisdiction specified above."}
+                        {disputeResolution === "custom" && "Any disputes arising from this Agreement shall be resolved as follows: [Custom procedure to be specified]"}
+                      </p>
+                    </>
+                  )}
+                  
                   <p className="text-muted-foreground mt-4">[...additional contract sections...]</p>
                 </div>
               </div>

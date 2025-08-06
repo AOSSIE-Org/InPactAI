@@ -79,9 +79,12 @@ const Contracts = () => {
           });
         } else if (response.status === 404) {
           console.warn('User not found in database, Smart Contract Generator will work without auto-fill');
+        } else {
+          console.warn('Backend not available, Smart Contract Generator will work without auto-fill');
         }
       } catch (error) {
-        console.error('Error fetching current user info:', error);
+        console.warn('Error fetching current user info (backend may be down):', error);
+        // Don't throw error, just log it and continue
       }
     };
 
@@ -105,7 +108,24 @@ const Contracts = () => {
         setStats(statsData);
       } catch (err) {
         console.error('Error fetching contracts:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch contracts');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch contracts';
+        
+        // Check if it's a backend availability issue
+        if (errorMessage.includes('Backend server is not available')) {
+          setError('Backend server is not available. Some features may be limited. Please try again later.');
+          // Set empty arrays so the interface still works
+          setContracts([]);
+          setStats({
+            total_contracts: 0,
+            active_contracts: 0,
+            completed_contracts: 0,
+            draft_contracts: 0,
+            total_budget: 0,
+            average_contract_value: 0
+          });
+        } else {
+          setError(errorMessage);
+        }
       } finally {
         setLoading(false);
       }
@@ -586,6 +606,37 @@ const Contracts = () => {
       padding: '24px',
       color: '#fff'
     }}>
+      {/* Backend Status Banner */}
+      {error && error.includes('Backend server is not available') && (
+        <div style={{
+          marginBottom: '24px',
+          padding: '16px',
+          background: 'rgba(120, 113, 108, 0.2)',
+          border: '1px solid rgba(180, 83, 9, 0.6)',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            background: '#fbbf24',
+            borderRadius: '50%',
+            animation: 'pulse 2s infinite'
+          }}></div>
+          <div>
+            <h3 style={{ color: '#fbbf24', fontWeight: '600', marginBottom: '4px' }}>
+              Backend Server Unavailable
+            </h3>
+            <p style={{ color: '#fde68a', fontSize: '14px' }}>
+              The backend server is currently not available. Some features may be limited. 
+              You can still view the interface and prepare contracts.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
