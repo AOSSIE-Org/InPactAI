@@ -860,3 +860,342 @@ SELECT
     c.contract_title
 FROM contract_notifications cn
 JOIN contracts c ON cn.contract_id = c.id; 
+
+
+-- Add to contracts table for self-learning pricing
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS brand_satisfaction_score INTEGER; -- 1-10 scale
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS roi_achieved DECIMAL(5,2); -- Percentage achieved
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS repeat_business BOOLEAN DEFAULT false;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS price_negotiation_history JSONB; -- Track price changes
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS campaign_success_metrics JSONB; -- Final performance data
+
+-- Add to contracts table for better similarity matching
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS creator_followers INTEGER;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS creator_engagement_rate DECIMAL(5,4);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS content_type VARCHAR(50); -- 'video', 'post', 'story', 'live'
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS campaign_type VARCHAR(50); -- 'product_launch', 'brand_awareness', 'sales'
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS platform VARCHAR(50); -- 'instagram', 'youtube', 'tiktok', 'twitter'
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS duration_weeks INTEGER;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS exclusivity_level VARCHAR(50); -- 'none', 'platform', 'category', 'full'
+
+-- Add to contracts table for market context
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS market_trend_score DECIMAL(3,2); -- 0-1 scale
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS seasonal_factor DECIMAL(3,2); -- 0-1 scale
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS industry_benchmark_rate DECIMAL(5,2); -- Industry average
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS competitor_pricing JSONB; -- Similar competitor rates
+
+-- Create new table for detailed pricing feedback
+CREATE TABLE IF NOT EXISTS pricing_feedback (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    recommended_price DECIMAL(10,2),
+    actual_price DECIMAL(10,2),
+    price_accuracy_score INTEGER, -- 1-10 scale
+    market_conditions TEXT,
+    feedback_notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create table to store AI recommendations
+CREATE TABLE IF NOT EXISTS pricing_recommendations (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    recommended_price DECIMAL(10,2),
+    confidence_score DECIMAL(3,2), -- 0-1 scale
+    reasoning JSONB, -- AI explanation
+    similar_contracts_used JSONB, -- IDs of similar contracts
+    market_factors JSONB, -- Market conditions considered
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Add sample data for AI pricing optimization system
+-- This script populates the contracts table with realistic data for testing
+
+-- Update existing contracts with creator metrics and learning fields
+UPDATE contracts 
+SET 
+    creator_followers = CASE 
+        WHEN creator_id = (SELECT id FROM users WHERE username = 'creator1') THEN 25000
+        WHEN creator_id = (SELECT id FROM users WHERE username = 'creator2') THEN 15000
+        ELSE 10000
+    END,
+    creator_engagement_rate = CASE 
+        WHEN creator_id = (SELECT id FROM users WHERE username = 'creator1') THEN 4.5
+        WHEN creator_id = (SELECT id FROM users WHERE username = 'creator2') THEN 3.8
+        ELSE 3.2
+    END,
+    content_type = CASE 
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%tech%') THEN 'video'
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%fashion%') THEN 'post'
+        ELSE 'video'
+    END,
+    campaign_type = CASE 
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%tech%') THEN 'product_launch'
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%fashion%') THEN 'brand_awareness'
+        ELSE 'sales'
+    END,
+    platform = CASE 
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%tech%') THEN 'youtube'
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%fashion%') THEN 'instagram'
+        ELSE 'youtube'
+    END,
+    duration_weeks = CASE 
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%tech%') THEN 4
+        WHEN id = (SELECT id FROM contracts WHERE contract_url LIKE '%fashion%') THEN 2
+        ELSE 3
+    END,
+    exclusivity_level = 'none',
+    brand_satisfaction_score = CASE 
+        WHEN status = 'signed' THEN 8
+        ELSE NULL
+    END,
+    roi_achieved = CASE 
+        WHEN status = 'signed' THEN 85.5
+        ELSE NULL
+    END,
+    repeat_business = CASE 
+        WHEN status = 'signed' THEN true
+        ELSE false
+    END,
+    price_negotiation_history = CASE 
+        WHEN status = 'signed' THEN '{"initial_price": 450, "final_price": 500, "negotiation_rounds": 2}'::jsonb
+        ELSE NULL
+    END,
+    campaign_success_metrics = CASE 
+        WHEN status = 'signed' THEN '{"impressions": 50000, "clicks": 2500, "conversions": 125, "engagement_rate": 4.5}'::jsonb
+        ELSE NULL
+    END
+WHERE id IN (SELECT id FROM contracts LIMIT 10);
+
+-- Insert additional sample contracts for better pricing analysis
+INSERT INTO contracts (
+    id, sponsorship_id, creator_id, brand_id, contract_url, status, 
+    total_budget, creator_followers, creator_engagement_rate, content_type, 
+    campaign_type, platform, duration_weeks, exclusivity_level,
+    brand_satisfaction_score, roi_achieved, repeat_business,
+    price_negotiation_history, campaign_success_metrics, created_at
+) VALUES 
+-- High-tier creator contracts
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/tech-video-1.pdf', 'signed', 2500.00, 50000, 6.2, 'video', 
+ 'product_launch', 'youtube', 6, 'platform', 9, 120.5, true,
+ '{"initial_price": 2000, "final_price": 2500, "negotiation_rounds": 3}'::jsonb,
+ '{"impressions": 120000, "clicks": 6000, "conversions": 300, "engagement_rate": 6.2}'::jsonb,
+ NOW() - INTERVAL '30 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/fashion-post-1.pdf', 'signed', 1800.00, 35000, 5.8, 'post', 
+ 'brand_awareness', 'instagram', 4, 'none', 8, 95.2, true,
+ '{"initial_price": 1500, "final_price": 1800, "negotiation_rounds": 2}'::jsonb,
+ '{"impressions": 80000, "clicks": 4000, "conversions": 200, "engagement_rate": 5.8}'::jsonb,
+ NOW() - INTERVAL '45 days'),
+
+-- Mid-tier creator contracts
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/gaming-live-1.pdf', 'signed', 1200.00, 20000, 4.1, 'live', 
+ 'sales', 'youtube', 3, 'none', 7, 78.3, false,
+ '{"initial_price": 1000, "final_price": 1200, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 45000, "clicks": 2250, "conversions": 112, "engagement_rate": 4.1}'::jsonb,
+ NOW() - INTERVAL '60 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/tech-review-1.pdf', 'signed', 900.00, 12000, 3.5, 'review', 
+ 'product_launch', 'youtube', 2, 'none', 6, 65.8, false,
+ '{"initial_price": 800, "final_price": 900, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 30000, "clicks": 1500, "conversions": 75, "engagement_rate": 3.5}'::jsonb,
+ NOW() - INTERVAL '75 days'),
+
+-- Low-tier creator contracts
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/fashion-story-1.pdf', 'signed', 600.00, 8000, 2.8, 'story', 
+ 'brand_awareness', 'instagram', 1, 'none', 5, 45.2, false,
+ '{"initial_price": 500, "final_price": 600, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 20000, "clicks": 1000, "conversions": 50, "engagement_rate": 2.8}'::jsonb,
+ NOW() - INTERVAL '90 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/gaming-post-1.pdf', 'signed', 400.00, 5000, 2.1, 'post', 
+ 'sales', 'instagram', 1, 'none', 4, 32.5, false,
+ '{"initial_price": 350, "final_price": 400, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 15000, "clicks": 750, "conversions": 37, "engagement_rate": 2.1}'::jsonb,
+ NOW() - INTERVAL '105 days'),
+
+-- High-tier creator with different content types
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/tech-tutorial-1.pdf', 'signed', 3000.00, 75000, 7.5, 'tutorial', 
+ 'product_launch', 'youtube', 8, 'category', 10, 150.8, true,
+ '{"initial_price": 2500, "final_price": 3000, "negotiation_rounds": 4}'::jsonb,
+ '{"impressions": 180000, "clicks": 9000, "conversions": 450, "engagement_rate": 7.5}'::jsonb,
+ NOW() - INTERVAL '15 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/fashion-video-1.pdf', 'signed', 2200.00, 45000, 6.8, 'video', 
+ 'brand_awareness', 'instagram', 5, 'platform', 9, 110.3, true,
+ '{"initial_price": 1800, "final_price": 2200, "negotiation_rounds": 3}'::jsonb,
+ '{"impressions": 100000, "clicks": 5000, "conversions": 250, "engagement_rate": 6.8}'::jsonb,
+ NOW() - INTERVAL '25 days');
+
+-- Insert sample pricing feedback data
+INSERT INTO pricing_feedback (
+    contract_id, recommended_price, actual_price, price_accuracy_score, 
+    market_conditions, feedback_notes, created_at
+) VALUES 
+((SELECT id FROM contracts WHERE total_budget = 2500.00 LIMIT 1), 2400.00, 2500.00, 8, 
+ 'normal', 'Good recommendation, slight underestimation', NOW() - INTERVAL '25 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 1800.00 LIMIT 1), 1750.00, 1800.00, 9, 
+ 'normal', 'Very accurate recommendation', NOW() - INTERVAL '40 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 1200.00 LIMIT 1), 1100.00, 1200.00, 7, 
+ 'normal', 'Underestimated by about 9%', NOW() - INTERVAL '55 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 900.00 LIMIT 1), 950.00, 900.00, 8, 
+ 'normal', 'Slightly overestimated, but close', NOW() - INTERVAL '70 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 600.00 LIMIT 1), 550.00, 600.00, 6, 
+ 'normal', 'Underestimated by about 8%', NOW() - INTERVAL '85 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 400.00 LIMIT 1), 450.00, 400.00, 7, 
+ 'normal', 'Overestimated by about 12%', NOW() - INTERVAL '100 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 3000.00 LIMIT 1), 2800.00, 3000.00, 8, 
+ 'normal', 'Good recommendation for high-tier creator', NOW() - INTERVAL '10 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 2200.00 LIMIT 1), 2100.00, 2200.00, 9, 
+ 'normal', 'Very accurate for mid-tier creator', NOW() - INTERVAL '20 days');
+
+-- Insert sample pricing recommendations
+INSERT INTO pricing_recommendations (
+    contract_id, recommended_price, confidence_score, reasoning, 
+    similar_contracts_used, market_factors, created_at
+) VALUES 
+((SELECT id FROM contracts WHERE total_budget = 2500.00 LIMIT 1), 2400.00, 0.85, 
+ '{"explanation": "Based on 3 similar contracts with 78% average similarity", "price_range": "$1800 - $3000", "adjustment": "Price increased by 15% based on market factors", "most_similar": "$2200 (82% match)"}'::jsonb,
+ '{"contract_ids": ["contract1", "contract2", "contract3"], "similarity_scores": [0.82, 0.75, 0.78]}'::jsonb,
+ '{"base_price": 2100, "adjustment_factor": 1.15, "follower_multiplier": 1.2, "engagement_multiplier": 1.2, "content_type_multiplier": 1.5, "platform_multiplier": 1.3, "duration_multiplier": 1.1, "exclusivity_multiplier": 1.2}'::jsonb,
+ NOW() - INTERVAL '30 days'),
+
+((SELECT id FROM contracts WHERE total_budget = 1800.00 LIMIT 1), 1750.00, 0.92, 
+ '{"explanation": "Based on 4 similar contracts with 85% average similarity", "price_range": "$1200 - $2200", "adjustment": "Price decreased by 3% based on market factors", "most_similar": "$1800 (88% match)"}'::jsonb,
+ '{"contract_ids": ["contract4", "contract5", "contract6", "contract7"], "similarity_scores": [0.88, 0.82, 0.85, 0.83]}'::jsonb,
+ '{"base_price": 1800, "adjustment_factor": 0.97, "follower_multiplier": 1.0, "engagement_multiplier": 1.1, "content_type_multiplier": 1.0, "platform_multiplier": 1.0, "duration_multiplier": 1.0, "exclusivity_multiplier": 1.0}'::jsonb,
+ NOW() - INTERVAL '45 days');
+
+-- Update some contracts with different platforms and content types for variety
+UPDATE contracts 
+SET 
+    platform = CASE 
+        WHEN content_type = 'video' THEN 'youtube'
+        WHEN content_type = 'post' THEN 'instagram'
+        WHEN content_type = 'story' THEN 'instagram'
+        WHEN content_type = 'live' THEN 'youtube'
+        WHEN content_type = 'review' THEN 'youtube'
+        WHEN content_type = 'tutorial' THEN 'youtube'
+        ELSE 'instagram'
+    END
+WHERE platform IS NULL;
+
+-- Add some TikTok contracts for platform diversity
+INSERT INTO contracts (
+    id, sponsorship_id, creator_id, brand_id, contract_url, status, 
+    total_budget, creator_followers, creator_engagement_rate, content_type, 
+    campaign_type, platform, duration_weeks, exclusivity_level,
+    brand_satisfaction_score, roi_achieved, repeat_business,
+    price_negotiation_history, campaign_success_metrics, created_at
+) VALUES 
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/fashion-tiktok-1.pdf', 'signed', 800.00, 18000, 4.2, 'video', 
+ 'brand_awareness', 'tiktok', 2, 'none', 7, 68.5, false,
+ '{"initial_price": 700, "final_price": 800, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 35000, "clicks": 1750, "conversions": 87, "engagement_rate": 4.2}'::jsonb,
+ NOW() - INTERVAL '50 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Gaming Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/gaming-tiktok-1.pdf', 'signed', 600.00, 12000, 3.8, 'video', 
+ 'sales', 'tiktok', 1, 'none', 6, 52.3, false,
+ '{"initial_price": 550, "final_price": 600, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 25000, "clicks": 1250, "conversions": 62, "engagement_rate": 3.8}'::jsonb,
+ NOW() - INTERVAL '65 days');
+
+-- Add some Twitter contracts for more platform diversity
+INSERT INTO contracts (
+    id, sponsorship_id, creator_id, brand_id, contract_url, status, 
+    total_budget, creator_followers, creator_engagement_rate, content_type, 
+    campaign_type, platform, duration_weeks, exclusivity_level,
+    brand_satisfaction_score, roi_achieved, repeat_business,
+    price_negotiation_history, campaign_success_metrics, created_at
+) VALUES 
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Tech Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator1'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/tech-twitter-1.pdf', 'signed', 500.00, 15000, 3.2, 'post', 
+ 'brand_awareness', 'twitter', 1, 'none', 5, 42.8, false,
+ '{"initial_price": 450, "final_price": 500, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 20000, "clicks": 1000, "conversions": 50, "engagement_rate": 3.2}'::jsonb,
+ NOW() - INTERVAL '80 days'),
+
+(gen_random_uuid()::text, (SELECT id FROM sponsorships WHERE title = 'Fashion Sponsorship'), 
+ (SELECT id FROM users WHERE username = 'creator2'), (SELECT id FROM users WHERE username = 'brand1'),
+ 'https://contracts.example.com/fashion-twitter-1.pdf', 'signed', 400.00, 8000, 2.9, 'post', 
+ 'sales', 'twitter', 1, 'none', 4, 35.6, false,
+ '{"initial_price": 350, "final_price": 400, "negotiation_rounds": 1}'::jsonb,
+ '{"impressions": 15000, "clicks": 750, "conversions": 37, "engagement_rate": 2.9}'::jsonb,
+ NOW() - INTERVAL '95 days');
+
+-- Add missing columns and tables for AI pricing optimization system
+
+-- 1. Add learning fields to contracts table
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS brand_satisfaction_score INTEGER;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS roi_achieved DECIMAL(5,2);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS repeat_business BOOLEAN DEFAULT false;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS price_negotiation_history JSONB;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS campaign_success_metrics JSONB;
+
+-- 2. Add creator metrics for similarity matching
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS creator_followers INTEGER;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS creator_engagement_rate DECIMAL(5,4);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS content_type VARCHAR(50);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS campaign_type VARCHAR(50);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS platform VARCHAR(50);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS duration_weeks INTEGER;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS exclusivity_level VARCHAR(50) DEFAULT 'none';
+
+-- 3. Add market intelligence fields
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS market_trend_score DECIMAL(3,2);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS seasonal_factor DECIMAL(3,2);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS industry_benchmark_rate DECIMAL(5,2);
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS competitor_pricing JSONB;
+
+-- 4. Create pricing feedback table
+CREATE TABLE IF NOT EXISTS pricing_feedback (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    recommended_price DECIMAL(10,2),
+    actual_price DECIMAL(10,2),
+    price_accuracy_score INTEGER, -- 1-10 scale
+    market_conditions TEXT,
+    feedback_notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- 5. Create pricing recommendations table
+CREATE TABLE IF NOT EXISTS pricing_recommendations (
+    id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    contract_id VARCHAR REFERENCES contracts(id) ON DELETE CASCADE,
+    recommended_price DECIMAL(10,2),
+    confidence_score DECIMAL(3,2), -- 0-1 scale
+    reasoning TEXT, -- AI explanation
+    similar_contracts_used JSONB, -- IDs of similar contracts
+    market_factors JSONB, -- Market conditions considered
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
