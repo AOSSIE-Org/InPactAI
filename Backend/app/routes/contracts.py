@@ -4,6 +4,7 @@ from datetime import datetime, date
 from pydantic import BaseModel
 import httpx
 import os
+import json
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -331,20 +332,47 @@ async def get_contract(contract_id: str):
 async def update_contract(contract_id: str, contract_update: ContractUpdate):
     """Update a contract"""
     try:
+        print(f"Updating contract {contract_id} with data: {contract_update.dict()}")
+        print(f"Raw request data: {contract_update}")
+        
+        # Validate the contract exists first
+        existing_contract = supabase.table("contracts").select("*").eq("id", contract_id).execute()
+        if not existing_contract.data:
+            raise HTTPException(status_code=404, detail="Contract not found")
+        
         update_data = contract_update.dict(exclude_unset=True)
         if update_data:
             update_data["updated_at"] = datetime.utcnow().isoformat()
             
+        print(f"Final update data: {update_data}")
+        print(f"JSON stringified update data: {json.dumps(update_data, default=str)}")
+        
+        # Check for any problematic data types
+        for key, value in update_data.items():
+            if value is not None:
+                print(f"Field {key}: {type(value)} = {value}")
+        
         result = supabase.table("contracts").update(update_data).eq("id", contract_id).execute()
         
         if not result.data:
             raise HTTPException(status_code=404, detail="Contract not found")
-            
-        return ContractResponse(**result.data[0])
+        
+        print(f"Updated contract data: {result.data[0]}")
+        
+        try:
+            return ContractResponse(**result.data[0])
+        except Exception as validation_error:
+            print(f"Validation error creating ContractResponse: {validation_error}")
+            print(f"Contract data: {result.data[0]}")
+            raise HTTPException(status_code=500, detail=f"Error creating response: {str(validation_error)}")
         
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Error updating contract {contract_id}: {str(e)}")
+        print(f"Contract update data: {contract_update.dict()}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error updating contract: {str(e)}")
 
 @router.delete("/{contract_id}")
