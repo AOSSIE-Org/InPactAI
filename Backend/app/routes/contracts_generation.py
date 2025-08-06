@@ -20,13 +20,18 @@ class ContractGenerationRequest(BaseModel):
     creator_id: str
     brand_id: str
     contract_type: str  # "one-time", "recurring", "campaign", "sponsorship"
-    budget_range: str  # "low", "medium", "high"
+    min_budget: float
+    max_budget: float
     content_type: List[str]  # ["instagram", "youtube", "tiktok", "blog"]
     duration_weeks: int
     requirements: str  # Natural language description
     industry: Optional[str] = None
     exclusivity: Optional[str] = "non-exclusive"
     compliance_requirements: Optional[List[str]] = []
+    jurisdiction: Optional[str] = None
+    dispute_resolution: Optional[str] = None
+    custom_jurisdiction: Optional[str] = None
+    custom_dispute_resolution: Optional[str] = None
 
 class ContractTemplate(BaseModel):
     id: str
@@ -61,7 +66,15 @@ class ClauseSuggestion(BaseModel):
 async def get_user_by_email(email: str):
     """Get user information by email"""
     try:
+        # Validate email format
+        if not email or '@' not in email:
+            raise HTTPException(status_code=400, detail="Invalid email format")
+        
+        print(f"Looking up user with email: {email}")
+        
         user_response = supabase.table("users").select("*").eq("email", email).execute()
+        
+        print(f"User response: {user_response.data}")
         
         if not user_response.data:
             raise HTTPException(status_code=404, detail=f"User with email '{email}' not found")
@@ -73,7 +86,10 @@ async def get_user_by_email(email: str):
             "email": user["email"],
             "role": user["role"]
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"Error in get_user_by_email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching user: {str(e)}")
 
 @router.get("/available-users")
@@ -125,14 +141,29 @@ async def generate_smart_contract(request: ContractGenerationRequest):
         similar_contracts_response = supabase.table("contracts").select("*").eq("contract_type", request.contract_type).limit(5).execute()
         similar_contracts = similar_contracts_response.data if similar_contracts_response.data else []
         
-        # Calculate budget based on type and content
-        budget = calculate_budget(request.budget_range, request.content_type, request.duration_weeks)
+        # Calculate budget based on min/max range
+        budget = (request.min_budget + request.max_budget) / 2  # Use average of min/max
         
         # Generate dates
         start_date = datetime.now().date()
         end_date = start_date + timedelta(weeks=request.duration_weeks)
         
         # Create AI prompt for contract generation
+        # Get jurisdiction details
+        jurisdiction_info = ""
+        if request.jurisdiction:
+            if request.jurisdiction == "custom" and request.custom_jurisdiction:
+                jurisdiction_info = f"Custom Jurisdiction: {request.custom_jurisdiction}"
+            else:
+                jurisdiction_info = f"Governing Jurisdiction: {request.jurisdiction}"
+        
+        dispute_info = ""
+        if request.dispute_resolution:
+            if request.dispute_resolution == "custom" and request.custom_dispute_resolution:
+                dispute_info = f"Custom Dispute Resolution: {request.custom_dispute_resolution}"
+            else:
+                dispute_info = f"Dispute Resolution: {request.dispute_resolution}"
+
         system_prompt = f"""You are an expert contract lawyer specializing in creator-brand collaborations. Generate a comprehensive contract based on the following requirements:
 
 Creator Profile: {json.dumps(creator, indent=2)}
@@ -144,6 +175,8 @@ Duration: {request.duration_weeks} weeks
 Requirements: {request.requirements}
 Industry: {request.industry or 'General'}
 Exclusivity: {request.exclusivity}
+{jurisdiction_info}
+{dispute_info}
 
 Similar Contracts for Reference: {json.dumps(similar_contracts[:3], indent=2)}
 
@@ -156,7 +189,10 @@ IMPORTANT: You must respond with ONLY valid JSON. Do not include any text before
     "usage_rights": "Rights granted to brand",
     "exclusivity": "{request.exclusivity}",
     "revision_policy": "Number of revisions allowed",
-    "approval_process": "Content approval process"
+    "approval_process": "Content approval process",
+    "governing_law": "{jurisdiction_info or 'Standard contract law'}",
+    "dispute_resolution": "{dispute_info or 'Standard dispute resolution'}",
+    "jurisdiction": "{request.jurisdiction or 'Standard jurisdiction'}"
   }},
   "payment_terms": {{
     "currency": "USD",
@@ -177,7 +213,8 @@ IMPORTANT: You must respond with ONLY valid JSON. Do not include any text before
     "ftc_compliance": true,
     "disclosure_required": true,
     "disclosure_format": "Required disclosure format",
-    "data_protection": "Data protection requirements"
+    "data_protection": "Data protection requirements",
+    "jurisdiction_compliance": "Compliance with {request.jurisdiction or 'standard'} jurisdiction laws"
   }},
   "risk_score": 0.3,
   "ai_suggestions": [
@@ -187,7 +224,7 @@ IMPORTANT: You must respond with ONLY valid JSON. Do not include any text before
   ]
 }}
 
-Generate a complete, professional contract that follows this exact JSON structure."""
+Generate a complete, professional contract that follows this exact JSON structure and incorporates the specified jurisdiction and dispute resolution requirements."""
 
         user_prompt = f"Generate a smart contract for: {request.requirements}"
         
@@ -212,37 +249,209 @@ Generate a complete, professional contract that follows this exact JSON structur
             "max_tokens": 2000
         }
         
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(groq_url, headers=headers, json=payload)
-                response.raise_for_status()
-                ai_response = response.json()
+        # Use Groq AI for enhanced contract generation
+        groq_api_key = os.environ.get('GROQ_API_KEY')
+        if not groq_api_key:
+            # Fallback if no API key
+            contract_data = {
+                "contract_title": f"{request.contract_type.title()} Contract - {request.industry or 'General'}",
+                "terms_and_conditions": {
+                    "content_guidelines": "Content must align with brand guidelines and target audience",
+                    "usage_rights": "Brand receives rights to use content across specified platforms",
+                    "exclusivity": request.exclusivity,
+                    "revision_policy": "2 rounds of revisions included",
+                    "approval_process": "Content requires brand approval before publication",
+                    "governing_law": f"Governing law: {request.jurisdiction or 'Standard contract law'}",
+                    "dispute_resolution": f"Dispute resolution: {request.dispute_resolution or 'Standard dispute resolution'}",
+                    "jurisdiction": request.jurisdiction or "Standard jurisdiction"
+                },
+                "payment_terms": {
+                    "currency": "USD",
+                    "payment_schedule": "50% upfront, 50% upon completion",
+                    "payment_method": "Bank transfer or digital payment",
+                    "late_fees": "5% monthly interest on overdue payments",
+                    "advance_payment": f"${request.min_budget * 0.5:,.2f}",
+                    "final_payment": f"${request.max_budget * 0.5:,.2f}"
+                },
+                "deliverables": {
+                    "content_type": ", ".join(request.content_type),
+                    "quantity": "1 deliverable per content type",
+                    "timeline": f"{request.duration_weeks} weeks",
+                    "format": "High-quality digital content",
+                    "specifications": request.requirements
+                },
+                "legal_compliance": {
+                    "ftc_compliance": True,
+                    "disclosure_required": True,
+                    "disclosure_format": "Clear disclosure of sponsored content",
+                    "data_protection": "GDPR compliant data handling",
+                    "jurisdiction_compliance": f"Compliance with {request.jurisdiction or 'standard'} jurisdiction laws"
+                },
+                "risk_score": calculate_risk_score(request),
+                "ai_suggestions": generate_ai_suggestions(request, calculate_risk_score(request))
+            }
+        else:
+            # Use Groq AI for enhanced generation
+            try:
+                risk_score = calculate_risk_score(request)
                 
-            ai_message = ai_response["choices"][0]["message"]["content"]
-            
-            # Check if AI response is empty
-            if not ai_message or ai_message.strip() == "":
-                raise HTTPException(status_code=500, detail="AI returned empty response. Please try again or check your API configuration.")
-            
-            # Parse AI response
-            try:
-                contract_data = json.loads(ai_message)
-            except json.JSONDecodeError as json_error:
-                # Log the actual AI response for debugging
-                print(f"AI Response (first 500 chars): {ai_message[:500]}")
-                raise HTTPException(status_code=500, detail=f"AI returned invalid JSON response: {str(json_error)}. Response preview: {ai_message[:200]}")
-        except httpx.HTTPStatusError as http_error:
-            error_detail = f"AI API HTTP error: {http_error.response.status_code}"
-            try:
-                error_text = http_error.response.text
-                error_detail += f" - {error_text}"
-            except:
-                error_detail += " - Unable to read error response"
-            raise HTTPException(status_code=500, detail=error_detail)
-        except httpx.RequestError as request_error:
-            raise HTTPException(status_code=500, detail=f"AI API request failed: {str(request_error)}")
-        except Exception as ai_error:
-            raise HTTPException(status_code=500, detail=f"AI contract generation failed: {str(ai_error)}")
+                # Get jurisdiction details for enhanced generation
+                jurisdiction_info = ""
+                if request.jurisdiction:
+                    if request.jurisdiction == "custom" and request.custom_jurisdiction:
+                        jurisdiction_info = f"Custom Jurisdiction: {request.custom_jurisdiction}"
+                    else:
+                        jurisdiction_info = f"Governing Jurisdiction: {request.jurisdiction}"
+                
+                dispute_info = ""
+                if request.dispute_resolution:
+                    if request.dispute_resolution == "custom" and request.custom_dispute_resolution:
+                        dispute_info = f"Custom Dispute Resolution: {request.custom_dispute_resolution}"
+                    else:
+                        dispute_info = f"Dispute Resolution: {request.dispute_resolution}"
+
+                system_prompt = f"""You are an expert contract lawyer and risk analyst specializing in creator-brand collaborations. 
+
+Analyze this contract request and provide enhanced contract terms and AI suggestions:
+
+Contract Details:
+- Type: {request.contract_type}
+- Budget: ${request.min_budget:,.2f} - ${request.max_budget:,.2f}
+- Content Types: {', '.join(request.content_type)}
+- Duration: {request.duration_weeks} weeks
+- Industry: {request.industry or 'General'}
+- Exclusivity: {request.exclusivity}
+- Requirements: {request.requirements}
+- Compliance Requirements: {', '.join(request.compliance_requirements) if request.compliance_requirements else 'None'}
+- Calculated Risk Score: {risk_score:.2f} ({risk_score*100:.0f}%)
+{jurisdiction_info and f"- {jurisdiction_info}" or ""}
+{dispute_info and f"- {dispute_info}" or ""}
+
+Respond with ONLY valid JSON in this exact format:
+{{
+  "contract_title": "Professional contract title",
+  "terms_and_conditions": {{
+    "content_guidelines": "Enhanced guidelines based on content type and industry",
+    "usage_rights": "Detailed rights specification",
+    "exclusivity": "{request.exclusivity}",
+    "revision_policy": "Specific revision terms",
+    "approval_process": "Detailed approval workflow",
+    "governing_law": "{jurisdiction_info or 'Standard contract law'}",
+    "dispute_resolution": "{dispute_info or 'Standard dispute resolution'}",
+    "jurisdiction": "{request.jurisdiction or 'Standard jurisdiction'}"
+  }},
+  "payment_terms": {{
+    "currency": "USD",
+    "payment_schedule": "Detailed payment schedule",
+    "payment_method": "Payment method details",
+    "late_fees": "Late payment terms",
+    "advance_payment": "Advance payment details",
+    "final_payment": "Final payment details"
+  }},
+  "deliverables": {{
+    "content_type": "{', '.join(request.content_type)}",
+    "quantity": "Specific quantity details",
+    "timeline": "{request.duration_weeks} weeks",
+    "format": "Detailed format requirements",
+    "specifications": "Enhanced specifications"
+  }},
+  "legal_compliance": {{
+    "ftc_compliance": true,
+    "disclosure_required": true,
+    "disclosure_format": "Specific disclosure requirements",
+    "data_protection": "Enhanced data protection terms",
+    "jurisdiction_compliance": "Compliance with {request.jurisdiction or 'standard'} jurisdiction laws"
+  }},
+  "risk_score": {risk_score},
+  "ai_suggestions": [
+    "AI-generated suggestion 1",
+    "AI-generated suggestion 2",
+    "AI-generated suggestion 3"
+  ]
+}}
+
+Focus on:
+1. Industry-specific requirements for {request.industry or 'general'} industry
+2. Content type-specific guidelines for {', '.join(request.content_type)}
+3. Risk mitigation strategies for {risk_score*100:.0f}% risk level
+4. Compliance requirements: {', '.join(request.compliance_requirements) if request.compliance_requirements else 'Standard'}
+5. Budget optimization for ${request.min_budget:,.2f} - ${request.max_budget:,.2f} range
+6. Jurisdiction-specific legal requirements for {request.jurisdiction or 'standard'} jurisdiction
+7. Dispute resolution framework: {request.dispute_resolution or 'standard'}"""
+
+                user_prompt = f"Generate enhanced contract terms and AI suggestions for: {request.requirements}"
+                
+                groq_url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "model": "moonshotai/kimi-k2-instruct",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(groq_url, headers=headers, json=payload)
+                    response.raise_for_status()
+                    ai_response = response.json()
+                    
+                ai_message = ai_response["choices"][0]["message"]["content"]
+                
+                if not ai_message or ai_message.strip() == "":
+                    raise Exception("AI returned empty response")
+                
+                # Parse AI response
+                try:
+                    contract_data = json.loads(ai_message)
+                    # Ensure risk score is preserved
+                    contract_data["risk_score"] = risk_score
+                except json.JSONDecodeError as json_error:
+                    print(f"AI Response (first 500 chars): {ai_message[:500]}")
+                    raise Exception(f"AI returned invalid JSON: {str(json_error)}")
+                    
+            except Exception as ai_error:
+                print(f"AI generation failed: {str(ai_error)}, using fallback")
+                # Fallback to structured generation
+                contract_data = {
+                    "contract_title": f"{request.contract_type.title()} Contract - {request.industry or 'General'}",
+                    "terms_and_conditions": {
+                        "content_guidelines": "Content must align with brand guidelines and target audience",
+                        "usage_rights": "Brand receives rights to use content across specified platforms",
+                        "exclusivity": request.exclusivity,
+                        "revision_policy": "2 rounds of revisions included",
+                        "approval_process": "Content requires brand approval before publication"
+                    },
+                    "payment_terms": {
+                        "currency": "USD",
+                        "payment_schedule": "50% upfront, 50% upon completion",
+                        "payment_method": "Bank transfer or digital payment",
+                        "late_fees": "5% monthly interest on overdue payments",
+                        "advance_payment": f"${request.min_budget * 0.5:,.2f}",
+                        "final_payment": f"${request.max_budget * 0.5:,.2f}"
+                    },
+                    "deliverables": {
+                        "content_type": ", ".join(request.content_type),
+                        "quantity": "1 deliverable per content type",
+                        "timeline": f"{request.duration_weeks} weeks",
+                        "format": "High-quality digital content",
+                        "specifications": request.requirements
+                    },
+                    "legal_compliance": {
+                        "ftc_compliance": True,
+                        "disclosure_required": True,
+                        "disclosure_format": "Clear disclosure of sponsored content",
+                        "data_protection": "GDPR compliant data handling"
+                    },
+                    "risk_score": calculate_risk_score(request),
+                    "ai_suggestions": generate_ai_suggestions(request, calculate_risk_score(request))
+                }
         
 
         
@@ -265,6 +474,149 @@ Generate a complete, professional contract that follows this exact JSON structur
         print(f"Contract generation error: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Contract generation failed: {str(e)}")
+
+def calculate_risk_score(request: ContractGenerationRequest) -> float:
+    """Calculate risk score based on contract parameters"""
+    
+    risk_score = 0.0
+    
+    # Budget risk factors
+    budget_range = request.max_budget - request.min_budget
+    budget_volatility = budget_range / request.max_budget if request.max_budget > 0 else 0
+    if budget_volatility > 0.5:  # High budget uncertainty
+        risk_score += 0.2
+    elif budget_volatility > 0.3:  # Medium budget uncertainty
+        risk_score += 0.1
+    
+    # Contract type risk
+    contract_type_risk = {
+        "one-time": 0.1,
+        "recurring": 0.15,
+        "campaign": 0.2,
+        "sponsorship": 0.25
+    }
+    risk_score += contract_type_risk.get(request.contract_type, 0.15)
+    
+    # Duration risk (longer contracts = higher risk)
+    if request.duration_weeks > 12:
+        risk_score += 0.2
+    elif request.duration_weeks > 8:
+        risk_score += 0.15
+    elif request.duration_weeks > 4:
+        risk_score += 0.1
+    
+    # Content type risk
+    content_type_risk = {
+        "youtube": 0.05,  # Lower risk, established platform
+        "instagram": 0.08,
+        "tiktok": 0.12,   # Higher risk, newer platform
+        "facebook": 0.06,
+        "twitter": 0.07,
+        "linkedin": 0.04,  # Lower risk, professional
+        "blog": 0.03       # Lowest risk, simple content
+    }
+    
+    # Calculate average content type risk
+    content_risks = [content_type_risk.get(ct.lower(), 0.1) for ct in request.content_type]
+    avg_content_risk = sum(content_risks) / len(content_risks) if content_risks else 0.1
+    risk_score += avg_content_risk
+    
+    # Exclusivity risk
+    if request.exclusivity == "exclusive":
+        risk_score += 0.15  # Higher risk for exclusive contracts
+    elif request.exclusivity == "platform":
+        risk_score += 0.1
+    
+    # Compliance requirements risk
+    compliance_risk = len(request.compliance_requirements) * 0.02
+    risk_score += min(compliance_risk, 0.1)  # Cap at 0.1
+    
+    # Industry risk
+    high_risk_industries = ["finance", "healthcare", "legal", "pharmaceutical"]
+    if request.industry and request.industry.lower() in high_risk_industries:
+        risk_score += 0.1
+    
+    # Requirements complexity risk
+    requirements_length = len(request.requirements)
+    if requirements_length > 200:
+        risk_score += 0.1
+    elif requirements_length > 100:
+        risk_score += 0.05
+    
+    # Cap risk score between 0.1 and 0.9
+    risk_score = max(0.1, min(0.9, risk_score))
+    
+    return round(risk_score, 2)
+
+def generate_ai_suggestions(request: ContractGenerationRequest, risk_score: float) -> List[str]:
+    """Generate AI suggestions based on contract parameters and risk score"""
+    
+    suggestions = []
+    
+    # Budget-related suggestions
+    budget_range = request.max_budget - request.min_budget
+    budget_volatility = budget_range / request.max_budget if request.max_budget > 0 else 0
+    
+    if budget_volatility > 0.5:
+        suggestions.append("Consider setting a more specific budget range to reduce uncertainty")
+    elif budget_volatility > 0.3:
+        suggestions.append("Define clear payment milestones to manage budget expectations")
+    
+    # Contract type suggestions
+    if request.contract_type == "sponsorship":
+        suggestions.append("Include detailed FTC disclosure requirements for sponsored content")
+        suggestions.append("Specify content usage rights and duration limitations")
+    elif request.contract_type == "recurring":
+        suggestions.append("Define performance metrics and review periods")
+        suggestions.append("Include termination clauses with notice periods")
+    elif request.contract_type == "campaign":
+        suggestions.append("Set clear campaign objectives and success metrics")
+        suggestions.append("Include content approval timeline and revision limits")
+    
+    # Duration suggestions
+    if request.duration_weeks > 8:
+        suggestions.append("Break down deliverables into phases with interim deadlines")
+        suggestions.append("Include progress review meetings and milestone payments")
+    elif request.duration_weeks > 4:
+        suggestions.append("Set weekly check-ins to track progress")
+    
+    # Content type suggestions
+    if "tiktok" in request.content_type:
+        suggestions.append("Include platform-specific guidelines for TikTok content")
+    if "youtube" in request.content_type:
+        suggestions.append("Specify video quality requirements and format standards")
+    if "instagram" in request.content_type:
+        suggestions.append("Define hashtag usage and tagging requirements")
+    
+    # Exclusivity suggestions
+    if request.exclusivity == "exclusive":
+        suggestions.append("Clearly define exclusivity scope and duration")
+        suggestions.append("Include compensation for exclusivity restrictions")
+    
+    # Compliance suggestions
+    if len(request.compliance_requirements) > 2:
+        suggestions.append("Consider legal review for complex compliance requirements")
+    
+    # Risk-based suggestions
+    if risk_score > 0.7:
+        suggestions.append("Consider adding performance bonds or insurance requirements")
+        suggestions.append("Include detailed dispute resolution procedures")
+    elif risk_score > 0.5:
+        suggestions.append("Add regular progress reports and quality checkpoints")
+    elif risk_score < 0.3:
+        suggestions.append("Keep contract terms simple and straightforward")
+    
+    # Industry-specific suggestions
+    if request.industry and request.industry.lower() in ["finance", "healthcare", "legal"]:
+        suggestions.append("Include industry-specific compliance and disclosure requirements")
+    
+    # Ensure we have at least 3 suggestions
+    while len(suggestions) < 3:
+        suggestions.append("Consider adding performance metrics to track campaign success")
+        if len(suggestions) >= 3:
+            break
+    
+    return suggestions[:5]  # Limit to 5 suggestions
 
 def calculate_budget(budget_range: str, content_types: List[str], duration_weeks: int) -> float:
     """Calculate budget based on requirements"""
