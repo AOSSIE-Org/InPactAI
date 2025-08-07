@@ -38,9 +38,11 @@ class PricingService:
                 "*, users!creator_id(username, email), users!brand_id(username, email)"
             ).not_.is_("total_budget", "null")
             
-            # Only filter by content_type for better matching
+            # Filter by content_type for better matching
             if content_type:
-                query = query.eq("content_type", content_type)
+                # Handle new content types by extracting the platform
+                platform = content_type.split('_')[0] if '_' in content_type else content_type
+                query = query.ilike("content_type", f"%{platform}%")
             
             # Don't filter by platform or campaign_type initially to get more matches
             
@@ -159,6 +161,31 @@ class PricingService:
         duration_weeks: int,
         exclusivity_level: str = "none"
     ) -> Dict:
+        """
+        Generate price recommendation with fallback handling
+        """
+        # Check if we have enough similar contracts for reliable pricing
+        has_sufficient_data = len(similar_contracts) >= 3
+        
+        if not has_sufficient_data:
+            # Use fallback pricing with market-based calculations
+            base_price = self._calculate_fallback_price(
+                creator_followers, creator_engagement_rate, content_type, 
+                campaign_type, platform, duration_weeks, exclusivity_level
+            )
+            
+            return {
+                "recommended_price": base_price,
+                "confidence_score": 0.3,  # Low confidence for fallback
+                "reasoning": f"Limited similar contracts found ({len(similar_contracts)} contracts). Using market-based pricing with industry averages. Consider this as a starting point and adjust based on your specific requirements.",
+                "similar_contracts_used": similar_contracts,
+                "market_factors": {
+                    "fallback_used": True,
+                    "similar_contracts_count": len(similar_contracts),
+                    "reason": "Insufficient similar contracts for AI-powered pricing"
+                },
+                "is_fallback": True
+            }
         """
         Generate price recommendation based on similar contracts
         """
@@ -312,6 +339,32 @@ class PricingService:
     def _get_content_type_multiplier(self, content_type: str) -> float:
         """Calculate price multiplier based on content type"""
         multipliers = {
+            # YouTube content types
+            "youtube_shorts": 0.8,
+            "youtube_video": 1.5,
+            "youtube_live": 1.3,
+            # Instagram content types
+            "instagram_post": 1.0,
+            "instagram_reel": 1.2,
+            "instagram_story": 0.8,
+            "instagram_live": 1.3,
+            # TikTok content types
+            "tiktok_video": 1.1,
+            "tiktok_live": 1.3,
+            # Facebook content types
+            "facebook_post": 0.9,
+            "facebook_live": 1.3,
+            # Twitter content types
+            "twitter_post": 0.8,
+            "twitter_space": 1.2,
+            # LinkedIn content types
+            "linkedin_post": 1.1,
+            "linkedin_article": 1.4,
+            # Other content types
+            "blog_post": 1.2,
+            "podcast": 1.5,
+            "newsletter": 1.0,
+            # Legacy support
             "video": 1.5,
             "live": 1.3,
             "story": 0.8,
@@ -466,3 +519,52 @@ class PricingService:
             return 2
         else:
             return 1 
+
+    def _calculate_fallback_price(
+        self,
+        creator_followers: int,
+        creator_engagement_rate: float,
+        content_type: str,
+        campaign_type: str,
+        platform: str,
+        duration_weeks: int,
+        exclusivity_level: str
+    ) -> float:
+        """
+        Calculate fallback price using market-based pricing when insufficient similar contracts are found
+        """
+        # Base price per follower (industry average)
+        base_price_per_follower = 0.01  # $0.01 per follower
+        
+        # Calculate base price
+        base_price = creator_followers * base_price_per_follower
+        
+        # Apply engagement rate multiplier
+        engagement_multiplier = self._get_engagement_multiplier(creator_engagement_rate)
+        base_price *= engagement_multiplier
+        
+        # Apply content type multiplier
+        content_multiplier = self._get_content_type_multiplier(content_type)
+        base_price *= content_multiplier
+        
+        # Apply platform multiplier
+        platform_multiplier = self._get_platform_multiplier(platform)
+        base_price *= platform_multiplier
+        
+        # Apply duration multiplier
+        duration_multiplier = self._get_duration_multiplier(duration_weeks)
+        base_price *= duration_multiplier
+        
+        # Apply exclusivity multiplier
+        exclusivity_multiplier = self._get_exclusivity_multiplier(exclusivity_level)
+        base_price *= exclusivity_multiplier
+        
+        # Apply campaign type multiplier
+        campaign_multiplier = 1.2 if campaign_type == "product_launch" else 1.0
+        base_price *= campaign_multiplier
+        
+        # Ensure minimum price
+        min_price = 500
+        base_price = max(base_price, min_price)
+        
+        return round(base_price, 2) 
