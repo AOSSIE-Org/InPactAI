@@ -14,8 +14,13 @@ import {
   BarChart3,
   CreditCard,
   Target,
-  Award
+  Award,
+  Plus,
+  Edit,
+  Download
 } from 'lucide-react';
+import UpdateContractModal from './UpdateContractModal';
+import { contractsApi } from '../../services/contractsApi';
 
 interface Contract {
   id: string;
@@ -36,17 +41,110 @@ interface Contract {
   status: string;
   created_at: string;
   updated_at?: string;
+  comments?: Array<{
+    comment: string;
+    timestamp: string;
+    user: string;
+  }>;
+  update_history?: Array<{
+    timestamp: string;
+    updated_by: string;
+    updates: any;
+  }>;
 }
 
 interface ContractDetailsModalProps {
   contract: Contract | null;
   onClose: () => void;
+  onContractUpdate?: (updatedContract: Contract) => void;
 }
 
-const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, onClose }) => {
+const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, onClose, onContractUpdate }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   if (!contract) return null;
+
+  const handleUpdateContract = async (contractId: string, updateData: any) => {
+    try {
+      await contractsApi.addContractUpdate(contractId, updateData);
+      
+      // Refresh the contract data
+      try {
+        const updatedContract = await contractsApi.getContract(contractId);
+        if (onContractUpdate) {
+          onContractUpdate(updatedContract);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing contract data:', refreshError);
+      }
+      
+      setShowUpdateModal(false);
+    } catch (error) {
+      console.error('Error updating contract:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) return;
+    
+    setIsSubmittingComment(true);
+    try {
+      await contractsApi.addContractUpdate(contract.id, {
+        comments: newComment,
+        update_timestamp: new Date().toISOString(),
+        updated_by: 'current_user' // This should come from auth context
+      });
+      setNewComment('');
+      
+      // Refresh the contract data
+      try {
+        const updatedContract = await contractsApi.getContract(contract.id);
+        if (onContractUpdate) {
+          onContractUpdate(updatedContract);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing contract data:', refreshError);
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Failed to add comment. Please try again.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleExportContract = async () => {
+    setIsExporting(true);
+    try {
+      // Create a download link for the file
+      const response = await fetch(`http://localhost:8000/api/contracts/${contract.id}/export/download`);
+      if (!response.ok) {
+        throw new Error('Failed to export contract');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${contract.contract_title || 'Contract'}-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      alert('Contract exported successfully!');
+    } catch (error) {
+      console.error('Error exporting contract:', error);
+      alert('Error exporting contract. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -639,73 +737,141 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
   );
 
   const renderComments = () => (
-    <div style={{ display: 'grid', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Chat Messages */}
       <div style={{
-        background: 'rgba(42, 42, 42, 0.6)',
-        borderRadius: '12px',
+        flex: 1,
+        overflowY: 'auto',
         padding: '20px',
-        border: '1px solid rgba(42, 42, 42, 0.8)'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
       }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Comments & Negotiations</h3>
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <div style={{
-            padding: '16px',
-            background: 'rgba(26, 26, 26, 0.6)',
-            borderRadius: '8px',
-            border: '1px solid rgba(42, 42, 42, 0.8)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
-                B
+        {/* Default welcome messages if no comments */}
+        {(!contract.comments || contract.comments.length === 0) && (
+          <>
+            <div style={{
+              alignSelf: 'flex-start',
+              maxWidth: '70%',
+              padding: '12px 16px',
+              background: 'rgba(42, 42, 42, 0.8)',
+              borderRadius: '18px 18px 18px 4px',
+              border: '1px solid rgba(42, 42, 42, 0.8)'
+            }}>
+              <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                Looking forward to working with you on this tech review! The product specs have been updated.
               </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600' }}>Brand Manager</div>
-                <div style={{ fontSize: '12px', color: '#a0a0a0' }}>2 hours ago</div>
+              <div style={{ fontSize: '11px', color: '#a0a0a0', marginTop: '4px' }}>
+                Brand Manager • 2 hours ago
               </div>
             </div>
-            <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
-              Looking forward to working with you on this tech review! The product specs have been updated.
+            <div style={{
+              alignSelf: 'flex-end',
+              maxWidth: '70%',
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              borderRadius: '18px 18px 4px 18px',
+              border: '1px solid rgba(99, 102, 241, 0.3)'
+            }}>
+              <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                Thanks! I'll make sure to create high-quality content that showcases the product well.
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', marginTop: '4px' }}>
+                You • 1 hour ago
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Actual comments */}
+        {contract.comments && contract.comments.map((comment: any, index: number) => (
+          <div key={index} style={{
+            alignSelf: comment.user === 'current_user' ? 'flex-end' : 'flex-start',
+            maxWidth: '70%',
+            padding: '12px 16px',
+            background: comment.user === 'current_user' 
+              ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+              : 'rgba(42, 42, 42, 0.8)',
+            borderRadius: comment.user === 'current_user' 
+              ? '18px 18px 4px 18px'
+              : '18px 18px 18px 4px',
+            border: comment.user === 'current_user'
+              ? '1px solid rgba(99, 102, 241, 0.3)'
+              : '1px solid rgba(42, 42, 42, 0.8)'
+          }}>
+            <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+              {comment.comment}
+            </div>
+            <div style={{ 
+              fontSize: '11px', 
+              color: comment.user === 'current_user' ? 'rgba(255, 255, 255, 0.7)' : '#a0a0a0', 
+              marginTop: '4px' 
+            }}>
+              {comment.user === 'current_user' ? 'You' : comment.user} • {new Date(comment.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
-          <div style={{
-            padding: '16px',
-            background: 'rgba(26, 26, 26, 0.6)',
-            borderRadius: '8px',
-            border: '1px solid rgba(42, 42, 42, 0.8)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+        ))}
+      </div>
+
+      {/* Chat Input */}
+      <div style={{
+        padding: '20px',
+        borderTop: '1px solid rgba(42, 42, 42, 0.6)',
+        background: 'rgba(26, 26, 26, 0.95)'
+      }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Type a message..."
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmitComment();
+                }
+              }}
+              style={{
+                width: '100%',
+                minHeight: '50px',
+                maxHeight: '100px',
+                padding: '12px 16px',
+                background: 'rgba(42, 42, 42, 0.8)',
+                border: '1px solid rgba(42, 42, 42, 0.8)',
+                borderRadius: '20px',
+                color: '#fff',
                 fontSize: '14px',
-                fontWeight: '600'
-              }}>
-                C
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600' }}>Creator</div>
-                <div style={{ fontSize: '12px', color: '#a0a0a0' }}>1 hour ago</div>
-              </div>
-            </div>
-            <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
-              Thanks! I'll make sure to create high-quality content that showcases the product well.
-            </div>
+                resize: 'none',
+                fontFamily: 'inherit',
+                outline: 'none'
+              }}
+            />
           </div>
+          <button
+            onClick={handleSubmitComment}
+            disabled={isSubmittingComment || !newComment.trim()}
+            style={{
+              padding: '12px 16px',
+              background: isSubmittingComment || !newComment.trim() 
+                ? 'rgba(42, 42, 42, 0.6)' 
+                : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              border: 'none',
+              borderRadius: '20px',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: isSubmittingComment || !newComment.trim() ? 'not-allowed' : 'pointer',
+              opacity: isSubmittingComment || !newComment.trim() ? 0.6 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              minWidth: '80px',
+              justifyContent: 'center'
+            }}
+          >
+            <MessageSquare size={16} />
+            {isSubmittingComment ? 'Sending...' : 'Send'}
+          </button>
         </div>
       </div>
     </div>
@@ -762,19 +928,63 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
             <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '4px' }}>{contract.contract_title || `Contract ${contract.id.slice(0, 8)}`}</h2>
             <p style={{ fontSize: '14px', color: '#a0a0a0' }}>{contract.creator_id} • {contract.brand_id}</p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '8px',
-              background: 'rgba(42, 42, 42, 0.6)',
-              border: '1px solid rgba(42, 42, 42, 0.8)',
-              borderRadius: '8px',
-              color: '#fff',
-              cursor: 'pointer'
-            }}
-          >
-            <X size={20} />
-          </button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button
+              onClick={handleExportContract}
+              disabled={isExporting}
+              style={{
+                padding: '8px 16px',
+                background: isExporting 
+                  ? 'rgba(42, 42, 42, 0.6)' 
+                  : 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: isExporting ? 'not-allowed' : 'pointer',
+                opacity: isExporting ? 0.6 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Download size={16} />
+              {isExporting ? 'Exporting...' : 'Export'}
+            </button>
+            <button
+              onClick={() => setShowUpdateModal(true)}
+              style={{
+                padding: '8px 16px',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Plus size={16} />
+              Update
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '8px',
+                background: 'rgba(42, 42, 42, 0.6)',
+                border: '1px solid rgba(42, 42, 42, 0.8)',
+                borderRadius: '8px',
+                color: '#fff',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -822,6 +1032,15 @@ const ContractDetailsModal: React.FC<ContractDetailsModalProps> = ({ contract, o
           {renderTabContent()}
         </div>
       </div>
+      
+      {/* Update Contract Modal */}
+      {showUpdateModal && (
+        <UpdateContractModal
+          contract={contract}
+          onClose={() => setShowUpdateModal(false)}
+          onUpdate={handleUpdateContract}
+        />
+      )}
     </div>
   );
 };
