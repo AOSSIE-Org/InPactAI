@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import FileResponse
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from pydantic import BaseModel
@@ -53,12 +54,25 @@ class ContractUpdate(BaseModel):
     legal_compliance: Optional[Dict[str, Any]] = None
     status: Optional[str] = None
 
+class ContractUpdateAdd(BaseModel):
+    comments: Optional[str] = None
+    status_update: Optional[str] = None
+    budget_adjustment: Optional[float] = None
+    new_deliverables: Optional[str] = None
+    timeline_update: Optional[str] = None
+    additional_terms: Optional[str] = None
+    deliverable_status_updates: Optional[List[Dict[str, Any]]] = None
+    update_timestamp: Optional[str] = None
+    updated_by: Optional[str] = None
+
 class ContractResponse(ContractBase):
     id: str
     contract_url: Optional[str] = None
     status: str
     created_at: str
     updated_at: Optional[str] = None
+    comments: Optional[List[Dict[str, Any]]] = None
+    update_history: Optional[List[Dict[str, Any]]] = None
 
 class ContractTemplateBase(BaseModel):
     template_name: str
@@ -374,6 +388,168 @@ async def update_contract(contract_id: str, contract_update: ContractUpdate):
         import traceback
         print(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error updating contract: {str(e)}")
+
+@router.post("/{contract_id}/updates")
+async def add_contract_update(contract_id: str, update_data: ContractUpdateAdd):
+    """
+    Add an update to a contract (preserves existing data and adds new data on top)
+    """
+    try:
+        print(f"Adding contract update for {contract_id}")
+        print(f"Update data: {update_data.dict()}")
+        
+        # Check if contract exists
+        existing_contract = supabase.table("contracts").select("*").eq("id", contract_id).execute()
+        if not existing_contract.data:
+            raise HTTPException(status_code=404, detail="Contract not found")
+        
+        contract = existing_contract.data[0]
+        print(f"Found contract: {contract.get('id')}")
+        
+        # Prepare update data
+        update_payload = {}
+        
+        # Handle status update
+        if update_data.status_update:
+            update_payload["status"] = update_data.status_update
+        
+        # Handle budget adjustment
+        if update_data.budget_adjustment is not None:
+            current_budget = contract.get("total_budget", 0) or 0
+            new_budget = current_budget + update_data.budget_adjustment
+            update_payload["total_budget"] = new_budget
+        
+        # Handle terms and conditions updates
+        if update_data.additional_terms or update_data.timeline_update:
+            current_terms = contract.get("terms_and_conditions", {}) or {}
+            if isinstance(current_terms, str):
+                current_terms = {}
+            
+            # Add updates to terms
+            if update_data.additional_terms:
+                current_terms["additional_notes"] = update_data.additional_terms
+            if update_data.timeline_update:
+                current_terms["timeline_updates"] = update_data.timeline_update
+            
+            update_payload["terms_and_conditions"] = current_terms
+        
+        # Handle deliverables updates
+        if update_data.new_deliverables:
+            current_deliverables = contract.get("deliverables", {}) or {}
+            if isinstance(current_deliverables, str):
+                current_deliverables = {}
+            
+            # Add new deliverables
+            if "additional_deliverables" not in current_deliverables:
+                current_deliverables["additional_deliverables"] = []
+            
+            if isinstance(current_deliverables["additional_deliverables"], list):
+                current_deliverables["additional_deliverables"].append({
+                    "description": update_data.new_deliverables,
+                    "added_at": update_data.update_timestamp or datetime.now().isoformat(),
+                    "added_by": update_data.updated_by or "system"
+                })
+            
+            update_payload["deliverables"] = current_deliverables
+        
+        # Add update history (excluding comments)
+        try:
+            update_history = contract.get("update_history", []) or []
+            if not isinstance(update_history, list):
+                update_history = []
+            
+            # Only add to update history if there are actual updates (not just comments)
+            has_updates = any([
+                update_data.status_update,
+                update_data.budget_adjustment is not None,
+                update_data.new_deliverables,
+                update_data.timeline_update,
+                update_data.additional_terms,
+                update_data.deliverable_status_updates
+            ])
+            
+            if has_updates:
+                # Create update entry without comments
+                update_entry = {
+                    "timestamp": update_data.update_timestamp or datetime.now().isoformat(),
+                    "updated_by": update_data.updated_by or "system",
+                    "updates": {k: v for k, v in update_data.dict(exclude_none=True).items() 
+                               if k not in ['comments', 'update_timestamp', 'updated_by']}
+                }
+                update_history.append(update_entry)
+                update_payload["update_history"] = update_history
+                print(f"Added update history entry")
+        except Exception as e:
+            print(f"Error handling update history: {str(e)}")
+            # Continue without update history if there's an issue
+        
+        # Handle deliverable status updates
+        if update_data.deliverable_status_updates:
+            current_deliverables = contract.get("deliverables", {}) or {}
+            if isinstance(current_deliverables, str):
+                current_deliverables = {}
+            
+            # Add deliverable status updates
+            if "status_updates" not in current_deliverables:
+                current_deliverables["status_updates"] = []
+            
+            for status_update in update_data.deliverable_status_updates:
+                if status_update.get("new_status"):
+                    current_deliverables["status_updates"].append({
+                        "deliverable_id": status_update["deliverable_id"],
+                        "new_status": status_update["new_status"],
+                        "notes": status_update.get("notes", ""),
+                        "updated_at": update_data.update_timestamp or datetime.now().isoformat(),
+                        "updated_by": update_data.updated_by or "system"
+                    })
+            
+            update_payload["deliverables"] = current_deliverables
+        
+        # Add comments if provided
+        if update_data.comments:
+            try:
+                # Add to comments field or create new
+                current_comments = contract.get("comments", []) or []
+                if not isinstance(current_comments, list):
+                    current_comments = []
+                
+                comment_entry = {
+                    "comment": update_data.comments,
+                    "timestamp": update_data.update_timestamp or datetime.now().isoformat(),
+                    "user": update_data.updated_by or "system"
+                }
+                current_comments.append(comment_entry)
+                update_payload["comments"] = current_comments
+                print(f"Added comment entry")
+            except Exception as e:
+                print(f"Error handling comments: {str(e)}")
+                # Continue without comments if there's an issue
+        
+        # Update the contract
+        print(f"Final update payload: {update_payload}")
+        print(f"JSON stringified payload: {json.dumps(update_payload, default=str)}")
+        
+        result = supabase.table("contracts").update(update_payload).eq("id", contract_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Contract not found")
+        
+        print(f"Update successful: {result.data}")
+        
+        return {
+            "message": "Contract updated successfully",
+            "contract_id": contract_id,
+            "updates_applied": update_payload
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error adding contract update {contract_id}: {str(e)}")
+        print(f"Update data: {update_data.dict()}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error adding contract update: {str(e)}")
 
 @router.delete("/{contract_id}")
 async def delete_contract(contract_id: str):
@@ -819,3 +995,289 @@ async def get_contracts_overview(brand_id: Optional[str] = None, creator_id: Opt
 # ============================================================================
 # CONTRACT SEARCH - ENDPOINT MOVED ABOVE /{contract_id} ROUTE
 # ============================================================================ 
+
+@router.get("/{contract_id}/export")
+async def export_contract(contract_id: str):
+    """
+    Export contract to a professional text file format
+    """
+    try:
+        # Get contract data
+        contract_result = supabase.table("contracts").select("*").eq("id", contract_id).execute()
+        if not contract_result.data:
+            raise HTTPException(status_code=404, detail="Contract not found")
+        
+        contract = contract_result.data[0]
+        
+        # Generate the contract text content
+        contract_text = generate_contract_text(contract)
+        
+        # Create filename
+        contract_title = contract.get("contract_title", "Contract").replace(" ", "_").replace("/", "-")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"{contract_title}-{date_str}.txt"
+        
+        # Save to file (in a temp directory)
+        export_dir = "exports"
+        os.makedirs(export_dir, exist_ok=True)
+        file_path = os.path.join(export_dir, filename)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(contract_text)
+        
+        return {
+            "message": "Contract exported successfully",
+            "filename": filename,
+            "file_path": file_path,
+            "contract_title": contract.get("contract_title", "Contract"),
+            "export_date": datetime.now().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error exporting contract {contract_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error exporting contract: {str(e)}")
+
+@router.get("/{contract_id}/export/download")
+async def download_exported_contract(contract_id: str):
+    """
+    Download the exported contract file
+    """
+    try:
+        # Get contract data to create filename
+        contract_result = supabase.table("contracts").select("*").eq("id", contract_id).execute()
+        if not contract_result.data:
+            raise HTTPException(status_code=404, detail="Contract not found")
+        
+        contract = contract_result.data[0]
+        contract_title = contract.get("contract_title", "Contract").replace(" ", "_").replace("/", "-")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"{contract_title}-{date_str}.txt"
+        file_path = os.path.join("exports", filename)
+        
+        if not os.path.exists(file_path):
+            # Generate the file if it doesn't exist
+            contract_text = generate_contract_text(contract)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(contract_text)
+        
+        return FileResponse(
+            path=file_path,
+            filename=filename,
+            media_type='text/plain'
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error downloading contract {contract_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error downloading contract: {str(e)}")
+
+def generate_contract_text(contract: Dict[str, Any]) -> str:
+    """
+    Generate professional contract text with proper formatting
+    """
+    # Header
+    text = "=" * 80 + "\n"
+    text += " " * 20 + "CONTRACT DOCUMENT" + "\n"
+    text += "=" * 80 + "\n\n"
+    
+    # Basic Contract Information
+    text += "📋 CONTRACT OVERVIEW\n"
+    text += "-" * 40 + "\n"
+    text += f"Contract Title: {contract.get('contract_title', 'N/A')}\n"
+    text += f"Contract Type: {contract.get('contract_type', 'N/A')}\n"
+    text += f"Status: {contract.get('status', 'N/A')}\n"
+    text += f"Created: {contract.get('created_at', 'N/A')}\n"
+    text += f"Last Updated: {contract.get('updated_at', 'N/A')}\n\n"
+    
+    # Parties Information
+    text += "👥 PARTIES INVOLVED\n"
+    text += "-" * 40 + "\n"
+    text += f"Brand ID: {contract.get('brand_id', 'N/A')}\n"
+    text += f"Creator ID: {contract.get('creator_id', 'N/A')}\n"
+    if contract.get('sponsorship_id'):
+        text += f"Sponsorship ID: {contract.get('sponsorship_id')}\n"
+    text += "\n"
+    
+    # Timeline
+    text += "📅 TIMELINE\n"
+    text += "-" * 40 + "\n"
+    text += f"Start Date: {contract.get('start_date', 'N/A')}\n"
+    text += f"End Date: {contract.get('end_date', 'N/A')}\n\n"
+    
+    # Financial Details
+    text += "💰 FINANCIAL DETAILS\n"
+    text += "-" * 40 + "\n"
+    text += f"Total Budget: ${contract.get('total_budget', 0):,.2f}\n"
+    
+    # Payment Terms
+    payment_terms = contract.get('payment_terms', {})
+    if payment_terms:
+        text += "\nPayment Terms:\n"
+        if isinstance(payment_terms, dict):
+            for key, value in payment_terms.items():
+                text += f"  • {key.replace('_', ' ').title()}: {value}\n"
+        else:
+            text += f"  {payment_terms}\n"
+    
+    # Payment Schedule
+    payment_schedule = contract.get('payment_schedule', {})
+    if payment_schedule:
+        text += "\nPayment Schedule:\n"
+        if isinstance(payment_schedule, dict):
+            for key, value in payment_schedule.items():
+                text += f"  • {key.replace('_', ' ').title()}: {value}\n"
+        else:
+            text += f"  {payment_schedule}\n"
+    text += "\n"
+    
+    # Deliverables
+    text += "📦 DELIVERABLES\n"
+    text += "-" * 40 + "\n"
+    deliverables = contract.get('deliverables', {})
+    if deliverables:
+        if isinstance(deliverables, dict):
+            for key, value in deliverables.items():
+                if key == "deliverables_list" and isinstance(value, list):
+                    text += "Deliverables List:\n"
+                    for i, item in enumerate(value, 1):
+                        text += f"  {i}. {item}\n"
+                elif key == "additional_deliverables" and isinstance(value, list):
+                    text += "Additional Deliverables:\n"
+                    for i, item in enumerate(value, 1):
+                        if isinstance(item, dict):
+                            text += f"  {i}. {item.get('description', 'N/A')}\n"
+                        else:
+                            text += f"  {i}. {item}\n"
+                elif key == "status_updates" and isinstance(value, list):
+                    text += "Status Updates:\n"
+                    for item in value:
+                        if isinstance(item, dict):
+                            text += f"  • {item.get('new_status', 'N/A')}: {item.get('notes', 'N/A')}\n"
+                else:
+                    text += f"{key.replace('_', ' ').title()}: {value}\n"
+        else:
+            text += f"{deliverables}\n"
+    else:
+        text += "No deliverables specified\n"
+    text += "\n"
+    
+    # Terms and Conditions
+    text += "📜 TERMS AND CONDITIONS\n"
+    text += "-" * 40 + "\n"
+    terms = contract.get('terms_and_conditions', {})
+    if terms:
+        if isinstance(terms, dict):
+            for key, value in terms.items():
+                if key == "jurisdiction":
+                    text += f"Jurisdiction: {value}\n"
+                elif key == "dispute_resolution":
+                    text += f"Dispute Resolution: {value}\n"
+                elif key == "additional_notes":
+                    text += f"Additional Notes: {value}\n"
+                elif key == "timeline_updates":
+                    text += f"Timeline Updates: {value}\n"
+                else:
+                    text += f"{key.replace('_', ' ').title()}: {value}\n"
+        else:
+            text += f"{terms}\n"
+    else:
+        text += "No terms and conditions specified\n"
+    text += "\n"
+    
+    # Legal Compliance
+    text += "⚖️ LEGAL COMPLIANCE\n"
+    text += "-" * 40 + "\n"
+    legal_compliance = contract.get('legal_compliance', {})
+    if legal_compliance:
+        if isinstance(legal_compliance, dict):
+            for key, value in legal_compliance.items():
+                text += f"{key.replace('_', ' ').title()}: {value}\n"
+        else:
+            text += f"{legal_compliance}\n"
+    else:
+        text += "No legal compliance information specified\n"
+    text += "\n"
+    
+    # Chat History
+    text += "💬 NEGOTIATION HISTORY\n"
+    text += "-" * 40 + "\n"
+    comments = contract.get('comments', [])
+    if comments and isinstance(comments, list):
+        for i, comment in enumerate(comments, 1):
+            if isinstance(comment, dict):
+                user = comment.get('user', 'Unknown')
+                timestamp = comment.get('timestamp', 'Unknown time')
+                message = comment.get('comment', 'No message')
+                
+                # Format timestamp
+                try:
+                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    formatted_time = dt.strftime("%B %d, %Y at %I:%M %p")
+                except:
+                    formatted_time = timestamp
+                
+                text += f"\nMessage {i}:\n"
+                text += f"From: {user}\n"
+                text += f"Time: {formatted_time}\n"
+                text += f"Message: {message}\n"
+                text += "-" * 30 + "\n"
+    else:
+        text += "No negotiation history available\n"
+    text += "\n"
+    
+    # Update History (excluding comments)
+    text += "📝 UPDATE HISTORY\n"
+    text += "-" * 40 + "\n"
+    update_history = contract.get("update_history", [])
+    if update_history and isinstance(update_history, list):
+        update_count = 0
+        for update in update_history:
+            if isinstance(update, dict):
+                updates = update.get('updates', {})
+                
+                # Skip updates that only contain comments
+                if isinstance(updates, dict) and len(updates) == 1 and 'comments' in updates:
+                    continue
+                
+                # Skip updates that only have comments field
+                if isinstance(updates, dict) and all(key in ['comments', 'update_timestamp', 'updated_by'] for key in updates.keys()):
+                    continue
+                
+                update_count += 1
+                updated_by = update.get('updated_by', 'Unknown')
+                timestamp = update.get('timestamp', 'Unknown time')
+                
+                # Format timestamp
+                try:
+                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    formatted_time = dt.strftime("%B %d, %Y at %I:%M %p")
+                except:
+                    formatted_time = timestamp
+                
+                text += f"\nUpdate {update_count}:\n"
+                text += f"Updated by: {updated_by}\n"
+                text += f"Time: {formatted_time}\n"
+                
+                if isinstance(updates, dict):
+                    for key, value in updates.items():
+                        if value and key not in ['update_timestamp', 'updated_by', 'comments']:
+                            text += f"  • {key.replace('_', ' ').title()}: {value}\n"
+                text += "-" * 30 + "\n"
+        
+        if update_count == 0:
+            text += "No contract updates available\n"
+    else:
+        text += "No update history available\n"
+    text += "\n"
+    
+    # Footer
+    text += "=" * 80 + "\n"
+    text += " " * 20 + "END OF CONTRACT DOCUMENT" + "\n"
+    text += "=" * 80 + "\n"
+    text += f"Generated on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}\n"
+    text += "Document ID: " + contract.get('id', 'N/A') + "\n"
+    
+    return text 

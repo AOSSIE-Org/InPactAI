@@ -19,11 +19,14 @@ supabase: Client = create_client(supabase_url, supabase_key)
 class ContractGenerationRequest(BaseModel):
     creator_id: str
     brand_id: str
-    contract_type: str  # "one-time", "recurring", "campaign", "sponsorship"
+    contract_type: str  # "one-time", "recurring", "campaign", "sponsorship", "custom"
+    custom_contract_type: Optional[str] = None
     min_budget: float
     max_budget: float
-    content_type: List[str]  # ["instagram", "youtube", "tiktok", "blog"]
-    duration_weeks: int
+    content_type: List[str]  # ["instagram_post", "youtube_shorts", "custom", etc.]
+    custom_content_types: Optional[List[str]] = []
+    duration_value: int
+    duration_unit: str  # "days", "weeks", "months", "years"
     requirements: str  # Natural language description
     industry: Optional[str] = None
     exclusivity: Optional[str] = "non-exclusive"
@@ -45,15 +48,23 @@ class ContractTemplate(BaseModel):
 class GeneratedContract(BaseModel):
     contract_title: str
     contract_type: str
+    custom_contract_type: Optional[str] = None
     total_budget: float
     start_date: str
     end_date: str
+    duration_value: int
+    duration_unit: str
+    content_types: List[str]
+    custom_content_types: List[str] = []
     terms_and_conditions: Dict[str, Any]
     payment_terms: Dict[str, Any]
     deliverables: Dict[str, Any]
     legal_compliance: Dict[str, Any]
     risk_score: float
     ai_suggestions: List[str]
+    pricing_fallback_used: Optional[bool] = False
+    pricing_fallback_reason: Optional[str] = None
+    generation_metadata: Optional[Dict[str, Any]] = None
 
 class ClauseSuggestion(BaseModel):
     clause_type: str
@@ -144,9 +155,17 @@ async def generate_smart_contract(request: ContractGenerationRequest):
         # Calculate budget based on min/max range
         budget = (request.min_budget + request.max_budget) / 2  # Use average of min/max
         
+        # Convert duration to weeks for date calculation
+        duration_weeks = (lambda: {
+            'days': request.duration_value / 7,
+            'weeks': request.duration_value,
+            'months': request.duration_value * 4.33,  # Average weeks per month
+            'years': request.duration_value * 52
+        }.get(request.duration_unit, request.duration_value))()
+        
         # Generate dates
         start_date = datetime.now().date()
-        end_date = start_date + timedelta(weeks=request.duration_weeks)
+        end_date = start_date + timedelta(weeks=duration_weeks)
         
         # Create AI prompt for contract generation
         # Get jurisdiction details
@@ -164,14 +183,24 @@ async def generate_smart_contract(request: ContractGenerationRequest):
             else:
                 dispute_info = f"Dispute Resolution: {request.dispute_resolution}"
 
+        # Prepare content types string including custom types
+        content_types_str = ', '.join(request.content_type)
+        if request.custom_content_types:
+            content_types_str += f", {', '.join(request.custom_content_types)}"
+        
+        # Prepare contract type string
+        contract_type_str = request.contract_type
+        if request.contract_type == 'custom' and request.custom_contract_type:
+            contract_type_str = request.custom_contract_type
+        
         system_prompt = f"""You are an expert contract lawyer specializing in creator-brand collaborations. Generate a comprehensive contract based on the following requirements:
 
 Creator Profile: {json.dumps(creator, indent=2)}
 Brand Profile: {json.dumps(brand, indent=2)}
-Contract Type: {request.contract_type}
+Contract Type: {contract_type_str}
 Budget: ${budget:,.2f}
-Content Types: {', '.join(request.content_type)}
-Duration: {request.duration_weeks} weeks
+Content Types: {content_types_str}
+Duration: {request.duration_value} {request.duration_unit}
 Requirements: {request.requirements}
 Industry: {request.industry or 'General'}
 Exclusivity: {request.exclusivity}
@@ -205,7 +234,7 @@ IMPORTANT: You must respond with ONLY valid JSON. Do not include any text before
   "deliverables": {{
     "content_type": "{', '.join(request.content_type)}",
     "quantity": "Number of deliverables",
-    "timeline": "{request.duration_weeks} weeks",
+    "timeline": "{request.duration_value} {request.duration_unit}",
     "format": "Content format requirements",
     "specifications": "Detailed specifications"
   }},
@@ -254,7 +283,7 @@ Generate a complete, professional contract that follows this exact JSON structur
         if not groq_api_key:
             # Fallback if no API key
             contract_data = {
-                "contract_title": f"{request.contract_type.title()} Contract - {request.industry or 'General'}",
+                "contract_title": f"{contract_type_str.title()} Contract - {request.industry or 'General'}",
                 "terms_and_conditions": {
                     "content_guidelines": "Content must align with brand guidelines and target audience",
                     "usage_rights": "Brand receives rights to use content across specified platforms",
@@ -274,9 +303,9 @@ Generate a complete, professional contract that follows this exact JSON structur
                     "final_payment": f"${request.max_budget * 0.5:,.2f}"
                 },
                 "deliverables": {
-                    "content_type": ", ".join(request.content_type),
+                    "content_type": content_types_str,
                     "quantity": "1 deliverable per content type",
-                    "timeline": f"{request.duration_weeks} weeks",
+                    "timeline": f"{request.duration_value} {request.duration_unit}",
                     "format": "High-quality digital content",
                     "specifications": request.requirements
                 },
@@ -351,7 +380,7 @@ Respond with ONLY valid JSON in this exact format:
   "deliverables": {{
     "content_type": "{', '.join(request.content_type)}",
     "quantity": "Specific quantity details",
-    "timeline": "{request.duration_weeks} weeks",
+    "timeline": "{request.duration_value} {request.duration_unit}",
     "format": "Detailed format requirements",
     "specifications": "Enhanced specifications"
   }},
@@ -439,7 +468,7 @@ Focus on:
                     "deliverables": {
                         "content_type": ", ".join(request.content_type),
                         "quantity": "1 deliverable per content type",
-                        "timeline": f"{request.duration_weeks} weeks",
+                        "timeline": f"{request.duration_value} {request.duration_unit}",
                         "format": "High-quality digital content",
                         "specifications": request.requirements
                     },
@@ -458,15 +487,32 @@ Focus on:
         return GeneratedContract(
             contract_title=contract_data.get("contract_title", f"{request.contract_type.title()} Contract"),
             contract_type=request.contract_type,
+            custom_contract_type=request.custom_contract_type if request.contract_type == 'custom' else None,
             total_budget=budget,
             start_date=start_date.isoformat(),
             end_date=end_date.isoformat(),
+            duration_value=request.duration_value,
+            duration_unit=request.duration_unit,
+            content_types=request.content_type,
+            custom_content_types=request.custom_content_types,
             terms_and_conditions=contract_data.get("terms_and_conditions", {}),
             payment_terms=contract_data.get("payment_terms", {}),
             deliverables=contract_data.get("deliverables", {}),
             legal_compliance=contract_data.get("legal_compliance", {}),
             risk_score=contract_data.get("risk_score", 0.3),
-            ai_suggestions=contract_data.get("ai_suggestions", [])
+            ai_suggestions=contract_data.get("ai_suggestions", []),
+            pricing_fallback_used=False,  # This will be set by the frontend based on pricing recommendation
+            pricing_fallback_reason=None,  # This will be set by the frontend based on pricing recommendation
+            generation_metadata={
+                "ai_generated": True,
+                "generation_timestamp": datetime.now().isoformat(),
+                "original_request": {
+                    "requirements": request.requirements,
+                    "industry": request.industry,
+                    "exclusivity": request.exclusivity,
+                    "compliance_requirements": request.compliance_requirements
+                }
+            }
         )
         
     except Exception as e:
@@ -498,22 +544,56 @@ def calculate_risk_score(request: ContractGenerationRequest) -> float:
     risk_score += contract_type_risk.get(request.contract_type, 0.15)
     
     # Duration risk (longer contracts = higher risk)
-    if request.duration_weeks > 12:
+    # Convert duration to weeks for risk calculation
+    duration_weeks = (lambda: {
+        'days': request.duration_value / 7,
+        'weeks': request.duration_value,
+        'months': request.duration_value * 4.33,
+        'years': request.duration_value * 52
+    }.get(request.duration_unit, request.duration_value))()
+    
+    if duration_weeks > 12:
         risk_score += 0.2
-    elif request.duration_weeks > 8:
+    elif duration_weeks > 8:
         risk_score += 0.15
-    elif request.duration_weeks > 4:
+    elif duration_weeks > 4:
         risk_score += 0.1
     
     # Content type risk
     content_type_risk = {
-        "youtube": 0.05,  # Lower risk, established platform
+        # YouTube content types
+        "youtube_shorts": 0.04,
+        "youtube_video": 0.05,
+        "youtube_live": 0.08,
+        # Instagram content types
+        "instagram_post": 0.06,
+        "instagram_reel": 0.07,
+        "instagram_story": 0.05,
+        "instagram_live": 0.08,
+        # TikTok content types
+        "tiktok_video": 0.12,
+        "tiktok_live": 0.15,
+        # Facebook content types
+        "facebook_post": 0.06,
+        "facebook_live": 0.08,
+        # Twitter content types
+        "twitter_post": 0.07,
+        "twitter_space": 0.09,
+        # LinkedIn content types
+        "linkedin_post": 0.04,
+        "linkedin_article": 0.05,
+        # Other content types
+        "blog_post": 0.03,
+        "podcast": 0.10,
+        "newsletter": 0.04,
+        # Legacy support
+        "youtube": 0.05,
         "instagram": 0.08,
-        "tiktok": 0.12,   # Higher risk, newer platform
+        "tiktok": 0.12,
         "facebook": 0.06,
         "twitter": 0.07,
-        "linkedin": 0.04,  # Lower risk, professional
-        "blog": 0.03       # Lowest risk, simple content
+        "linkedin": 0.04,
+        "blog": 0.03
     }
     
     # Calculate average content type risk
@@ -574,10 +654,18 @@ def generate_ai_suggestions(request: ContractGenerationRequest, risk_score: floa
         suggestions.append("Include content approval timeline and revision limits")
     
     # Duration suggestions
-    if request.duration_weeks > 8:
+    # Convert duration to weeks for suggestions
+    duration_weeks = (lambda: {
+        'days': request.duration_value / 7,
+        'weeks': request.duration_value,
+        'months': request.duration_value * 4.33,
+        'years': request.duration_value * 52
+    }.get(request.duration_unit, request.duration_value))()
+    
+    if duration_weeks > 8:
         suggestions.append("Break down deliverables into phases with interim deadlines")
         suggestions.append("Include progress review meetings and milestone payments")
-    elif request.duration_weeks > 4:
+    elif duration_weeks > 4:
         suggestions.append("Set weekly check-ins to track progress")
     
     # Content type suggestions
@@ -618,11 +706,37 @@ def generate_ai_suggestions(request: ContractGenerationRequest, risk_score: floa
     
     return suggestions[:5]  # Limit to 5 suggestions
 
-def calculate_budget(budget_range: str, content_types: List[str], duration_weeks: int) -> float:
+def calculate_budget(budget_range: str, content_types: List[str], duration_value: int, duration_unit: str) -> float:
     """Calculate budget based on requirements"""
     
     # Base rates per content type
     base_rates = {
+        # YouTube content types
+        "youtube_shorts": 300,
+        "youtube_video": 1000,
+        "youtube_live": 1500,
+        # Instagram content types
+        "instagram_post": 500,
+        "instagram_reel": 600,
+        "instagram_story": 300,
+        "instagram_live": 800,
+        # TikTok content types
+        "tiktok_video": 400,
+        "tiktok_live": 600,
+        # Facebook content types
+        "facebook_post": 450,
+        "facebook_live": 700,
+        # Twitter content types
+        "twitter_post": 300,
+        "twitter_space": 500,
+        # LinkedIn content types
+        "linkedin_post": 600,
+        "linkedin_article": 800,
+        # Other content types
+        "blog_post": 800,
+        "podcast": 1200,
+        "newsletter": 400,
+        # Legacy support
         "instagram": 500,
         "youtube": 1000,
         "tiktok": 400,
@@ -644,6 +758,14 @@ def calculate_budget(budget_range: str, content_types: List[str], duration_weeks
     
     # Apply budget range multiplier
     budget = base_budget * budget_multipliers.get(budget_range, 1.0)
+    
+    # Convert duration to weeks for budget calculation
+    duration_weeks = (lambda: {
+        'days': duration_value / 7,
+        'weeks': duration_value,
+        'months': duration_value * 4.33,
+        'years': duration_value * 52
+    }.get(duration_unit, duration_value))()
     
     # Adjust for duration
     if duration_weeks > 4:

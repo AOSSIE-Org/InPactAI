@@ -1,0 +1,106 @@
+================================================================================
+                    CONTRACT DOCUMENT
+================================================================================
+
+📋 CONTRACT OVERVIEW
+----------------------------------------
+Contract Title: Updated Test Contrayuyuy
+Contract Type: one-time
+Status: draft
+Created: 2025-08-02T01:36:43.716801+00:00
+Last Updated: 2025-08-06T00:11:06.910057+00:00
+
+👥 PARTIES INVOLVED
+----------------------------------------
+Brand ID: u111
+Creator ID: u116
+
+📅 TIMELINE
+----------------------------------------
+Start Date: 2025-08-06
+End Date: 2025-08-14
+
+💰 FINANCIAL DETAILS
+----------------------------------------
+Total Budget: $3,000.00
+
+Payment Terms:
+  • Currency: EUR
+  • Late Fees: Updated late fees
+  • Final Payment: 60% on completion
+  • Payment Method: Bank transfer
+  • Advance Payment: 40% advance
+  • Payment Schedule: Updated payment schedule
+
+📦 DELIVERABLES
+----------------------------------------
+Format: 1080p HD
+Quantity: 5 posts and 2 videos
+Timeline: 3 weeks
+Content Type: Instagram posts and YouTube videos
+Specifications: Detailed specifications for all deliverables
+Revision Policy: 2 rounds of revisions included
+
+📜 TERMS AND CONDITIONS
+----------------------------------------
+Exclusivity: Non-exclusive agreement
+Jurisdiction: mumbai
+Usage Rights: Full usage rights granted.
+Additional Terms: Additional terms here
+Brand Guidelines: Updated brand guidelines
+Content Guidelines: Updated content guidelines
+Dispute Resolution: mediation
+Disclosure Requirements: Updated FTC compliance
+
+⚖️ LEGAL COMPLIANCE
+----------------------------------------
+Ftc Compliance: True
+Disclosure Required: True
+
+💬 NEGOTIATION HISTORY
+----------------------------------------
+
+Message 1:
+From: test_user
+Time: January 01, 2024 at 12:00 AM
+Message: Test comment from updated backend
+------------------------------
+
+Message 2:
+From: test_user
+Time: January 01, 2024 at 12:00 AM
+Message: Another test comment with dedicated columns
+------------------------------
+
+Message 3:
+From: test_user
+Time: January 01, 2024 at 12:00 AM
+Message: Test comment for frontend visibility
+------------------------------
+
+📝 UPDATE HISTORY
+----------------------------------------
+
+Update 1:
+Updated by: test_user
+Time: January 01, 2024 at 12:00 AM
+  • Comments: Test comment from updated backend
+------------------------------
+
+Update 2:
+Updated by: test_user
+Time: January 01, 2024 at 12:00 AM
+  • Comments: Another test comment with dedicated columns
+------------------------------
+
+Update 3:
+Updated by: test_user
+Time: January 01, 2024 at 12:00 AM
+  • Comments: Test comment for frontend visibility
+------------------------------
+
+================================================================================
+                    END OF CONTRACT DOCUMENT
+================================================================================
+Generated on: August 07, 2025 at 03:44 AM
+Document ID: 6f780c78-3ec5-4102-a22b-784174a57f35
