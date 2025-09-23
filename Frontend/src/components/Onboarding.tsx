@@ -97,7 +97,9 @@ export default function Onboarding() {
   // Revoke brand logo preview when it changes/unmounts
   useEffect(() => {
     return () => {
-      if (brandLogoPreview) URL.revokeObjectURL(brandLogoPreview);
+      if (brandLogoPreview) {
+        try { URL.revokeObjectURL(brandLogoPreview); } catch {}
+      }
     };
   }, [brandLogoPreview]);
 
@@ -663,8 +665,14 @@ export default function Onboarding() {
   const industries = ["Tech", "Fashion", "Travel", "Food", "Fitness", "Beauty", "Gaming", "Education", "Music", "Finance", "Other"];
   const handleBrandLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setBrandData({ ...brandData, logo: e.target.files[0] });
-      setBrandLogoPreview(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+      // Revoke previous preview if present
+      if (brandLogoPreview) {
+        try { URL.revokeObjectURL(brandLogoPreview); } catch {}
+      }
+      const url = URL.createObjectURL(file);
+      setBrandData({ ...brandData, logo: file });
+      setBrandLogoPreview(url);
     }
   };
   const renderBrandDetailsStep = () => (
