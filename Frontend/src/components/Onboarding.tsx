@@ -443,7 +443,7 @@ export default function Onboarding() {
       // 1. Upload profile picture if provided
       if (profilePic) {
         setProgress(20);
-        const fileExt = profilePic.name.split('.').pop();
+        const fileExt = profilePic.name ? profilePic.name.split('.').pop() : '';
         const fileName = `${user?.id}_${Date.now()}.${fileExt}`;
         const { data, error } = await supabase.storage.from('profile-pictures').upload(fileName, profilePic);
         if (error) throw error;
@@ -942,9 +942,20 @@ export default function Onboarding() {
     setBrandSubmitSuccess("");
     let logo_url = null;
     try {
+      // 0. Ensure user exists in users table (upsert)
+      if (user) {
+        const upsertUser = {
+          id: user.id,
+          email: user.email,
+          username: user.user_metadata?.name || user.email || `user_${user.id}`,
+          role: 'brand',
+        };
+        const { error: upsertError } = await supabase.from('users').upsert(upsertUser, { onConflict: 'id' });
+        if (upsertError) throw upsertError;
+      }
       // 1. Upload logo if provided
       if (brandData.logo) {
-        const fileExt = brandData.logo.name.split('.').pop();
+        const fileExt = brandData.logo.name ? brandData.logo.name.split('.').pop() : '';
         const fileName = `${user?.id}_${Date.now()}.${fileExt}`;
         const { data, error } = await supabase.storage.from('brand-logos').upload(fileName, brandData.logo);
         if (error) throw error;
@@ -992,8 +1003,8 @@ export default function Onboarding() {
       <h2 className="text-2xl font-bold mb-4">Review & Submit</h2>
       <div className="mb-4">
         <label className="block font-medium mb-2">Logo</label>
-        {(brandLogoPreview || brandData.logo) ? (
-          <img src={brandLogoPreview || (brandData.logo ? URL.createObjectURL(brandData.logo) : undefined)} alt="Logo Preview" className="h-16 w-16 rounded-full object-cover border mb-2" />
+        {(brandLogoPreview || (brandData.logo instanceof File ? URL.createObjectURL(brandData.logo) : undefined)) ? (
+          <img src={brandLogoPreview || (brandData.logo instanceof File ? URL.createObjectURL(brandData.logo) : undefined)} alt="Logo Preview" className="h-16 w-16 rounded-full object-cover border mb-2" />
         ) : (
           <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">No Logo</div>
         )}
