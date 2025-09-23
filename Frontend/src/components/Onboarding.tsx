@@ -962,6 +962,7 @@ export default function Onboarding() {
     setBrandSubmitSuccess("");
     let logo_url = null;
     try {
+  if (!user?.id || !user?.email) throw new Error("Please sign in to finish brand onboarding.");
       // 0. Ensure user exists in users table (upsert)
       if (user) {
         const upsertUser = {
@@ -1089,7 +1090,11 @@ export default function Onboarding() {
     const savedStep = localStorage.getItem("brandStep");
     const savedData = localStorage.getItem("brandData");
     if (savedStep) setBrandStep(Number(savedStep));
-    if (savedData) setBrandData(JSON.parse(savedData));
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      if (parsed.logo) parsed.logo = null;
+      setBrandData(parsed);
+    }
   }, []);
   useEffect(() => {
     localStorage.setItem("brandStep", String(brandStep));
