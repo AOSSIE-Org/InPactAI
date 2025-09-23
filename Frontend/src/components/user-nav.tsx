@@ -19,8 +19,9 @@ interface UserNavProps {
 }
 
 export function UserNav({ showDashboard = true }: UserNavProps) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, role } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
+  const [dashboardPath, setDashboardPath] = useState<string>("/dashboard");
 
   if (!isAuthenticated || !user) {
     return (
@@ -38,6 +39,18 @@ export function UserNav({ showDashboard = true }: UserNavProps) {
   const handleAvatarError = () => {
     setAvatarError(true);
   };
+
+  // Determine which dashboard path to use based on user metadata or role from AuthContext
+  React.useEffect(() => {
+    if (!user) return;
+
+    const roleFromUser = (user as any)?.user_metadata?.role || (user as any)?.role;
+    if (roleFromUser === "brand" || role === "brand") {
+      setDashboardPath("/brand/dashboard");
+    } else {
+      setDashboardPath("/dashboard");
+    }
+  }, [user, role]);
 
   return (
     <DropdownMenu>
@@ -66,7 +79,7 @@ export function UserNav({ showDashboard = true }: UserNavProps) {
         <DropdownMenuGroup>
           {showDashboard && (
             <DropdownMenuItem asChild>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to={dashboardPath}>Dashboard</Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuItem>Profile</DropdownMenuItem>

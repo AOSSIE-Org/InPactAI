@@ -14,7 +14,9 @@ interface AuthContextType {
   login: () => void;
   logout: () => void;
   checkUserOnboarding: (userToCheck?: User | null) => Promise<{ hasOnboarding: boolean; role: string | null }>;
+  role: string | null;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -64,6 +66,7 @@ async function ensureUserInTable(user: any) {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRequest, setLastRequest] = useState(0);
   const navigate = useNavigate();
@@ -131,6 +134,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       setUser(data.session?.user || null);
       setIsAuthenticated(!!data.session?.user);
+      // Determine role once at startup
+      if (data.session?.user) {
+        try {
+          const res = await checkUserOnboarding(data.session.user);
+          setRole(res.role || null);
+        } catch (err) {
+          console.error("AuthContext: error determining role", err);
+        }
+      }
       if (data.session?.user) {
         console.log("AuthContext: Ensuring user in table");
         try {
@@ -161,12 +173,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log("AuthContext: User authenticated");
           try {
             await ensureUserInTable(session.user);
+            const res = await checkUserOnboarding(session.user);
+            setRole(res.role || null);
           } catch (error) {
             console.error("AuthContext: Error ensuring user in table", error);
           }
           setLoading(false);
         } else {
           // User logged out
+          setRole(null);
           console.log("AuthContext: User logged out");
           setLoading(false);
         }
@@ -208,7 +223,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, checkUserOnboarding }}>
+  <AuthContext.Provider value={{ isAuthenticated, user, login, logout, checkUserOnboarding, role }}>
       {children}
     </AuthContext.Provider>
   );
