@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Info } from "lucide-react";
@@ -85,6 +85,23 @@ export default function Onboarding() {
   const [brandData, setBrandData] = useState<BrandData>(brandInitialState);
   const [brandLogoPreview, setBrandLogoPreview] = useState<string | null>(null);
   const [brandError, setBrandError] = useState("");
+
+  // Memoized preview URL for profile picture to avoid creating new ObjectURLs every render
+  const profilePicUrl = useMemo(() => (profilePic ? URL.createObjectURL(profilePic) : null), [profilePic]);
+  useEffect(() => {
+    return () => {
+      if (profilePicUrl) URL.revokeObjectURL(profilePicUrl);
+    };
+  }, [profilePicUrl]);
+
+  // Revoke brand logo preview when it changes/unmounts
+  useEffect(() => {
+    return () => {
+      if (brandLogoPreview) {
+        try { URL.revokeObjectURL(brandLogoPreview); } catch {}
+      }
+    };
+  }, [brandLogoPreview]);
 
   // Prefill name and email from Google user if available
   useEffect(() => {
@@ -415,9 +432,9 @@ export default function Onboarding() {
           className="hidden"
         />
         <div className="flex items-center gap-4 mt-2">
-          {(profilePic || user?.user_metadata?.avatar_url) ? (
+          {(profilePicUrl || user?.user_metadata?.avatar_url) ? (
             <img
-              src={profilePic ? URL.createObjectURL(profilePic) : user?.user_metadata?.avatar_url}
+              src={profilePicUrl ?? user?.user_metadata?.avatar_url}
               alt="Profile Preview"
               className="h-20 w-20 rounded-full object-cover border-2 border-purple-500"
             />
@@ -443,26 +460,31 @@ export default function Onboarding() {
       // 1. Upload profile picture if provided
       if (profilePic) {
         setProgress(20);
-        const fileExt = profilePic.name.split('.').pop();
-        const fileName = `${user?.id}_${Date.now()}.${fileExt}`;
-        const { data, error } = await supabase.storage.from('profile-pictures').upload(fileName, profilePic);
+        const ext = profilePic.name.includes('.') ? profilePic.name.split('.').pop()!.toLowerCase() : undefined;
+        const fileName = `${user?.id}_${Date.now()}${ext ? `.${ext}` : ''}`;
+        const { data, error } = await supabase
+          .storage.from('profile-pictures')
+          .upload(fileName, profilePic, { contentType: profilePic.type, cacheControl: '3600', upsert: false });
         if (error) throw error;
         profile_image_url = `${supabase.storage.from('profile-pictures').getPublicUrl(fileName).data.publicUrl}`;
       } else if (user?.user_metadata?.avatar_url) {
         profile_image_url = user.user_metadata.avatar_url;
       }
       setProgress(40);
-      // 2. Update users table
+      // 2. Ensure auth and upsert users row
       const categoryToSave = personal.category === 'Other' ? personal.otherCategory : personal.category;
-      const { error: userError } = await supabase.from('users').update({
+      if (!user?.id || !user?.email) throw new Error('You must be signed in to submit onboarding.');
+      const { error: userError } = await supabase.from('users').upsert({
+        id: user.id,
+        email: user.email,
         username: personal.name,
-        age: personal.age,
+        age: Number(personal.age),
         gender: personal.gender,
         country: personal.country,
         category: categoryToSave,
         profile_image: profile_image_url,
         role,
-      }).eq('id', user?.id);
+      }, { onConflict: 'id' });
       if (userError) throw userError;
       setProgress(60);
       // 3. Insert social_profiles for each platform
@@ -643,8 +665,14 @@ export default function Onboarding() {
   const industries = ["Tech", "Fashion", "Travel", "Food", "Fitness", "Beauty", "Gaming", "Education", "Music", "Finance", "Other"];
   const handleBrandLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setBrandData({ ...brandData, logo: e.target.files[0] });
-      setBrandLogoPreview(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+      // Revoke previous preview if present
+      if (brandLogoPreview) {
+        try { URL.revokeObjectURL(brandLogoPreview); } catch {}
+      }
+      const url = URL.createObjectURL(file);
+      setBrandData({ ...brandData, logo: file });
+      setBrandLogoPreview(url);
     }
   };
   const renderBrandDetailsStep = () => (
@@ -942,11 +970,25 @@ export default function Onboarding() {
     setBrandSubmitSuccess("");
     let logo_url = null;
     try {
+  if (!user?.id || !user?.email) throw new Error("Please sign in to finish brand onboarding.");
+      // 0. Ensure user exists in users table (upsert)
+      if (user) {
+        const upsertUser = {
+          id: user.id,
+          email: user.email,
+          username: user.user_metadata?.name || user.email || `user_${user.id}`,
+          role: 'brand',
+        };
+        const { error: upsertError } = await supabase.from('users').upsert(upsertUser, { onConflict: 'id' });
+        if (upsertError) throw upsertError;
+      }
       // 1. Upload logo if provided
-      if (brandData.logo) {
-        const fileExt = brandData.logo.name.split('.').pop();
-        const fileName = `${user?.id}_${Date.now()}.${fileExt}`;
-        const { data, error } = await supabase.storage.from('brand-logos').upload(fileName, brandData.logo);
+      if (brandData.logo instanceof File) {
+        const ext = brandData.logo.name.includes('.') ? brandData.logo.name.split('.').pop()!.toLowerCase() : undefined;
+        const fileName = `${user!.id}_${Date.now()}${ext ? `.${ext}` : ''}`;
+        const { data, error } = await supabase
+          .storage.from('brand-logos')
+          .upload(fileName, brandData.logo, { contentType: brandData.logo.type, cacheControl: '3600', upsert: false });
         if (error) throw error;
         logo_url = supabase.storage.from('brand-logos').getPublicUrl(fileName).data.publicUrl;
       }
@@ -992,8 +1034,8 @@ export default function Onboarding() {
       <h2 className="text-2xl font-bold mb-4">Review & Submit</h2>
       <div className="mb-4">
         <label className="block font-medium mb-2">Logo</label>
-        {(brandLogoPreview || brandData.logo) ? (
-          <img src={brandLogoPreview || (brandData.logo ? URL.createObjectURL(brandData.logo) : undefined)} alt="Logo Preview" className="h-16 w-16 rounded-full object-cover border mb-2" />
+        {(brandLogoPreview || (brandData.logo instanceof File ? brandLogoPreview : undefined)) ? (
+          <img src={(brandLogoPreview || (brandData.logo instanceof File ? brandLogoPreview : undefined)) ?? ''} alt="Logo Preview" className="h-16 w-16 rounded-full object-cover border mb-2" />
         ) : (
           <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">No Logo</div>
         )}
@@ -1056,7 +1098,11 @@ export default function Onboarding() {
     const savedStep = localStorage.getItem("brandStep");
     const savedData = localStorage.getItem("brandData");
     if (savedStep) setBrandStep(Number(savedStep));
-    if (savedData) setBrandData(JSON.parse(savedData));
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      if (parsed.logo) parsed.logo = null;
+      setBrandData(parsed);
+    }
   }, []);
   useEffect(() => {
     localStorage.setItem("brandStep", String(brandStep));
@@ -1215,7 +1261,7 @@ function YouTubeDetails({ details, setDetails }: { details: any, setDetails: (d:
 
   return (
     <div className="space-y-2">
-      <label className="block font-medium flex items-center gap-2">
+  <label className="flex font-medium items-center gap-2">
         YouTube Channel URL or ID
         <button
           type="button"
