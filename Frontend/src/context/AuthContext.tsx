@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const checkUserOnboarding = async (userToCheck?: User | null) => {
     const userToUse = userToCheck || user;
     if (!userToUse) return { hasOnboarding: false, role: null };
-    
+
     // Add rate limiting - only allow one request per 2 seconds
     const now = Date.now();
     if (now - lastRequest < 2000) {
@@ -83,29 +83,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return { hasOnboarding: false, role: null };
     }
     setLastRequest(now);
-    
+
     // Check if user has completed onboarding by looking for social profiles or brand data
     const { data: socialProfiles } = await supabase
       .from("social_profiles")
       .select("id")
       .eq("user_id", userToUse.id)
       .limit(1);
-    
+
     const { data: brandData } = await supabase
       .from("brands")
       .select("id")
       .eq("user_id", userToUse.id)
       .limit(1);
-    
-    const hasOnboarding = (socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0);
-    
+
+    // Always return boolean, never null
+    const hasOnboarding = Boolean((socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0));
+
     // Get user role
     const { data: userData } = await supabase
       .from("users")
       .select("role")
       .eq("id", userToUse.id)
       .single();
-    
+
     return { hasOnboarding, role: userData?.role || null };
   };
 
@@ -138,7 +139,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (data.session?.user) {
         try {
           const res = await checkUserOnboarding(data.session.user);
-          setRole(res.role || null);
+          if (res.role !== null && res.role !== undefined) {
+            setRole(res.role);
+          }
         } catch (err) {
           console.error("AuthContext: error determining role", err);
         }
@@ -174,7 +177,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           try {
             await ensureUserInTable(session.user);
             const res = await checkUserOnboarding(session.user);
-            setRole(res.role || null);
+            if (res.role !== null && res.role !== undefined) {
+              setRole(res.role);
+            }
           } catch (error) {
             console.error("AuthContext: Error ensuring user in table", error);
           }
