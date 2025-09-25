@@ -135,36 +135,8 @@ export default function BrandDashboard() {
               <button
                 key={tab.route}
                 onClick={() => navigate(tab.route)}
-                style={{
-                  width: "100%",
-                  background: isActive ? "var(--sidebar-active)" : "transparent",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: sidebarCollapsed ? "12px" : "12px 16px",
-                  color: isActive ? "var(--text-default)" : "var(--muted-text)",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                  gap: "12px",
-                  marginBottom: "4px",
-                  transition: "all 0.2s ease",
-                  textAlign: sidebarCollapsed ? "center" : "left",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "var(--sidebar-active)";
-                    e.currentTarget.style.color = "var(--text-default)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "var(--muted-text)";
-                  }
-                }}
+                type="button"
+                className={`brand-nav-btn${isActive ? " active" : ""}${sidebarCollapsed ? " collapsed" : ""}`}
               >
                 <Icon size={18} />
                 {!sidebarCollapsed && tab.label}
@@ -530,6 +502,7 @@ export default function BrandDashboard() {
       </div>
 
       {/* CSS for gradient animation */}
+      {/* CSS for gradient animation and nav button styles */}
       <style>
         {`
           @keyframes gradientFlow {
@@ -563,6 +536,42 @@ export default function BrandDashboard() {
             --sidebar-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             --sidebar-toggle-bg: rgba(26,26,26,0.9);
             --sidebar-toggle-hover: rgba(42,42,42,0.9);
+          }
+
+          .brand-nav-btn {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--muted-text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+            text-align: left;
+            outline: none;
+          }
+          .brand-nav-btn.collapsed {
+            padding: 12px;
+            justify-content: center;
+            text-align: center;
+          }
+          .brand-nav-btn.active {
+            background: var(--sidebar-active);
+            color: var(--text-default);
+          }
+          .brand-nav-btn:hover,
+          .brand-nav-btn:focus-visible {
+            background: var(--sidebar-active);
+            color: var(--text-default);
+            outline: 2px solid var(--primary-hover);
+            outline-offset: 2px;
           }
 
           /* Responsive: auto-collapse sidebar under 1024px */
