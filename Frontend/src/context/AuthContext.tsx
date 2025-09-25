@@ -175,9 +175,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (session?.user) {
           console.log("AuthContext: User authenticated");
           try {
+            const userId = session.user.id;
             await ensureUserInTable(session.user);
             const res = await checkUserOnboarding(session.user);
-            if (res.role !== null && res.role !== undefined) {
+            // Only update role if userId matches current session.user.id and role is defined
+            if (res.role !== undefined && session.user.id === userId) {
               setRole(res.role);
             }
           } catch (error) {
