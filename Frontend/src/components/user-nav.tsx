@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
@@ -21,7 +22,10 @@ interface UserNavProps {
 export function UserNav({ showDashboard = true }: UserNavProps) {
   const { user, isAuthenticated, logout, role } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
-  const [dashboardPath, setDashboardPath] = useState<string>("/dashboard");
+
+  // Compute dashboardPath synchronously
+  const roleFromUser = (user as any)?.user_metadata?.role || (user as any)?.role;
+  const dashboardPath = (roleFromUser === "brand" || role === "brand") ? "/brand/dashboard" : "/dashboard";
 
   if (!isAuthenticated || !user) {
     return (
@@ -40,17 +44,6 @@ export function UserNav({ showDashboard = true }: UserNavProps) {
     setAvatarError(true);
   };
 
-  // Determine which dashboard path to use based on user metadata or role from AuthContext
-  React.useEffect(() => {
-    if (!user) return;
-
-    const roleFromUser = (user as any)?.user_metadata?.role || (user as any)?.role;
-    if (roleFromUser === "brand" || role === "brand") {
-      setDashboardPath("/brand/dashboard");
-    } else {
-      setDashboardPath("/dashboard");
-    }
-  }, [user, role]);
 
   return (
     <DropdownMenu>
