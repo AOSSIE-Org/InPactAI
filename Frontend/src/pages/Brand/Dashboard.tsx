@@ -295,6 +295,7 @@ export default function BrandDashboard() {
                           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             {/* Settings button removed from top bar since it's now in sidebar */}
+            <UserNav />
                         </div>
                       </div>
 
