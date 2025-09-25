@@ -3,9 +3,9 @@ import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText,
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserNav } from "../../components/user-nav";
 
-const PRIMARY = "#0B00CF";
-const SECONDARY = "#300A6E";
-const ACCENT = "#FF2D2B";
+const PRIMARY = "var(--primary)";
+const SECONDARY = "var(--secondary)";
+const ACCENT = "var(--accent)";
 
 const TABS = [
   { label: "Discover", route: "/brand/dashboard", icon: Home },
@@ -19,33 +19,50 @@ export default function BrandDashboard() {
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // Auto-collapse sidebar for viewports < 1024px
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarCollapsed(true);
+      } else {
+        setSidebarCollapsed(false);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#0f0f0f",
+        background: "var(--background)",
         display: "flex",
-        color: "#ffffff",
+        color: "var(--text-default)",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       {/* Left Sidebar */}
-      <div style={{
-        width: sidebarCollapsed ? "80px" : "280px",
-        background: "rgba(26, 26, 26, 0.8)",
-        backdropFilter: "blur(20px)",
-        borderRight: "1px solid rgba(42, 42, 42, 0.6)",
-        display: "flex",
-        flexDirection: "column",
-        padding: "24px 0",
-        transition: "width 0.3s ease",
-        position: "relative",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-      }}>
+      <div
+        style={{
+          width: sidebarCollapsed ? "var(--sidebar-collapsed, 64px)" : "var(--sidebar-expanded, 280px)",
+          background: "var(--sidebar)",
+          backdropFilter: "var(--backdrop-filter, blur(20px))",
+          borderRight: "1px solid var(--border)",
+          display: "flex",
+          flexDirection: "column",
+          padding: "24px 0",
+          transition: "width 0.3s ease",
+          position: "relative",
+          boxShadow: "var(--sidebar-shadow, 0 8px 32px rgba(0, 0, 0, 0.3))",
+        }}
+        className="brand-dashboard-sidebar"
+      >
         {/* Logo */}
         <div style={{
           padding: sidebarCollapsed ? "0 16px 32px 16px" : "0 24px 32px 24px",
-          borderBottom: "1px solid rgba(42, 42, 42, 0.6)",
+          borderBottom: "1px solid var(--border)",
           marginBottom: "24px",
         }}>
           <div style={{
@@ -64,18 +81,18 @@ export default function BrandDashboard() {
               justifyContent: "center",
               flexShrink: 0,
             }}>
-              <span style={{ color: "#fff", fontWeight: 700, fontSize: "16px" }}>I</span>
+              <span style={{ color: "var(--text-default)", fontWeight: 700, fontSize: "16px" }}>I</span>
             </div>
             {!sidebarCollapsed && (
-              <span style={{ 
+                <span style={{ 
                 fontSize: "16px", 
                 fontWeight: 600, 
-                color: "#fff",
+                color: "var(--text-default)",
                 letterSpacing: "-0.02em",
                 lineHeight: 1.2,
               }}>
                 INPACT AI<br />
-                <span style={{ fontSize: "12px", color: "#a0a0a0", fontWeight: 400 }}>
+                <span style={{ fontSize: "12px", color: "var(--muted-text)", fontWeight: 400 }}>
                   for BRANDS
                 </span>
                 </span>
@@ -91,7 +108,7 @@ export default function BrandDashboard() {
             border: "none",
             borderRadius: "12px",
             padding: sidebarCollapsed ? "12px" : "12px 16px",
-            color: "#fff",
+            color: "var(--text-default)",
             fontSize: "14px",
             fontWeight: 500,
             cursor: "pointer",
@@ -101,7 +118,7 @@ export default function BrandDashboard() {
             gap: "8px",
             transition: "background-color 0.2s ease",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "#0a00b3"}
+          onMouseEnter={(e) => e.currentTarget.style.background = "var(--primary-hover)"}
           onMouseLeave={(e) => e.currentTarget.style.background = PRIMARY}
           >
             <Plus size={16} />
@@ -120,11 +137,11 @@ export default function BrandDashboard() {
                 onClick={() => navigate(tab.route)}
                 style={{
                   width: "100%",
-                  background: isActive ? "rgba(42, 42, 42, 0.8)" : "transparent",
+                  background: isActive ? "var(--sidebar-active)" : "transparent",
                   border: "none",
                   borderRadius: "8px",
                   padding: sidebarCollapsed ? "12px" : "12px 16px",
-                  color: isActive ? "#fff" : "#a0a0a0",
+                  color: isActive ? "var(--text-default)" : "var(--muted-text)",
                   fontSize: "14px",
                   fontWeight: 500,
                   cursor: "pointer",
@@ -138,14 +155,14 @@ export default function BrandDashboard() {
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
-                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.background = "var(--sidebar-active)";
+                    e.currentTarget.style.color = "var(--text-default)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "#a0a0a0";
+                    e.currentTarget.style.color = "var(--muted-text)";
                   }
                 }}
               >
@@ -159,17 +176,17 @@ export default function BrandDashboard() {
         {/* Bottom Section - Profile and Settings */}
         <div style={{
           padding: sidebarCollapsed ? "24px 16px" : "24px",
-          borderTop: "1px solid rgba(42, 42, 42, 0.6)",
+          borderTop: "1px solid var(--border)",
         }}>
           {/* Profile */}
           <button
-            style={{
+              style={{
               width: "100%",
               background: "transparent",
               border: "none",
               borderRadius: "8px",
               padding: sidebarCollapsed ? "12px" : "12px 16px",
-              color: "#a0a0a0",
+                color: "var(--muted-text)",
               fontSize: "14px",
               fontWeight: 500,
               cursor: "pointer",
@@ -182,12 +199,12 @@ export default function BrandDashboard() {
               textAlign: sidebarCollapsed ? "center" : "left",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
-              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.background = "var(--sidebar-active)";
+              e.currentTarget.style.color = "var(--text-default)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#a0a0a0";
+              e.currentTarget.style.color = "var(--muted-text)";
             }}
           >
             <div style={{
@@ -200,12 +217,12 @@ export default function BrandDashboard() {
               justifyContent: "center",
               flexShrink: 0,
             }}>
-              <User size={14} color="#fff" />
+              <User size={14} color="var(--text-default)" />
                 </div>
             {!sidebarCollapsed && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <span style={{ fontSize: "14px", fontWeight: 500 }}>John Doe</span>
-                <span style={{ fontSize: "12px", color: "#808080" }}>john@example.com</span>
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-default)" }}>John Doe</span>
+                <span style={{ fontSize: "12px", color: "var(--muted-text)" }}>john@example.com</span>
               </div>
             )}
           </button>
@@ -246,16 +263,16 @@ export default function BrandDashboard() {
               </div>
 
         {/* Collapse Toggle */}
-        <button
+    <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           style={{
             position: "absolute",
             right: "-12px",
             top: "50%",
             transform: "translateY(-50%)",
-            background: "rgba(26, 26, 26, 0.9)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(42, 42, 42, 0.6)",
+      background: "var(--sidebar-toggle-bg)",
+      backdropFilter: "var(--backdrop-filter, blur(10px))",
+      border: "1px solid var(--border)",
             borderRadius: "50%",
             width: "24px",
             height: "24px",
@@ -263,17 +280,17 @@ export default function BrandDashboard() {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            color: "#a0a0a0",
+      color: "var(--muted-text)",
             transition: "all 0.2s ease",
             zIndex: 10,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(42, 42, 42, 0.9)";
-            e.currentTarget.style.color = "#fff";
+      e.currentTarget.style.background = "var(--sidebar-toggle-hover)";
+      e.currentTarget.style.color = "var(--text-default)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(26, 26, 26, 0.9)";
-            e.currentTarget.style.color = "#a0a0a0";
+      e.currentTarget.style.background = "var(--sidebar-toggle-bg)";
+      e.currentTarget.style.color = "var(--muted-text)";
           }}
         >
           {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -374,7 +391,7 @@ export default function BrandDashboard() {
               e.currentTarget.style.transform = "translateX(-5%)";
               // Remove glass texture
               const overlay = e.currentTarget.querySelector('[data-glass-overlay]');
-              if (overlay) overlay.style.opacity = "0";
+              if (overlay) (overlay as HTMLElement).style.opacity = "0";
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
@@ -386,7 +403,7 @@ export default function BrandDashboard() {
               e.currentTarget.style.transform = "translateX(0)";
               // Restore glass texture
               const overlay = e.currentTarget.querySelector('[data-glass-overlay]');
-              if (overlay) overlay.style.opacity = "1";
+              if (overlay) (overlay as HTMLElement).style.opacity = "1";
             }}
             >
               {/* Glass texture overlay */}
@@ -530,6 +547,28 @@ export default function BrandDashboard() {
             }
             100% {
               background-position: 0% 50%;
+            }
+          }
+          :root {
+            --sidebar-expanded: 280px;
+            --sidebar-collapsed: 80px;
+            --sidebar: rgba(26, 26, 26, 0.8);
+            --border: rgba(42, 42, 42, 0.6);
+            --backdrop: rgba(255,255,255,0.02);
+            --primary: #0B00CF;
+            --primary-hover: #0a00b3;
+            --sidebar-active: rgba(42,42,42,0.8);
+            --text-default: #ffffff;
+            --muted-text: #a0a0a0;
+            --sidebar-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --sidebar-toggle-bg: rgba(26,26,26,0.9);
+            --sidebar-toggle-hover: rgba(42,42,42,0.9);
+          }
+
+          /* Responsive: auto-collapse sidebar under 1024px */
+          @media (max-width: 1024px) {
+            :root {
+              --sidebar-expanded: var(--sidebar-collapsed);
             }
           }
         `}
