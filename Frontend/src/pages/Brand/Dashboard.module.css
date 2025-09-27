@@ -1,0 +1,27 @@
+.brand-nav-btn {
+  @apply w-full border-none rounded-xl px-4 py-3 flex items-center gap-2 text-base font-medium cursor-pointer transition-colors duration-200 bg-transparent text-[var(--muted-text)] outline-none;
+}
+.brand-nav-btn:hover,
+.brand-nav-btn:focus-visible {
+  @apply bg-[var(--sidebar-active)] text-[var(--text-default)] outline outline-2 outline-[var(--accent)];
+}
+.brand-nav-btn.active {
+  @apply bg-[var(--sidebar-active)] text-[var(--text-default)] outline-none;
+}
+.brand-nav-btn.collapsed {
+  @apply justify-center px-2 py-2;
+}
+.brand-new-btn {
+  @apply w-full bg-[var(--primary)] border-none rounded-xl px-4 py-3 flex items-center gap-2 text-base font-medium cursor-pointer transition-colors duration-200 text-[var(--text-default)] outline-none;
+}
+.brand-new-btn:hover,
+.brand-new-btn:focus-visible {
+  @apply bg-[var(--primary-hover)] outline outline-2 outline-[var(--accent)];
+}
+.brand-profile-btn {
+  @apply w-full bg-transparent border-none rounded-lg px-4 py-3 flex items-center gap-3 text-base font-medium cursor-pointer transition-colors duration-200 text-[var(--muted-text)] outline-none;
+}
+.brand-profile-btn:hover,
+.brand-profile-btn:focus-visible {
+  @apply bg-[var(--sidebar-active)] text-[var(--text-default)] outline outline-2 outline-[var(--accent)];
+}

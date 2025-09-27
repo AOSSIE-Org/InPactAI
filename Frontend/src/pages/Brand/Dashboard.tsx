@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import styles from "./Dashboard.module.css";
 import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserNav } from "../../components/user-nav";
@@ -102,24 +103,10 @@ export default function BrandDashboard() {
 
         {/* New Button */}
         <div style={{ padding: sidebarCollapsed ? "0 16px 24px 16px" : "0 24px 24px 24px" }}>
-          <button style={{
-            width: "100%",
-            background: PRIMARY,
-            border: "none",
-            borderRadius: "12px",
-            padding: sidebarCollapsed ? "12px" : "12px 16px",
-            color: "var(--text-default)",
-            fontSize: "14px",
-            fontWeight: 500,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: sidebarCollapsed ? "center" : "center",
-            gap: "8px",
-            transition: "background-color 0.2s ease",
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "var(--primary-hover)"}
-          onMouseLeave={(e) => e.currentTarget.style.background = PRIMARY}
+          <button
+            type="button"
+            className={`${styles["brand-new-btn"]}`}
+            tabIndex={0}
           >
             <Plus size={16} />
             {!sidebarCollapsed && "New Campaign"}
@@ -136,7 +123,12 @@ export default function BrandDashboard() {
                 key={tab.route}
                 onClick={() => navigate(tab.route)}
                 type="button"
-                className={`brand-nav-btn${isActive ? " active" : ""}${sidebarCollapsed ? " collapsed" : ""}`}
+                className={[
+                  styles["brand-nav-btn"],
+                  isActive ? styles["active"] : "",
+                  sidebarCollapsed ? styles["collapsed"] : ""
+                ].filter(Boolean).join(" ")}
+                tabIndex={0}
               >
                 <Icon size={18} />
                 {!sidebarCollapsed && tab.label}
@@ -152,32 +144,9 @@ export default function BrandDashboard() {
         }}>
           {/* Profile */}
           <button
-              style={{
-              width: "100%",
-              background: "transparent",
-              border: "none",
-              borderRadius: "8px",
-              padding: sidebarCollapsed ? "12px" : "12px 16px",
-                color: "var(--muted-text)",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: sidebarCollapsed ? "center" : "flex-start",
-              gap: "12px",
-              marginBottom: "4px",
-              transition: "all 0.2s ease",
-              textAlign: sidebarCollapsed ? "center" : "left",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--sidebar-active)";
-              e.currentTarget.style.color = "var(--text-default)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "var(--muted-text)";
-            }}
+            type="button"
+            className={styles["brand-profile-btn"]}
+            tabIndex={0}
           >
             <div style={{
               width: "24px",
@@ -190,7 +159,7 @@ export default function BrandDashboard() {
               flexShrink: 0,
             }}>
               <User size={14} color="var(--text-default)" />
-                </div>
+            </div>
             {!sidebarCollapsed && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-default)" }}>John Doe</span>
