@@ -11,12 +11,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
-export function UserNav() {
-  const { user, isAuthenticated, logout } = useAuth();
+interface UserNavProps {
+  showDashboard?: boolean;
+}
+
+export function UserNav({ showDashboard = true }: UserNavProps) {
+  const { user, isAuthenticated, logout, role } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
+
+  // Compute dashboardPath synchronously
+  const roleFromUser = (user as any)?.user_metadata?.role || (user as any)?.role;
+  const dashboardPath = (roleFromUser === "brand" || role === "brand") ? "/brand/dashboard" : "/dashboard";
 
   if (!isAuthenticated || !user) {
     return (
@@ -34,6 +43,7 @@ export function UserNav() {
   const handleAvatarError = () => {
     setAvatarError(true);
   };
+
 
   return (
     <DropdownMenu>
@@ -60,9 +70,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link to="/dashboard">Dashboard</Link>
-          </DropdownMenuItem>
+          {showDashboard && (
+            <DropdownMenuItem asChild>
+              <Link to={dashboardPath}>Dashboard</Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>

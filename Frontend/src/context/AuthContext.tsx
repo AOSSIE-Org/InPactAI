@@ -14,7 +14,9 @@ interface AuthContextType {
   login: () => void;
   logout: () => void;
   checkUserOnboarding: (userToCheck?: User | null) => Promise<{ hasOnboarding: boolean; role: string | null }>;
+  role: string | null;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -64,6 +66,7 @@ async function ensureUserInTable(user: any) {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRequest, setLastRequest] = useState(0);
   const navigate = useNavigate();
@@ -72,7 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const checkUserOnboarding = async (userToCheck?: User | null) => {
     const userToUse = userToCheck || user;
     if (!userToUse) return { hasOnboarding: false, role: null };
-    
+
     // Add rate limiting - only allow one request per 2 seconds
     const now = Date.now();
     if (now - lastRequest < 2000) {
@@ -80,29 +83,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return { hasOnboarding: false, role: null };
     }
     setLastRequest(now);
-    
+
     // Check if user has completed onboarding by looking for social profiles or brand data
     const { data: socialProfiles } = await supabase
       .from("social_profiles")
       .select("id")
       .eq("user_id", userToUse.id)
       .limit(1);
-    
+
     const { data: brandData } = await supabase
       .from("brands")
       .select("id")
       .eq("user_id", userToUse.id)
       .limit(1);
-    
-    const hasOnboarding = (socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0);
-    
+
+    // Always return boolean, never null
+    const hasOnboarding = Boolean((socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0));
+
     // Get user role
     const { data: userData } = await supabase
       .from("users")
       .select("role")
       .eq("id", userToUse.id)
       .single();
-    
+
     return { hasOnboarding, role: userData?.role || null };
   };
 
@@ -131,6 +135,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       setUser(data.session?.user || null);
       setIsAuthenticated(!!data.session?.user);
+      // Determine role once at startup
+      if (data.session?.user) {
+        try {
+          const res = await checkUserOnboarding(data.session.user);
+          if (res.role !== null && res.role !== undefined) {
+            setRole(res.role);
+          }
+        } catch (err) {
+          console.error("AuthContext: error determining role", err);
+        }
+      }
       if (data.session?.user) {
         console.log("AuthContext: Ensuring user in table");
         try {
@@ -160,13 +175,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (session?.user) {
           console.log("AuthContext: User authenticated");
           try {
+            const userId = session.user.id;
             await ensureUserInTable(session.user);
+            const res = await checkUserOnboarding(session.user);
+            // Only update role if userId matches current session.user.id and role is defined
+            if (res.role !== undefined && session.user.id === userId) {
+              setRole(res.role);
+            }
           } catch (error) {
             console.error("AuthContext: Error ensuring user in table", error);
           }
           setLoading(false);
         } else {
           // User logged out
+          setRole(null);
           console.log("AuthContext: User logged out");
           setLoading(false);
         }
@@ -208,7 +230,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, checkUserOnboarding }}>
+  <AuthContext.Provider value={{ isAuthenticated, user, login, logout, checkUserOnboarding, role }}>
       {children}
     </AuthContext.Provider>
   );
