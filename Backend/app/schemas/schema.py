@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-from typing import Optional, Dict, List
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Dict, List, Any
 from datetime import datetime
+
+class ORMBaseModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
 class UserCreate(BaseModel):
     username: str
@@ -73,7 +76,7 @@ class BrandProfileUpdate(BaseModel):
     contact_person: Optional[str] = None
     contact_email: Optional[str] = None
 
-class BrandProfileResponse(BaseModel):
+class BrandProfileResponse(ORMBaseModel):
     id: str
     user_id: str
     company_name: Optional[str] = None
@@ -82,9 +85,6 @@ class BrandProfileResponse(BaseModel):
     contact_person: Optional[str] = None
     contact_email: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Campaign Metrics Schemas
@@ -96,7 +96,7 @@ class CampaignMetricsCreate(BaseModel):
     revenue: Optional[float] = None
     engagement_rate: Optional[float] = None
 
-class CampaignMetricsResponse(BaseModel):
+class CampaignMetricsResponse(ORMBaseModel):
     id: str
     campaign_id: str
     impressions: Optional[int] = None
@@ -105,9 +105,6 @@ class CampaignMetricsResponse(BaseModel):
     revenue: Optional[float] = None
     engagement_rate: Optional[float] = None
     recorded_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Contract Schemas
@@ -122,7 +119,7 @@ class ContractUpdate(BaseModel):
     contract_url: Optional[str] = None
     status: Optional[str] = None
 
-class ContractResponse(BaseModel):
+class ContractResponse(ORMBaseModel):
     id: str
     sponsorship_id: str
     creator_id: str
@@ -131,20 +128,14 @@ class ContractResponse(BaseModel):
     status: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 # Creator Match Schemas
-class CreatorMatchResponse(BaseModel):
+class CreatorMatchResponse(ORMBaseModel):
     id: str
     brand_id: str
     creator_id: str
     match_score: Optional[float] = None
     matched_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # Dashboard Analytics Schemas
@@ -179,7 +170,7 @@ class CreatorMatchAnalyticsResponse(BaseModel):
 # ============================================================================
 
 # Application Management Schemas
-class SponsorshipApplicationResponse(BaseModel):
+class SponsorshipApplicationResponse(ORMBaseModel):
     id: str
     creator_id: str
     sponsorship_id: str
@@ -189,9 +180,6 @@ class SponsorshipApplicationResponse(BaseModel):
     applied_at: datetime
     creator: Optional[Dict] = None  # From users table
     campaign: Optional[Dict] = None  # From sponsorships table
-
-    class Config:
-        from_attributes = True
 
 class ApplicationUpdateRequest(BaseModel):
     status: str  # "accepted", "rejected", "pending"
@@ -207,7 +195,7 @@ class ApplicationSummaryResponse(BaseModel):
 
 
 # Payment Management Schemas
-class PaymentResponse(BaseModel):
+class PaymentResponse(ORMBaseModel):
     id: str
     creator_id: str
     brand_id: str
@@ -217,9 +205,6 @@ class PaymentResponse(BaseModel):
     transaction_date: datetime
     creator: Optional[Dict] = None  # From users table
     campaign: Optional[Dict] = None  # From sponsorships table
-
-    class Config:
-        from_attributes = True
 
 class PaymentStatusUpdate(BaseModel):
     status: str  # "pending", "completed", "failed", "cancelled"

@@ -128,7 +128,7 @@ Response: {{"intent": "View revenue analytics", "route": "analytics_revenue", "p
 
 Remember: Always return valid JSON, no extra text."""
 
-    async def process_query(self, query: str, brand_id: str = None) -> Dict[str, Any]:
+    async def process_query(self, query: str, brand_id: Optional[str] = None) -> Dict[str, Any]:
         """Process a natural language query and return routing information"""
         try:
             # Create the conversation with system prompt
@@ -136,43 +136,39 @@ Remember: Always return valid JSON, no extra text."""
                 {"role": "system", "content": self.create_system_prompt()},
                 {"role": "user", "content": f"User query: {query}"}
             ]
-            
             # Add brand_id context if available
-            if brand_id:
+            if brand_id is not None:
                 messages.append({
                     "role": "system", 
                     "content": f"Note: The user's brand_id is {brand_id}. Use this for any endpoints that require it."
                 })
-            
             # Call Groq LLM with lower temperature for more consistent responses
-            response = self.client.chat.completions.create(
-                model="moonshotai/kimi-k2-instruct",  # Updated to Kimi K2 instruct
+            import asyncio
+            response = await asyncio.to_thread(
+                self.client.chat.completions.create,
+                model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
                 messages=messages,
-                temperature=0.1,  # Lower temperature for more consistent JSON output
-                max_tokens=1024  # Updated max tokens
+                temperature=0.1,
+                max_tokens=1024,
+                response_format={"type": "json_object"}
             )
-            
             # Parse the response
             llm_response = response.choices[0].message.content.strip()
-            
             # Clean the response and try to parse JSON with retry logic
             parsed_response = self._parse_json_with_retry(llm_response, query)
-            
             # Validate and enhance the response
             enhanced_response = self._enhance_response(parsed_response, brand_id, query)
-            
             logger.info(f"AI Router processed query: '{query}' -> {enhanced_response['intent']}")
             return enhanced_response
-            
         except Exception as e:
-            logger.error(f"Error processing query with AI Router: {e}")
-            raise HTTPException(status_code=500, detail="AI processing error")
+            logger.exception(f"Error processing query with AI Router: {e}")
+            raise HTTPException(status_code=500, detail="AI processing error") from e
 
-    def _enhance_response(self, response: Dict[str, Any], brand_id: str, original_query: str) -> Dict[str, Any]:
+    def _enhance_response(self, response: Dict[str, Any], brand_id: Optional[str], original_query: str) -> Dict[str, Any]:
         """Enhance the LLM response with additional context and validation"""
         
         # Add brand_id to parameters if not present and route needs it
-        if brand_id and response.get("route"):
+        if brand_id is not None and response.get("route"):
             route_info = self.available_routes.get(response["route"])
             if route_info and "brand_id" in route_info["parameters"]:
                 if "parameters" not in response:
@@ -340,4 +336,4 @@ Remember: Always return valid JSON, no extra text."""
         return self.available_routes
 
 # Global instance
-ai_router = AIRouter() 
+ai_router = AIRouter()
