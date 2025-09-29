@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -96,7 +96,9 @@ def check_rate_limit(user_id: str, max_requests: int = 100, window_seconds: int 
 # ============================================================================
 
 @router.get("/dashboard/overview", response_model=DashboardOverviewResponse)
-async def get_dashboard_overview(brand_id: str = Query(..., description="Brand user ID")):
+async def get_dashboard_overview(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get dashboard overview with key metrics for a brand
     """
@@ -192,7 +194,9 @@ async def create_brand_profile(profile: BrandProfileCreate):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/profile/{user_id}", response_model=BrandProfileResponse)
-async def get_brand_profile(user_id: str):
+async def get_brand_profile(
+    user_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="User ID (UUID)")
+):
     """
     Get brand profile by user ID
     """
@@ -211,7 +215,10 @@ async def get_brand_profile(user_id: str):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/profile/{user_id}", response_model=BrandProfileResponse)
-async def update_brand_profile(user_id: str, profile_update: BrandProfileUpdate):
+async def update_brand_profile(
+    profile_update: BrandProfileUpdate,
+    user_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="User ID (UUID)")
+):
     """
     Update brand profile
     """
@@ -236,7 +243,9 @@ async def update_brand_profile(user_id: str, profile_update: BrandProfileUpdate)
 # ============================================================================
 
 @router.get("/campaigns")
-async def get_brand_campaigns(brand_id: str = Query(..., description="Brand user ID")):
+async def get_brand_campaigns(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get all campaigns for a brand
     """
@@ -251,7 +260,10 @@ async def get_brand_campaigns(brand_id: str = Query(..., description="Brand user
     return campaigns
 
 @router.get("/campaigns/{campaign_id}")
-async def get_campaign_details(campaign_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def get_campaign_details(
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get specific campaign details
     """
@@ -316,7 +328,11 @@ async def create_campaign(campaign: SponsorshipCreate):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/campaigns/{campaign_id}")
-async def update_campaign(campaign_id: str, campaign_update: dict, brand_id: str = Query(..., description="Brand user ID")):
+async def update_campaign(
+    campaign_update: dict,
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Update campaign details
     """
@@ -340,7 +356,10 @@ async def update_campaign(campaign_id: str, campaign_update: dict, brand_id: str
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/campaigns/{campaign_id}")
-async def delete_campaign(campaign_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def delete_campaign(
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Delete a campaign
     """
@@ -365,7 +384,9 @@ async def delete_campaign(campaign_id: str, brand_id: str = Query(..., descripti
 # ============================================================================
 
 @router.get("/creators/matches", response_model=List[CreatorMatchResponse])
-async def get_creator_matches(brand_id: str = Query(..., description="Brand user ID")):
+async def get_creator_matches(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get AI-matched creators for a brand
     """
@@ -395,10 +416,10 @@ async def get_creator_matches(brand_id: str = Query(..., description="Brand user
 
 @router.get("/creators/search")
 async def search_creators(
-    brand_id: str = Query(..., description="Brand user ID"),
-    industry: Optional[str] = Query(None, description="Industry filter"),
-    min_engagement: Optional[float] = Query(None, description="Minimum engagement rate"),
-    location: Optional[str] = Query(None, description="Location filter")
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)"),
+    industry: Optional[str] = Query(None, min_length=2, max_length=64, description="Industry filter"),
+    min_engagement: Optional[float] = Query(None, ge=0, le=100, description="Minimum engagement rate (0-100%)"),
+    location: Optional[str] = Query(None, min_length=2, max_length=64, description="Location filter")
 ):
     """
     Search for creators based on criteria
@@ -439,7 +460,10 @@ async def search_creators(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/creators/{creator_id}/profile")
-async def get_creator_profile(creator_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def get_creator_profile(
+    creator_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Creator ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get detailed creator profile
     """
@@ -480,7 +504,9 @@ async def get_creator_profile(creator_id: str, brand_id: str = Query(..., descri
 # ============================================================================
 
 @router.get("/analytics/performance")
-async def get_campaign_performance(brand_id: str = Query(..., description="Brand user ID")):
+async def get_campaign_performance(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get campaign performance analytics
     """
@@ -525,7 +551,9 @@ async def get_campaign_performance(brand_id: str = Query(..., description="Brand
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/analytics/revenue")
-async def get_revenue_analytics(brand_id: str = Query(..., description="Brand user ID")):
+async def get_revenue_analytics(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get revenue analytics
     """
@@ -560,7 +588,9 @@ async def get_revenue_analytics(brand_id: str = Query(..., description="Brand us
 # ============================================================================
 
 @router.get("/contracts")
-async def get_brand_contracts(brand_id: str = Query(..., description="Brand user ID")):
+async def get_brand_contracts(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get all contracts for a brand
     """
@@ -602,9 +632,9 @@ async def create_contract(contract: ContractCreate):
 
 @router.put("/contracts/{contract_id}/status")
 async def update_contract_status(
-    contract_id: str, 
-    status: str = Query(..., description="New contract status"),
-    brand_id: str = Query(..., description="Brand user ID")
+    status: str = Query(..., min_length=3, max_length=32, description="New contract status"),
+    contract_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Contract ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
 ):
     """
     Update contract status
@@ -634,7 +664,9 @@ async def update_contract_status(
 # ============================================================================
 
 @router.get("/applications", response_model=List[SponsorshipApplicationResponse])
-async def get_brand_applications(brand_id: str = Query(..., description="Brand user ID")):
+async def get_brand_applications(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get all applications for brand's campaigns
     """
@@ -685,7 +717,10 @@ async def get_brand_applications(brand_id: str = Query(..., description="Brand u
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/applications/{application_id}", response_model=SponsorshipApplicationResponse)
-async def get_application_details(application_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def get_application_details(
+    application_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Application ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get specific application details
     """
@@ -729,9 +764,9 @@ async def get_application_details(application_id: str, brand_id: str = Query(...
 
 @router.put("/applications/{application_id}")
 async def update_application_status(
-    application_id: str, 
     update_data: ApplicationUpdateRequest,
-    brand_id: str = Query(..., description="Brand user ID")
+    application_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Application ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
 ):
     """
     Update application status (accept/reject)
@@ -770,7 +805,9 @@ async def update_application_status(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/applications/summary", response_model=ApplicationSummaryResponse)
-async def get_applications_summary(brand_id: str = Query(..., description="Brand user ID")):
+async def get_applications_summary(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get applications summary and statistics
     """
@@ -817,7 +854,9 @@ async def get_applications_summary(brand_id: str = Query(..., description="Brand
 # ============================================================================
 
 @router.get("/payments", response_model=List[PaymentResponse])
-async def get_brand_payments(brand_id: str = Query(..., description="Brand user ID")):
+async def get_brand_payments(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get all payments for brand
     """
@@ -857,7 +896,10 @@ async def get_brand_payments(brand_id: str = Query(..., description="Brand user 
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/payments/{payment_id}", response_model=PaymentResponse)
-async def get_payment_details(payment_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def get_payment_details(
+    payment_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Payment ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get specific payment details
     """
@@ -896,9 +938,9 @@ async def get_payment_details(payment_id: str, brand_id: str = Query(..., descri
 
 @router.put("/payments/{payment_id}/status")
 async def update_payment_status(
-    payment_id: str,
     status_update: PaymentStatusUpdate,
-    brand_id: str = Query(..., description="Brand user ID")
+    payment_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Payment ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
 ):
     """
     Update payment status
@@ -928,7 +970,9 @@ async def update_payment_status(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/payments/analytics", response_model=PaymentAnalyticsResponse)
-async def get_payment_analytics(brand_id: str = Query(..., description="Brand user ID")):
+async def get_payment_analytics(
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get payment analytics
     """
@@ -974,9 +1018,9 @@ async def get_payment_analytics(brand_id: str = Query(..., description="Brand us
 
 @router.post("/campaigns/{campaign_id}/metrics")
 async def add_campaign_metrics(
-    campaign_id: str,
     metrics: CampaignMetricsUpdate,
-    brand_id: str = Query(..., description="Brand user ID")
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
 ):
     """
     Add metrics to a campaign
@@ -1020,7 +1064,10 @@ async def add_campaign_metrics(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/campaigns/{campaign_id}/metrics")
-async def get_campaign_metrics(campaign_id: str, brand_id: str = Query(..., description="Brand user ID")):
+async def get_campaign_metrics(
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
+):
     """
     Get metrics for a specific campaign
     """
@@ -1050,10 +1097,10 @@ async def get_campaign_metrics(campaign_id: str, brand_id: str = Query(..., desc
 
 @router.put("/campaigns/{campaign_id}/metrics/{metrics_id}")
 async def update_campaign_metrics(
-    campaign_id: str,
-    metrics_id: str,
     metrics_update: CampaignMetricsUpdate,
-    brand_id: str = Query(..., description="Brand user ID")
+    campaign_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Campaign ID (UUID)"),
+    metrics_id: str = Path(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Metrics ID (UUID)"),
+    brand_id: str = Query(..., min_length=36, max_length=36, regex=r"^[a-fA-F0-9\-]{36}$", description="Brand user ID (UUID)")
 ):
     """
     Update campaign metrics
