@@ -76,20 +76,45 @@ class BrandApiService {
     const url = `${API_BASE_URL}${endpoint}`;
     
     try {
-      const response = await fetch(url, {
+      const fetchOptions = {
+        ...options,
         headers: {
           'Content-Type': 'application/json',
-          ...options.headers,
+          ...(options?.headers || {}),
         },
-        ...options,
-      });
+      };
+      const response = await fetch(url, fetchOptions);
 
+      // Error handling
+      let errorData = {};
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        // Try to parse error JSON, fallback to empty object
+        try {
+          if (
+            response.status !== 204 &&
+            response.headers.get('content-type')?.includes('application/json')
+          ) {
+            errorData = await response.json();
+          }
+        } catch {
+          errorData = {};
+        }
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      // Guarded response parsing
+      if (
+        response.status === 204 ||
+        response.headers.get('content-length') === '0' ||
+        !response.headers.get('content-type')?.includes('application/json')
+      ) {
+        return null;
+      }
+      try {
+        return await response.json();
+      } catch {
+        return {};
+      }
     } catch (error) {
       console.error(`API Error (${endpoint}):`, error);
       throw error;
