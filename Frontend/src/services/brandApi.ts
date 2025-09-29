@@ -171,7 +171,7 @@ class BrandApiService {
   ): Promise<any[]> {
     const params = new URLSearchParams({ brand_id: brandId });
     if (filters?.industry) params.append('industry', filters.industry);
-    if (filters?.min_engagement) params.append('min_engagement', filters.min_engagement.toString());
+  if (filters?.min_engagement != null) params.append('min_engagement', filters.min_engagement.toString());
     if (filters?.location) params.append('location', filters.location);
 
     return this.makeRequest<any[]>(`/creators/search?${params.toString()}`);
