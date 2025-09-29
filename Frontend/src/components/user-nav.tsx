@@ -66,7 +66,7 @@ export function UserNav({ showDashboard = true }: UserNavProps) {
         <DropdownMenuGroup>
           {showDashboard && (
             <DropdownMenuItem asChild>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/brand/dashboard">Dashboard</Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuItem>Profile</DropdownMenuItem>
