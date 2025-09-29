@@ -205,7 +205,18 @@ class BrandApiService {
     notes?: string,
     brandId?: string
   ): Promise<Application> {
-    return this.makeRequest<Application>(`/applications/${applicationId}?brand_id=${brandId}`, {
+    // Validate brandId if provided
+    if (brandId) {
+      const uuidRegex = /^[a-fA-F0-9\-]{36}$/;
+      if (!uuidRegex.test(brandId)) {
+        throw new Error('Invalid brandId: must be a non-empty UUID');
+      }
+    }
+    // Build query string only if brandId is provided
+    const params = new URLSearchParams();
+    if (brandId) params.append('brand_id', brandId);
+    const url = `/applications/${applicationId}${params.toString() ? `?${params.toString()}` : ''}`;
+    return this.makeRequest<Application>(url, {
       method: 'PUT',
       body: JSON.stringify({ status, notes }),
     });
