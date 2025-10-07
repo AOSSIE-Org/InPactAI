@@ -14,7 +14,11 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
-export function UserNav() {
+interface UserNavProps {
+  showDashboard?: boolean;
+}
+
+export function UserNav({ showDashboard = true }: UserNavProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const [avatarError, setAvatarError] = useState(false);
 
@@ -60,9 +64,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link to="/dashboard">Dashboard</Link>
-          </DropdownMenuItem>
+          {showDashboard && (
+            <DropdownMenuItem asChild>
+              <Link to="/brand/dashboard">Dashboard</Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
