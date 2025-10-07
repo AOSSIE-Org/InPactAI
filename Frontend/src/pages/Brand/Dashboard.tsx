@@ -1,380 +1,697 @@
-import Chat from "@/components/chat/chat";
-import { Button } from "../../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
-import {
-  BarChart3,
-  Users,
-  MessageSquareMore,
-  TrendingUp,
-  Search,
-  Bell,
-  UserCircle,
-  FileText,
-  Send,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  BarChart,
-  ChevronRight,
-  FileSignature,
-  LineChart,
-  Activity,
-  Rocket,
-} from "lucide-react";
-import { CreatorMatches } from "../../components/dashboard/creator-matches";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Menu, Settings, Search, Plus, Home, BarChart3, MessageSquare, FileText, ChevronLeft, ChevronRight, User, Loader2 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { UserNav } from "../../components/user-nav";
+import { useBrandDashboard } from "../../hooks/useBrandDashboard";
 
-const Dashboard = () => {
-  // Mock sponsorships for selection (replace with real API call if needed)
-  const sponsorships = [
-    { id: "1", title: "Summer Collection" },
-    { id: "2", title: "Tech Launch" },
-    { id: "3", title: "Fitness Drive" },
+const PRIMARY = "#0B00CF";
+const SECONDARY = "#300A6E";
+const ACCENT = "#FF2D2B";
+
+const TABS = [
+  { label: "Discover", route: "/brand/dashboard", icon: Home },
+  { label: "Contracts", route: "/brand/contracts", icon: FileText },
+  { label: "Messages", route: "/brand/messages", icon: MessageSquare },
+  { label: "Tracking", route: "/brand/tracking", icon: BarChart3 },
   ];
-  const [selectedSponsorship, setSelectedSponsorship] = useState<string>("");
+
+export default function BrandDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+  
+  // Brand Dashboard Hook
+  const {
+    loading,
+    error,
+    dashboardOverview,
+    brandProfile,
+    campaigns,
+    creatorMatches,
+    applications,
+    payments,
+    aiResponse,
+    aiLoading,
+    queryAI,
+    refreshData,
+  } = useBrandDashboard();
+
+  // Handle AI Search
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    try {
+      const response = await queryAI(searchQuery);
+      setSearchResults(response);
+    } catch (error) {
+      console.error('AI Search error:', error);
+    }
+  };
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        {/* Navigation */}
-        <nav className="border-neutral-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              <div className="flex items-center">
-                <Rocket className="h-8 w-8 text-purple-700" />
-                <span className="ml-2 text-xl font-bold text-black">
-                  Inpact
-                </span>
-                <span className="ml-1 mb-3 text-sm font-medium text-purple-500">
-                  Brand
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Bell className="h-6 w-6 text-gray-500 hover:text-purple-700 cursor-pointer" />
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-purple-700 text-[10px] font-bold text-white flex items-center justify-center">
-                    3
-                  </span>
-                </div>
-                <UserCircle className="h-8 w-8 text-gray-500 hover:text-purple-700 cursor-pointer" />
-              </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0f0f0f",
+        display: "flex",
+        color: "#ffffff",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      {/* Left Sidebar */}
+      <div style={{
+        width: sidebarCollapsed ? "80px" : "280px",
+        background: "rgba(26, 26, 26, 0.8)",
+        backdropFilter: "blur(20px)",
+        borderRight: "1px solid rgba(42, 42, 42, 0.6)",
+        display: "flex",
+        flexDirection: "column",
+        padding: "24px 0",
+        transition: "width 0.3s ease",
+        position: "relative",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+      }}>
+        {/* Logo */}
+        <div style={{
+          padding: sidebarCollapsed ? "0 16px 32px 16px" : "0 24px 32px 24px",
+          borderBottom: "1px solid rgba(42, 42, 42, 0.6)",
+          marginBottom: "24px",
+        }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            justifyContent: sidebarCollapsed ? "center" : "flex-start",
+          }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              background: PRIMARY,
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <span style={{ color: "#fff", fontWeight: 700, fontSize: "16px" }}>I</span>
             </div>
+            {!sidebarCollapsed && (
+              <span style={{ 
+                fontSize: "16px", 
+                fontWeight: 600, 
+                color: "#fff",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.2,
+              }}>
+                INPACT AI<br />
+                <span style={{ fontSize: "12px", color: "#a0a0a0", fontWeight: 400 }}>
+                  for BRANDS
+                </span>
+                </span>
+            )}
           </div>
-        </nav>
-
-        <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Brand Dashboard
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Discover and collaborate with creators that match your brand
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 border-neutral-200" />
-            <Input
-              className="pl-10 border border-gray-300"
-              placeholder="Search creators by niche, audience size, or location..."
-            />
           </div>
 
-          {/* Main Content */}
-          <Tabs defaultValue="discover" className="space-y-8">
-            <TabsList className="bg-white border border-gray-300">
-              <TabsTrigger value="discover">Discover</TabsTrigger>
-              <TabsTrigger value="contracts">Contracts</TabsTrigger>
-              <TabsTrigger value="messages">Messages</TabsTrigger>
-              <TabsTrigger value="tracking">Tracking</TabsTrigger>
-            </TabsList>
+        {/* New Button */}
+        <div style={{ padding: sidebarCollapsed ? "0 16px 24px 16px" : "0 24px 24px 24px" }}>
+          <button style={{
+            width: "100%",
+            background: PRIMARY,
+            border: "none",
+            borderRadius: "12px",
+            padding: sidebarCollapsed ? "12px" : "12px 16px",
+            color: "#fff",
+            fontSize: "14px",
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: sidebarCollapsed ? "center" : "center",
+            gap: "8px",
+            transition: "background-color 0.2s ease",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "#0a00b3"}
+          onMouseLeave={(e) => e.currentTarget.style.background = PRIMARY}
+          >
+            <Plus size={16} />
+            {!sidebarCollapsed && "New Campaign"}
+          </button>
+          </div>
 
-            {/* Discover Tab */}
-            <TabsContent value="discover" className="space-y-8">
-              {/* Stats */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
-                    <CardTitle className="text-sm font-medium">
-                      Active Creators
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +180 from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Avg. Engagement
-                    </CardTitle>
-                    <TrendingUp className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">4.5%</div>
-                    <p className="text-xs text-muted-foreground">
-                      +0.3% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Active Campaigns
-                    </CardTitle>
-                    <BarChart3 className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">24</div>
-                    <p className="text-xs text-muted-foreground">
-                      8 pending approval
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Messages
-                    </CardTitle>
-                    <MessageSquareMore className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12</div>
-                    <p className="text-xs text-muted-foreground">
-                      3 unread messages
-                    </p>
-                  </CardContent>
-                </Card>
+        {/* Navigation */}
+        <div style={{ flex: 1, padding: "0 12px" }}>
+          {TABS.map((tab) => {
+            const isActive = location.pathname === tab.route;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.route}
+                onClick={() => navigate(tab.route)}
+                style={{
+                  width: "100%",
+                  background: isActive ? "rgba(42, 42, 42, 0.8)" : "transparent",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: sidebarCollapsed ? "12px" : "12px 16px",
+                  color: isActive ? "#fff" : "#a0a0a0",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: sidebarCollapsed ? "center" : "flex-start",
+                  gap: "12px",
+                  marginBottom: "4px",
+                  transition: "all 0.2s ease",
+                  textAlign: sidebarCollapsed ? "center" : "left",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
+                    e.currentTarget.style.color = "#fff";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "#a0a0a0";
+                  }
+                }}
+              >
+                <Icon size={18} />
+                {!sidebarCollapsed && tab.label}
+              </button>
+            );
+          })}
               </div>
 
-              {/* Creator Recommendations */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Matched Creators for Your Campaign
-                  </h2>
+        {/* Bottom Section - Profile and Settings */}
+        <div style={{
+          padding: sidebarCollapsed ? "24px 16px" : "24px",
+          borderTop: "1px solid rgba(42, 42, 42, 0.6)",
+        }}>
+          {/* Profile */}
+          <button
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              borderRadius: "8px",
+              padding: sidebarCollapsed ? "12px" : "12px 16px",
+              color: "#a0a0a0",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: sidebarCollapsed ? "center" : "flex-start",
+              gap: "12px",
+              marginBottom: "4px",
+              transition: "all 0.2s ease",
+              textAlign: sidebarCollapsed ? "center" : "left",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#a0a0a0";
+            }}
+          >
+            <div style={{
+              width: "24px",
+              height: "24px",
+              borderRadius: "50%",
+              background: PRIMARY,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <User size={14} color="#fff" />
                 </div>
-                <div className="mb-4">
-                  <label htmlFor="sponsorship-select" className="mr-2 font-medium">Select Campaign:</label>
-                  <select
-                    id="sponsorship-select"
-                    value={selectedSponsorship}
-                    onChange={e => setSelectedSponsorship(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1"
-                  >
-                    <option value="">-- Select --</option>
-                    {sponsorships.map(s => (
-                      <option key={s.id} value={s.id}>{s.title}</option>
-                    ))}
-                  </select>
-                </div>
-                <CreatorMatches sponsorshipId={selectedSponsorship} />
+            {!sidebarCollapsed && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>John Doe</span>
+                <span style={{ fontSize: "12px", color: "#808080" }}>john@example.com</span>
               </div>
-            </TabsContent>
+            )}
+          </button>
 
-            {/* Contracts Tab */}
-            <TabsContent value="contracts" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Active Contracts
-                </h2>
-                <Button className="bg-purple-700 hover:bg-purple-800 text-white">
-                  <FileSignature className="mr-2 h-4 w-4" />
-                  New Contract
-                </Button>
+          {/* Settings */}
+          <button
+            onClick={() => navigate("/brand/settings")}
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              borderRadius: "8px",
+              padding: sidebarCollapsed ? "12px" : "12px 16px",
+              color: "#a0a0a0",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: sidebarCollapsed ? "center" : "flex-start",
+              gap: "12px",
+              marginBottom: "4px",
+              transition: "all 0.2s ease",
+              textAlign: sidebarCollapsed ? "center" : "left",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#a0a0a0";
+            }}
+          >
+            <Settings size={18} />
+            {!sidebarCollapsed && "Settings"}
+          </button>
               </div>
 
-              <div className="grid gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white p-6 rounded-lg shadow-sm border border-gray-300"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex gap-4">
-                        <img
-                          src={`https://plus.unsplash.com/premium_photo-1671656349322-41de944d259b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cG90cmFpdHxlbnwwfHwwfHx8MA%3D%3D`}
-                          alt="Creator"
-                          className="h-12 w-12 rounded-full object-cover"
-                        />
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            Summer Collection Campaign
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            with Alex Rivera
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Clock className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-500">
-                              Due in 12 days
-                            </span>
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          style={{
+            position: "absolute",
+            right: "-12px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: "rgba(26, 26, 26, 0.9)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(42, 42, 42, 0.6)",
+            borderRadius: "50%",
+            width: "24px",
+            height: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#a0a0a0",
+            transition: "all 0.2s ease",
+            zIndex: 10,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(42, 42, 42, 0.9)";
+            e.currentTarget.style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(26, 26, 26, 0.9)";
+            e.currentTarget.style.color = "#a0a0a0";
+          }}
+        >
+          {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* Top Bar */}
+        <div style={{
+          height: "64px",
+          background: "#0f0f0f",
+          borderBottom: "1px solid #2a2a2a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          <div style={{ 
+            fontSize: "24px", 
+            fontWeight: 600, 
+            color: "#fff",
+            transition: "all 0.3s ease",
+            transform: sidebarCollapsed ? "translateX(-100px)" : "translateX(0)",
+            opacity: sidebarCollapsed ? 0 : 1,
+          }}>
+            INPACT Brands
                           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* Settings button removed from top bar since it's now in sidebar */}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                          Active
+
+        {/* Content Area */}
+        <div style={{
+          flex: 1,
+          padding: "48px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          {/* INPACT AI Title with animated gradient */}
+          <h1 style={{
+            fontSize: "48px",
+            fontWeight: 700,
+            color: "#fff",
+            marginBottom: "48px",
+            letterSpacing: "-0.02em",
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}>
+            <span>INPACT</span>
+            <span style={{
+              background: "linear-gradient(90deg, #87CEEB 0%, #1E90FF 50%, #000080 100%)",
+              backgroundSize: "200% 200%",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: "gradientFlow 3s ease-in-out infinite",
+            }}>
+              AI
                         </span>
-                        <p className="mt-2 text-sm font-medium text-gray-900">
-                          $2,400
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-between items-center">
-                      <div className="flex gap-4">
-                        <Button variant="default" size="sm">
-                          <FileText className="mr-2 h-4 w-4" />
-                          View Contract
-                        </Button>
-                        <Button variant="default" size="sm">
-                          <MessageSquareMore className="mr-2 h-4 w-4" />
-                          Message
-                        </Button>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
+          </h1>
 
-            {/* Messages Tab */}
-            <TabsContent
-              value="messages"
-              //  className="grid grid-cols-12 gap-6"
+          {/* Main Search */}
+          <div style={{
+            width: "100%",
+            maxWidth: "600px",
+            marginBottom: "48px",
+          }}>
+            <div style={{
+              background: "rgba(26, 26, 26, 0.6)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "50px",
+              padding: "16px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              transition: "all 0.3s ease",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+              position: "relative",
+              overflow: "hidden",
+              width: "100%",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#87CEEB";
+              e.currentTarget.style.background = "rgba(26, 26, 26, 0.8)";
+              e.currentTarget.style.backdropFilter = "blur(10px)";
+              e.currentTarget.style.padding = "12px 16px";
+              e.currentTarget.style.gap = "8px";
+              e.currentTarget.style.width = "110%";
+              e.currentTarget.style.transform = "translateX(-5%)";
+              // Remove glass texture
+              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
+              if (overlay) overlay.style.opacity = "0";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+              e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
+              e.currentTarget.style.backdropFilter = "blur(20px)";
+              e.currentTarget.style.padding = "16px 20px";
+              e.currentTarget.style.gap = "12px";
+              e.currentTarget.style.width = "100%";
+              e.currentTarget.style.transform = "translateX(0)";
+              // Restore glass texture
+              const overlay = e.currentTarget.querySelector('[data-glass-overlay]') as HTMLElement;
+              if (overlay) overlay.style.opacity = "1";
+            }}
             >
-              <Chat />
-            </TabsContent>
-
-            {/* Tracking Tab */}
-            <TabsContent value="tracking" className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Reach
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">2.4M</div>
-                    <p className="text-xs text-muted-foreground">
-                      Across all campaigns
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Engagement Rate
-                    </CardTitle>
-                    <Activity className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">5.2%</div>
-                    <p className="text-xs text-muted-foreground">
-                      Average across creators
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">ROI</CardTitle>
-                    <LineChart className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">3.8x</div>
-                    <p className="text-xs text-muted-foreground">
-                      Last 30 days
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Active Posts
-                    </CardTitle>
-                    <BarChart className="h-4 w-4 text-purple-700" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">156</div>
-                    <p className="text-xs text-muted-foreground">
-                      Across platforms
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 border border-gray-300">
-                <h3 className="text-lg font-semibold mb-4">
-                  Campaign Performance
-                </h3>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="border-neutral-200 pb-4 last:border-0 last:pb-0"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={`https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHBvdHJhaXR8ZW58MHx8MHx8fDA%3D`}
-                            alt="Creator"
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <h4 className="font-medium">Summer Collection</h4>
-                            <p className="text-sm text-gray-500">
-                              with Sarah Parker
-                            </p>
+              {/* Glass texture overlay */}
+              <div 
+                data-glass-overlay
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
+                  borderRadius: "50px",
+                  pointerEvents: "none",
+                  transition: "opacity 0.3s ease",
+                }} 
+              />
+              <Search size={20} color="#a0a0a0" style={{ position: "relative", zIndex: 1 }} />
+                            <input
+                type="text"
+                placeholder="Ask anything about your brand campaigns, creator matches, or analytics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    handleAISearch();
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: "16px",
+                  outline: "none",
+                  position: "relative",
+                  zIndex: 1,
+                }}
+              />
+              <button 
+                onClick={handleAISearch}
+                disabled={aiLoading || !searchQuery.trim()}
+                style={{
+                  background: aiLoading ? "#666" : PRIMARY,
+                  border: "none",
+                  color: "#fff",
+                  cursor: aiLoading ? "not-allowed" : "pointer",
+                  padding: "12px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background-color 0.2s ease",
+                  width: "44px",
+                  height: "44px",
+                  position: "relative",
+                  zIndex: 1,
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  if (!aiLoading) e.currentTarget.style.background = "#0a00b3";
+                }}
+                onMouseLeave={(e) => {
+                  if (!aiLoading) e.currentTarget.style.background = PRIMARY;
+                }}
+              >
+                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+              </button>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">458K Reach</p>
-                          <p className="text-sm text-gray-500">
-                            6.2% Engagement
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span>12 Posts Live</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <XCircle className="h-4 w-4 text-red-500" />
-                          <span>2 Pending</span>
-                        </div>
-                      </div>
-                    </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "32px",
+            }}>
+              <Loader2 size={32} className="animate-spin" style={{ color: PRIMARY }} />
+              <div style={{ color: "#a0a0a0", fontSize: "16px" }}>Loading your dashboard...</div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              borderRadius: "12px",
+              padding: "16px",
+              marginBottom: "32px",
+              maxWidth: "600px",
+              textAlign: "center",
+            }}>
+              <div style={{ color: "#ef4444", fontSize: "16px", marginBottom: "8px" }}>Error</div>
+              <div style={{ color: "#a0a0a0", fontSize: "14px" }}>{error}</div>
+              <button 
+                onClick={refreshData}
+                style={{
+                  background: PRIMARY,
+                  border: "none",
+                  color: "#fff",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  marginTop: "12px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* AI Search Results */}
+          {searchResults && (
+            <div style={{
+              background: "rgba(26, 26, 26, 0.6)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "16px",
+              padding: "24px",
+              marginBottom: "32px",
+              maxWidth: "800px",
+              width: "100%",
+            }}>
+              <div style={{ 
+                fontSize: "18px", 
+                fontWeight: 600, 
+                color: "#fff", 
+                marginBottom: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                🤖 AI Response
+              </div>
+              <div style={{ color: "#e0e0e0", fontSize: "14px", lineHeight: "1.6" }}>
+                <div style={{ marginBottom: "12px" }}>
+                  <strong>Intent:</strong> {searchResults.intent}
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <strong>Explanation:</strong> {searchResults.explanation}
+                </div>
+                {searchResults.follow_up_needed && searchResults.follow_up_question && (
+                  <div style={{ 
+                    background: "rgba(59, 130, 246, 0.1)", 
+                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginTop: "12px"
+                  }}>
+                    <strong>Follow-up Question:</strong> {searchResults.follow_up_question}
+                  </div>
+                )}
+                {searchResults.route && (
+                  <div style={{ marginTop: "12px", fontSize: "12px", color: "#a0a0a0" }}>
+                    <strong>Route:</strong> {searchResults.route}
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={() => setSearchResults(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  color: "#a0a0a0",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  marginTop: "16px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                Clear Results
+              </button>
+            </div>
+          )}
+
+          {/* Metrics Cards */}
+          {/* Removed metrics cards grid here */}
+
+          {/* Quick Actions */}
+          <div style={{
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            maxWidth: "900px",
+          }}>
+            {[
+              { label: "Find Creators", icon: "👥", color: "#3b82f6" },
+              { label: "Campaign Stats", icon: "📊", color: "#10b981" },
+              { label: "Draft Contract", icon: "📄", color: "#f59e0b" },
+              { label: "Analytics", icon: "📈", color: "#8b5cf6" },
+              { label: "Messages", icon: "💬", color: "#ef4444" },
+            ].map((action, index) => (
+              <button
+                key={index}
+                style={{
+                  background: "rgba(26, 26, 26, 0.6)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  borderRadius: "50px",
+                  padding: "12px 20px",
+                  color: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  transition: "all 0.3s ease",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(42, 42, 42, 0.8)";
+                  e.currentTarget.style.borderColor = action.color;
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(26, 26, 26, 0.6)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.2)";
+                }}
+              >
+                {/* Glass texture overlay */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.05) 100%)",
+                  borderRadius: "50px",
+                  pointerEvents: "none",
+                }} />
+                <span style={{ fontSize: "16px", position: "relative", zIndex: 1 }}>{action.icon}</span>
+                <span style={{ position: "relative", zIndex: 1 }}>{action.label}</span>
+              </button>
                   ))}
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </main>
       </div>
-    </>
-  );
-};
 
-export default Dashboard;
+      {/* CSS for gradient animation */}
+      <style>
+        {`
+          @keyframes gradientFlow {
+            0% {
+              background-position: 0% 50%;
+            }
+            25% {
+              background-position: 100% 50%;
+            }
+            50% {
+              background-position: 0% 50%;
+            }
+            75% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+}
