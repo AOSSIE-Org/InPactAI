@@ -7,13 +7,20 @@ const nextConfig: NextConfig = {
       root: process.cwd(),
     },
   },
-  
+
   // Enable React strict mode for better debugging
   reactStrictMode: true,
-  
+
   // Configure image domains if needed later
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
 };
 
