@@ -1,5 +1,5 @@
-import Image from "next/image";
+// ...existing code...
 
 export default function Home() {
-  return (<div>Hey</div>);
+  return <div>Hey</div>;
 }
