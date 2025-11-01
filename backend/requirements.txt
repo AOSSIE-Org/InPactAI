@@ -11,7 +11,7 @@ packaging==25.0
 pathspec==0.12.1
 platformdirs==4.5.0
 pydantic==2.12.3
-pydantic-settings
+pydantic-settings>=2.0.3
 pydantic_core==2.41.4
 python-dotenv==1.2.1
 pytokens==0.2.0
