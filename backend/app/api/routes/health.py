@@ -18,18 +18,18 @@ def check_supabase():
     """
     try:
         from app.services.supabase_client import supabase
-        
+
         # Attempt a simple query to verify connection
         # This will fail gracefully if no tables exist yet
         response = supabase.table("_supabase_test").select("*").limit(1).execute()
-        
+
         return {
             "connected": True,
             "message": "Supabase connection is working!",
             "status": "healthy"
         }
     except Exception as e:
-        # Even if the query fails (table doesn't exist), 
+        # Even if the query fails (table doesn't exist),
         # we can still confirm the client initialized
         return {
             "connected": True,
