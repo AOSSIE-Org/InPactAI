@@ -7,6 +7,7 @@ This project uses Supabase for authentication, database, and backend services.
 ### Frontend Setup (Next.js)
 
 1. **Install dependencies** (already done):
+
    ```bash
    cd frontend
    npm install
@@ -24,18 +25,18 @@ This project uses Supabase for authentication, database, and backend services.
      ```
 
 3. **Use the Supabase client**:
+
    ```typescript
-   import { supabase } from '@/lib/supabaseClient';
-   
+   import { supabase } from "@/lib/supabaseClient";
+
    // Example: Fetch data
-   const { data, error } = await supabase
-     .from('your_table')
-     .select('*');
+   const { data, error } = await supabase.from("your_table").select("*");
    ```
 
 ### Backend Setup (FastAPI)
 
 1. **Install dependencies**:
+
    ```bash
    cd backend
    pip install -r requirements.txt
@@ -53,9 +54,10 @@ This project uses Supabase for authentication, database, and backend services.
      ```
 
 3. **Use the Supabase client**:
+
    ```python
    from app.services.supabase_client import supabase
-   
+
    # Example: Fetch data
    response = supabase.table('your_table').select('*').execute()
    ```
@@ -74,6 +76,7 @@ curl http://localhost:8000/health/supabase
 ```
 
 Expected response:
+
 ```json
 {
   "connected": true,
@@ -85,6 +88,7 @@ Expected response:
 ## 📁 Project Structure
 
 ### Frontend
+
 ```
 frontend/
 ├── lib/
@@ -95,6 +99,7 @@ frontend/
 ```
 
 ### Backend
+
 ```
 backend/
 ├── app/
@@ -111,10 +116,12 @@ backend/
 ## 🔑 Environment Variables
 
 ### Frontend (Next.js)
+
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon/public key (safe for client-side)
 
 ### Backend (FastAPI)
+
 - `SUPABASE_URL`: Your Supabase project URL
 - `SUPABASE_SERVICE_KEY`: Supabase service role key (admin access, keep secret!)
 - `DATABASE_URL`: (Optional) Direct PostgreSQL connection string
