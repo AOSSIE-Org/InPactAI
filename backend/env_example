@@ -1,2 +1,4 @@
+# Example environment file for backend
+
 DATABASE_URL=postgresql://user:password@localhost:5432/inpactdb
-AI_API_KEY=sk-xxxx
+AI_API_KEY=your-ai-api-key-here
