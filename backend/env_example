@@ -1,24 +1,17 @@
 # Example environment file for backend
-# Application Settings
-APP_NAME=InPactAI
 
-
-# Supabase Configuration
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_KEY=your-supabase-anon-key-here
+# Supabase Configuration (Required)
+# Get these from: https://app.supabase.com/project/_/settings/api
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-supabase-service-role-key-here
 
-# Database Configuration (Supabase PostgreSQL)
+# Database Configuration (Optional - Supabase PostgreSQL direct connection)
 # Get this from: Settings → Database → Connection string → URI
 DATABASE_URL=postgresql://postgres.your-project-ref:[YOUR-PASSWORD]@aws-0-region.pooler.supabase.com:6543/postgres
 
-# AI Configuration
+# AI Configuration (Optional)
 GROQ_API_KEY=your-groq-api-key
 AI_API_KEY=your-openai-api-key-optional
 
 # CORS Origins (comma-separated)
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-
-# Server Configuration
-HOST=0.0.0.0
-PORT=8000

@@ -1,9 +1,21 @@
 # Configuration settings for FastAPI app
 from pydantic_settings import BaseSettings
+from typing import Optional
 
 class Settings(BaseSettings):
-    database_url: str
-    ai_api_key: str
+    # Supabase Configuration
+    supabase_url: str
+    supabase_service_key: str
+    
+    # Database Configuration
+    database_url: Optional[str] = None
+    
+    # AI Configuration
+    ai_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
+    
+    # CORS Configuration
+    allowed_origins: str = "http://localhost:3000"
 
     model_config = {
         "env_file": ".env"

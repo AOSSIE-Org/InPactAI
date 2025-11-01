@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from app.api.routes import health
 
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
@@ -12,6 +13,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(health.router)
 
 @app.get("/")
 def root():
