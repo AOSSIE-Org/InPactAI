@@ -23,15 +23,4 @@ public/
 
 # Ignore other config files
 .eslint*
-.next/
-dist/
-build/
-node_modules/
-.env*
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-coverage/
-*.log
-public/
-.eslint*
+# ...existing code...
