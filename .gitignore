@@ -1,3 +1,5 @@
+# Ignore VS Code settings
+.vscode/
 # Logs
 logs
 *.log
@@ -36,3 +38,10 @@ env/
 ENV/
 venv.bak/
 pycache/
+
+# Environment files
+.env
+backend/.env
+
+#next.js
+.next/
