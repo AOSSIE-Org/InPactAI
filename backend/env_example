@@ -1,6 +1,23 @@
 # Example environment file for backend
 
-DATABASE_URL=postgresql://user:password@localhost:5432/inpactdb
-AI_API_KEY=your-ai-api-key-here
+# Supabase Configuration (Required)
 
-ALLOWED_ORIGINS=http://localhost:3000
+# Get these from: https://app.supabase.com/project/_/settings/api
+
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-supabase-anon-key-here
+
+# Database Configuration (Optional - Supabase PostgreSQL direct connection)
+
+# Get this from: Settings → Database → Connection string → URI
+
+DATABASE_URL=postgresql://postgres.your-project-ref:[YOUR-PASSWORD]@aws-0-region.pooler.supabase.com:6543/postgres
+
+# AI Configuration (Optional)
+
+GROQ_API_KEY=your-groq-api-key
+AI_API_KEY=your-openai-api-key-optional
+
+# CORS Origins (comma-separated)
+
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
