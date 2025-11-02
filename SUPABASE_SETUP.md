@@ -50,8 +50,9 @@ This project uses Supabase for authentication, database, and backend services.
    - Update with your Supabase credentials:
      ```env
      SUPABASE_URL=https://your-project.supabase.co
-     SUPABASE_SERVICE_KEY=your-service-role-key-here
+     SUPABASE_KEY=your-anon-key-here
      ```
+     > **Note:** Use the public Supabase Anon Key (`SUPABASE_KEY`) for backend configuration. Do **not** use or store the Service Role key in your backend `.env` file.
 
 3. **Use the Supabase client**:
 
@@ -123,7 +124,7 @@ backend/
 ### Backend (FastAPI)
 
 - `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_SERVICE_KEY`: Supabase service role key (admin access, keep secret!)
+- `SUPABASE_KEY`: Supabase anon/public key (safe for backend, matches config.py)
 - `DATABASE_URL`: (Optional) Direct PostgreSQL connection string
 - `ALLOWED_ORIGINS`: CORS allowed origins (comma-separated)
 
@@ -131,7 +132,7 @@ backend/
 
 1. **Never commit `.env` files** - they are in `.gitignore`
 2. **Frontend uses anon key** - safe for browser, limited permissions
-3. **Backend uses service key** - full admin access, never expose to frontend
+3. **Backend uses anon key** - safe for backend, never expose service role key or store it in backend environment files
 4. **Rotate keys if exposed** - generate new keys in Supabase dashboard
 5. **Use environment-specific keys** - different keys for dev/staging/prod
 
