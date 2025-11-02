@@ -20,7 +20,6 @@ def check_supabase():
         from app.services.supabase_client import supabase
 
         # Attempt a simple query to verify connection
-        # This will fail gracefully if no tables exist yet
         response = supabase.table("_supabase_test").select("*").limit(1).execute()
 
         return {
@@ -29,11 +28,24 @@ def check_supabase():
             "status": "healthy"
         }
     except Exception as e:
-        # Even if the query fails (table doesn't exist),
-        # we can still confirm the client initialized
+        error_msg = str(e)
+        # Detect table-not-found error (Supabase/PostgREST or DB error)
+        if (
+            "does not exist" in error_msg or
+            "relation" in error_msg and "does not exist" in error_msg or
+            "Could not find the table" in error_msg or
+            "PGRST205" in error_msg
+        ):
+            return {
+                "connected": True,
+                "message": "Supabase client initialized (no tables queried yet)",
+                "status": "ready",
+                "note": error_msg
+            }
+        # For any other error, treat as unhealthy
         return {
-            "connected": True,
-            "message": "Supabase client initialized (no tables queried yet)",
-            "status": "ready",
-            "note": str(e)
+            "connected": False,
+            "message": "Supabase connection failed",
+            "status": "unhealthy",
+            "note": error_msg
         }
