@@ -1,0 +1,8 @@
+-- Table for user profiles
+create table if not exists profiles (
+  id uuid references auth.users(id) on delete cascade,
+  name text not null,
+  role text check (role in ('Creator', 'Brand')) not null,
+  created_at timestamp with time zone default timezone('utc', now()),
+  primary key (id)
+);
