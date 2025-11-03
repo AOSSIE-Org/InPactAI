@@ -5,8 +5,9 @@ from supabase import create_client, Client
 from app.core.config import settings
 
 router = APIRouter()
-# Use Supabase anon key only (no service key)
-supabase: Client = create_client(settings.supabase_url, settings.supabase_key)
+# Use anon key for end-user auth flows and service role for admin ops
+supabase_public: Client = create_client(settings.supabase_url, settings.supabase_key)
+supabase_admin: Client = create_client(settings.supabase_url, settings.supabase_service_key)
 
 
 class SignupRequest(BaseModel):
@@ -35,7 +36,7 @@ async def signup_user(payload: SignupRequest):
     """
     try:
         # 1. Create user via Supabase Auth (sends verification email automatically)
-        auth_resp = supabase.auth.sign_up({
+        auth_resp = supabase_public.auth.sign_up({
             "email": payload.email,
             "password": payload.password
         })
@@ -50,13 +51,13 @@ async def signup_user(payload: SignupRequest):
             "name": payload.name,
             "role": payload.role
         }
-        res = supabase.table("profiles").insert(profile).execute()
+        res = supabase_admin.table("profiles").insert(profile).execute()
         if not res.data:
             # 3. Rollback: delete auth user if profile insert fails
             rollback_error = None
             for attempt in range(2):  # try up to 2 times
                 try:
-                    supabase.auth.admin.delete_user(user.id)
+                    supabase_admin.auth.admin.delete_user(user.id)
                     break
                 except Exception as rollback_err:
                     rollback_error = rollback_err
@@ -104,7 +105,7 @@ async def login_user(payload: LoginRequest):
     """
     try:
         # 1. Authenticate user
-        auth_resp = supabase.auth.sign_in_with_password({
+        auth_resp = supabase_public.auth.sign_in_with_password({
             "email": payload.email,
             "password": payload.password
         })
@@ -119,7 +120,7 @@ async def login_user(payload: LoginRequest):
             raise HTTPException(status_code=401, detail="Invalid credentials.")
 
         # 2. Fetch user profile
-        profile_res = supabase.table("profiles").select("id, name, role").eq("id", user.id).single().execute()
+        profile_res = supabase_admin.table("profiles").select("id, name, role").eq("id", user.id).single().execute()
         profile = profile_res.data if hasattr(profile_res, "data") else None
         if not profile:
             raise HTTPException(status_code=404, detail="User profile not found.")
