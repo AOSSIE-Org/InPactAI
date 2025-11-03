@@ -6,6 +6,7 @@
 
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-supabase-anon-key-here
+SUPABASE_SERVICE_KEY=your-service-role-key
 
 # Database Configuration (Optional - Supabase PostgreSQL direct connection)
 

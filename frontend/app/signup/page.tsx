@@ -1,7 +1,5 @@
 "use client";
 
-import { getAuthErrorMessage } from "@/lib/auth-helpers";
-import { supabase } from "@/lib/supabaseClient";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Eye, EyeOff, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -76,38 +74,37 @@ export default function SignupPage() {
       setIsLoading(true);
       setError(null);
 
-      // Step 1: Sign up the user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
+      // POST to FastAPI backend for atomic signup
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          role: data.accountType,
+        }),
       });
 
-      if (authError) throw authError;
-
-      if (!authData.user) {
-        throw new Error("Failed to create user account");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData?.detail || "Signup failed. Please try again.");
+        setIsLoading(false);
+        return;
       }
-
-      // Step 2: Create profile record in database
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        name: data.name,
-        role: data.accountType,
-      });
-
-      if (profileError) throw profileError;
 
       // Success!
       setSuccess(true);
-
+      setIsLoading(false);
       // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError(getAuthErrorMessage(err));
-    } finally {
+      setError("Signup failed. Please try again.");
       setIsLoading(false);
     }
   };
