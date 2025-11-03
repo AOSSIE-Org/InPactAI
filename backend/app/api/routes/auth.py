@@ -52,26 +52,30 @@ async def signup_user(payload: SignupRequest):
         }
         res = supabase.table("profiles").insert(profile).execute()
         if not res.data:
-            # Rollback: delete auth user if profile insert fails (admin access)
-            delete_error = None
+            # 3. Rollback: delete auth user if profile insert fails
+            rollback_error = None
             for attempt in range(2):  # try up to 2 times
                 try:
                     supabase.auth.admin.delete_user(user.id)
                     break
-                except Exception as de:
-                    delete_error = str(de)
+                except Exception as rollback_err:
+                    rollback_error = rollback_err
                     if attempt == 0:
                         continue  # retry once
-            if delete_error:
-                detail_msg = f"Failed to create profile. Rollback failed: could not delete user {user.id}. Error: {delete_error}"
-                print(detail_msg)
-                raise HTTPException(status_code=500, detail=detail_msg)
-            else:
-                raise HTTPException(status_code=500, detail="Failed to create profile. User rolled back.")
+            if rollback_error:
+                # Log the orphaned user for manual cleanup
+                # logger.error(f"Failed to rollback user {user.id}: {rollback_error}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to create profile and rollback failed. User {user.id} may be orphaned. Error: {rollback_error}"
+                ) from rollback_error
+            raise HTTPException(status_code=500, detail="Failed to create profile. User rolled back.")
 
         return SignupResponse(message="Signup successful! Please check your inbox to verify your email.", user_id=user.id)
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Signup failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Signup failed: {str(e)}") from e
 
 # ------------------- LOGIN ROUTE -------------------
 class LoginRequest(BaseModel):
