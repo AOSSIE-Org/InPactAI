@@ -105,17 +105,18 @@ async def login_user(payload: LoginRequest):
     """
     try:
         # 1. Authenticate user
-        auth_resp = supabase_public.auth.sign_in_with_password({
-            "email": payload.email,
-            "password": payload.password
-        })
-        user = getattr(auth_resp, "user", None)
-        error = getattr(auth_resp, "error", None)
-        if error:
-            error_msg = str(error)
-            if "Email not confirmed" in error_msg:
+        try:
+            auth_resp = supabase_public.auth.sign_in_with_password({
+                "email": payload.email,
+                "password": payload.password
+            })
+            user = getattr(auth_resp, "user", None)
+        except Exception as e:
+            # Supabase Python SDK v2 raises exceptions for auth errors
+            # Import AuthApiError if available
+            if hasattr(e, "code") and e.code == "email_not_confirmed":
                 raise HTTPException(status_code=403, detail="Please verify your email before logging in.")
-            raise HTTPException(status_code=401, detail=error_msg)
+            raise HTTPException(status_code=401, detail=str(e))
         if not user or not getattr(user, "id", None):
             raise HTTPException(status_code=401, detail="Invalid credentials.")
 
@@ -132,7 +133,7 @@ async def login_user(payload: LoginRequest):
             role=profile.get("role"),
             name=profile.get("name")
         )
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}") from e
