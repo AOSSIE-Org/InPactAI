@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.api.routes import health
 from app.services.supabase_client import supabase
+from app.api.routes import auth
 
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
@@ -28,6 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def root():

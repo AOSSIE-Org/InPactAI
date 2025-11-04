@@ -5,7 +5,8 @@ from typing import Optional
 class Settings(BaseSettings):
     # Supabase Configuration
     supabase_url: str
-    supabase_key: str  # Use the public Anon Key instead of the Service Key
+    supabase_key: str
+    supabase_service_key: str
 
     # Database Configuration
     database_url: Optional[str] = None
