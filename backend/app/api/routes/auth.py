@@ -31,9 +31,10 @@ class SignupResponse(BaseModel):
 
 @router.post("/api/auth/signup", response_model=SignupResponse)
 async def signup_user(payload: SignupRequest):
+   
     """
-    Atomic signup: creates Supabase Auth user and profile row together.
-    Supabase sends verification email automatically. If profile creation fails, user is not rolled back (no admin access).
+        Atomic signup: creates Supabase Auth user and profile row together.
+        Supabase sends verification email automatically. If profile creation fails, the code attempts to delete the created auth user via supabase_admin (rollback is implemented).
     """
     try:
         # 1. Create user via Supabase Auth (sends verification email automatically)
