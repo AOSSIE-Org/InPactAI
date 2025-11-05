@@ -236,7 +236,21 @@ export default function CreatorOnboardingPage() {
         .update({ onboarding_completed: true })
         .eq("id", userId);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        // Rollback: delete the creator profile
+        const { error: deleteError } = await supabase
+          .from("creators")
+          .delete()
+          .eq("user_id", userId);
+        if (deleteError) {
+          setIsSubmitting(false);
+          throw new Error(
+            `Onboarding failed and rollback also failed: ${profileError.message}; Cleanup error: ${deleteError.message}`
+          );
+        }
+        setIsSubmitting(false);
+        throw profileError;
+      }
 
       // Show success and redirect
       setTimeout(() => {

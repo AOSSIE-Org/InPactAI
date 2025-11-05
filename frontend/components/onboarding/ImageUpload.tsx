@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
 
 export interface ImageUploadProps {
-  onImageSelect: (file: File) => void;
+  onImageSelect: (file: File | null) => void;
   currentImage?: File | null;
   label: string;
   maxSizeMB?: number;
@@ -93,6 +93,7 @@ export default function ImageUpload({
     if (inputRef.current) {
       inputRef.current.value = "";
     }
+    onImageSelect(null);
   };
 
   return (
