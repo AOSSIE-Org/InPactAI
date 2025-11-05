@@ -30,8 +30,7 @@ export default async function handler(
     res.status(backendRes.status).json(data);
   } catch (error: any) {
     // Optional: Add logging here
-    res
-      .status(500)
-      .json({ detail: "Internal Server Error", error: error?.message });
+    console.error("Signup API error:", error);
+    res.status(500).json({ detail: "Internal Server Error" });
   }
 }
