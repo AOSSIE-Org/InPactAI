@@ -25,10 +25,9 @@ export async function uploadImage(
       upsert: true, // Replace if exists
     });
 
-  // Line 29 - Fix this:
-    if (uploadError) {
+  if (uploadError) {
     throw new Error(`Failed to upload image: ${uploadError.message}`);
-    }
+  }
 
   // Get public URL
   const {
@@ -78,13 +77,18 @@ export async function fileExists(
   bucket: string,
   filePath: string
 ): Promise<boolean> {
-  const { data, error } = await supabase.storage.from(bucket).list(filePath);
+  // Extract folder and filename
+  const lastSlash = filePath.lastIndexOf("/");
+  const folder = lastSlash > 0 ? filePath.substring(0, lastSlash) : "";
+  const fileName = filePath.substring(lastSlash + 1);
 
+  const { data, error } = await supabase.storage.from(bucket).list(folder, {
+    search: fileName,
+  });
   if (error) {
     return false;
   }
-
-  return data && data.length > 0;
+  return data ? data.some((file) => file.name === fileName) : false;
 }
 
 /**
