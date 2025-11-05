@@ -14,7 +14,11 @@ export async function uploadImage(
   userId: string,
   filename: string
 ): Promise<string> {
-  const fileExt = file.name.split(".").pop();
+  const parts = file.name.split(".");
+  const fileExt = parts.length > 1 ? parts.pop() : "jpg";
+  if (!fileExt) {
+    throw new Error("File must have a valid extension");
+  }
   const filePath = `${userId}/${filename}.${fileExt}`;
 
   // Upload file
