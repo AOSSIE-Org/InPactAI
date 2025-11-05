@@ -70,7 +70,7 @@ Already includes `supabase_service_key: str` in Settings class.
 
 - ✅ **Signup**: Admin API creates user + profile atomically
 - ✅ **Login**: Anon key for normal user authentication
-- ✅ **Email verification**: Controlled by `email_confirm: false` in admin.create_user()
+- ✅ **Email verification**: Disabled via `email_confirm: false` in admin.create_user() (users can log in without verifying their email). To require email verification in production, set `email_confirm: true` or omit the parameter (defaults to true).
 
 ---
 
@@ -155,7 +155,7 @@ SUPABASE_SERVICE_KEY=your_supabase_service_role_key_here  # 🔒 CRITICAL
 - [ ] Service role key is set as **secret environment variable** (not plain text)
 - [ ] Service role key is **never logged** or exposed in error messages
 - [ ] Backend API endpoints are **properly secured** with CORS
-- [ ] Email verification is **enabled** in production (`email_confirm: false`)
+- [ ] Email verification is **enabled** in production (`email_confirm: true` or omit the parameter; default is true, which requires users to verify their email before logging in)
 
 ---
 

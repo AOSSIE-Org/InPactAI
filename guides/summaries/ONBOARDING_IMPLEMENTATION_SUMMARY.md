@@ -301,7 +301,7 @@ Create the storage buckets as mentioned above:
 
 Ensure these are set in `.env.local`:
 
-```
+```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
@@ -340,7 +340,7 @@ The implementation includes:
 
 ## 📝 File Structure
 
-```
+```plaintext
 frontend/
 ├── app/
 │   ├── login/
