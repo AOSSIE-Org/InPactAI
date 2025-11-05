@@ -68,27 +68,31 @@ async def signup_user(payload: SignupRequest):
         if not user_id:
             raise HTTPException(status_code=500, detail="Auth user created but no id returned.")
 
-        # 2. Insert profile row
+
+        # 2. Insert profile row (with rollback on any failure)
         profile = {
             "id": user_id,
             "name": payload.name,
             "role": payload.role
         }
-        res = supabase_admin.table("profiles").insert(profile).execute()
-
-        # 3. If profile insert failed -> rollback by deleting the auth user
-        insert_data = getattr(res, "data", None)
-        if not insert_data:
-            # Try to rollback the created auth user
+        try:
+            res = supabase_admin.table("profiles").insert(profile).execute()
+            insert_data = getattr(res, "data", None)
+            if not insert_data:
+                raise Exception("No data returned from profile insert.")
+        except Exception as insert_exc:
+            # Always attempt rollback if insert fails
             try:
                 supabase_admin.auth.admin.delete_user(user_id)
             except Exception as rollback_err:
-                # If rollback delete fails, log details and return 500 with clear instructions
                 raise HTTPException(
                     status_code=500,
                     detail=f"Profile insert failed and rollback deletion failed for user {user_id}: {rollback_err}"
                 ) from rollback_err
-            raise HTTPException(status_code=500, detail="Failed to create profile. Auth user removed for safety.")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to create profile. Auth user removed for safety. Reason: {insert_exc}"
+            ) from insert_exc
 
         return SignupResponse(
             message="Signup successful! Please check your inbox to verify your email.",
