@@ -5,6 +5,7 @@ export interface UserProfile {
   name: string;
   role: "Creator" | "Brand";
   created_at: string;
+  onboarding_completed: boolean;
 }
 
 /**
@@ -60,6 +61,19 @@ export async function checkUserRole(
     return profile?.role === requiredRole;
   } catch (error) {
     console.error("Error checking user role:", error);
+    return false;
+  }
+}
+
+/**
+ * Check if user has completed onboarding
+ */
+export async function hasCompletedOnboarding(): Promise<boolean> {
+  try {
+    const profile = await getUserProfile();
+    return profile?.onboarding_completed ?? false;
+  } catch (error) {
+    console.error("Error checking onboarding status:", error);
     return false;
   }
 }

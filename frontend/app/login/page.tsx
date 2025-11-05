@@ -50,10 +50,10 @@ export default function LoginPage() {
         throw new Error("Failed to authenticate");
       }
 
-      // Step 2: Fetch user's profile to get their role
+      // Step 2: Fetch user's profile to get their role and onboarding status
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role, name")
+        .select("role, name, onboarding_completed")
         .eq("id", authData.user.id)
         .single();
 
@@ -63,13 +63,25 @@ export default function LoginPage() {
         throw new Error("User profile not found");
       }
 
-      // Step 3: Redirect based on role
-      if (profile.role === "Creator") {
-        router.push("/creator/home");
-      } else if (profile.role === "Brand") {
-        router.push("/brand/home");
+      // Step 3: Redirect based on onboarding status and role
+      if (!profile.onboarding_completed) {
+        // User hasn't completed onboarding, redirect to onboarding flow
+        if (profile.role === "Creator") {
+          router.push("/creator/onboarding");
+        } else if (profile.role === "Brand") {
+          router.push("/brand/onboarding");
+        } else {
+          throw new Error("Invalid user role");
+        }
       } else {
-        throw new Error("Invalid user role");
+        // User has completed onboarding, redirect to home
+        if (profile.role === "Creator") {
+          router.push("/creator/home");
+        } else if (profile.role === "Brand") {
+          router.push("/brand/home");
+        } else {
+          throw new Error("Invalid user role");
+        }
       }
     } catch (err: any) {
       console.error("Login error:", err);
