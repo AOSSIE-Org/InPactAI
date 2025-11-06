@@ -1,0 +1,30 @@
+import os
+import requests
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+router = APIRouter()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+
+class GenerateRequest(BaseModel):
+    prompt: str
+
+@router.post("/generate")
+async def generate_content(request: GenerateRequest):
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set in environment.")
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": request.prompt}]}]
+    }
+    headers = {
+        "Content-Type": "application/json",
+    }
+    params = {"key": GEMINI_API_KEY}
+    try:
+        response = requests.post(GEMINI_API_URL, json=payload, headers=headers, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Gemini API error: {str(e)}")
