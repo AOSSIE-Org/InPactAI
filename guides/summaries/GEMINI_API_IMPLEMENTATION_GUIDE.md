@@ -11,7 +11,7 @@ This guide explains how Gemini API integration is implemented in the InPactAI pr
 ### 1. Backend (Python/FastAPI)
 
 - **API Route:** `/generate` (POST)
-- **File:** `backend/app/routes/gemini_generate.py`
+- **File:** `backend/app/api/routes/gemini_generate.py`
 - **Functionality:** Accepts a JSON body with a `prompt` string, calls the Gemini REST API using the API key from environment, and returns the response as JSON.
 - **Security:** The Gemini API key is stored in `backend/.env` and loaded via Pydantic `Settings` (`gemini_api_key`). It is **never** exposed to the frontend.
 - **Router Inclusion:** The Gemini router is included in `backend/app/main.py` using `app.include_router(gemini_generate.router)`.
