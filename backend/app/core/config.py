@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # AI Configuration
     ai_api_key: Optional[str] = None
     groq_api_key: Optional[str] = None
-    gemini_api_key: str
+    gemini_api_key: Optional[str] = None
 
     # CORS Configuration
     allowed_origins: str = "http://localhost:3000"
