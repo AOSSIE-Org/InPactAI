@@ -19,6 +19,10 @@ DATABASE_URL=postgresql://postgres.your-project-ref:[YOUR-PASSWORD]@aws-0-region
 GROQ_API_KEY=your-groq-api-key
 AI_API_KEY=your-openai-api-key-optional
 
+# Gemini API Key (Optional)
+
+GEMINI_API_KEY=your-gemini-api-key-here
+
 # CORS Origins (comma-separated)
 
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
