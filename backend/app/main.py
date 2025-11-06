@@ -4,7 +4,7 @@ import os
 from app.api.routes import health
 from app.services.supabase_client import supabase
 from app.api.routes import auth
-
+from app.api.routes import gemini_generate
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
 # Verify Supabase client initialization on startup
@@ -27,7 +27,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(gemini_generate.router)
 app.include_router(health.router)
 app.include_router(auth.router)
 

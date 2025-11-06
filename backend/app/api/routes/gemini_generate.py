@@ -2,10 +2,9 @@ import os
 import requests
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
+from app.core.config import settings
 router = APIRouter()
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = settings.gemini_api_key
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 class GenerateRequest(BaseModel):
