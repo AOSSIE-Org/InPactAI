@@ -1,5 +1,5 @@
 import os
-import requests
+import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.core.config import settings
@@ -29,8 +29,11 @@ async def generate_content(request: GenerateRequest):
     }
     params = {"key": GEMINI_API_KEY}
     try:
-        response = requests.post(GEMINI_API_URL, json=payload, headers=headers, params=params, timeout=30)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(GEMINI_API_URL, json=payload, headers=headers, params=params)
         response.raise_for_status()
         return response.json()
-    except requests.RequestException as e:
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Gemini API error: {str(e)}")
+    except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=502, detail=f"Gemini API error: {str(e)}")
