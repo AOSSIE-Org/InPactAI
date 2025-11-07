@@ -103,23 +103,24 @@ export default function SlidingMenu({ role }: Props) {
         <nav className="p-4">
           <ul className="space-y-2">
             <li>
-              <Link href={createCampaignPath} legacyBehavior>
-                <a className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <svg
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  <span>Create Campaign</span>
-                </a>
+              <Link
+                href={createCampaignPath}
+                className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                <span>Create Campaign</span>
               </Link>
             </li>
             {/* future actions listed here */}
