@@ -75,7 +75,7 @@ export default function SlidingMenu({ role }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
-        className={`fixed top-0 left-0 z-50 h-full transform bg-white shadow-xl transition-transform duration-300 ease-in-out dark:bg-slate-900 ${open ? "translate-x-0" : "-translate-x-full"} w-80 sm:w-64`}
+        className={`fixed top-0 left-0 z-50 flex h-full w-80 transform flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out sm:w-64 dark:bg-slate-900 ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between border-b p-4 dark:border-slate-800">
           <h3 className="text-lg font-semibold">Menu</h3>
