@@ -84,7 +84,7 @@ export default function SignupPage() {
           name: data.name,
           email: data.email,
           password: data.password,
-          role: data.accountType,
+          role: data.accountType === "Creator" ? "creator" : "brand",
         }),
       });
 

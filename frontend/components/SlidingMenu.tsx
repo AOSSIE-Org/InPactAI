@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+export type Role = "creator" | "brand";
+
 type Props = {
-  role: "creator" | "brand" | string;
+  role: Role;
 };
 
 export default function SlidingMenu({ role }: Props) {
@@ -30,8 +32,9 @@ export default function SlidingMenu({ role }: Props) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  const basePath =
-    role && role.toLowerCase().startsWith("brand") ? "/brand" : "/creator";
+  // Strict role comparison for reliable routing
+  const normalizedRole = String(role).trim().toLowerCase();
+  const basePath = normalizedRole === "brand" ? "/brand" : "/creator";
   const createCampaignPath = `${basePath}/createcampaign`;
 
   return (
