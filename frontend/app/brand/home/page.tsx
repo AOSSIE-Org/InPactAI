@@ -1,6 +1,7 @@
 "use client";
 
 import AuthGuard from "@/components/auth/AuthGuard";
+import SlidingMenu from "@/components/SlidingMenu";
 import { getUserProfile, signOut } from "@/lib/auth-helpers";
 import { Briefcase, Loader2, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export default function BrandHomePage() {
   return (
     <AuthGuard requiredRole="Brand">
       <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
+        <SlidingMenu role="brand" />
         {/* Header */}
         <header className="border-b border-gray-200 bg-white">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
