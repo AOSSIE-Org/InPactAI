@@ -335,7 +335,95 @@ CREATE TABLE public.profiles (
   onboarding_completed boolean DEFAULT false,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+
+-- collaboration tables 
+);
+CREATE TABLE IF NOT EXISTS creator_collaborations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    -- Creators involved
+    creator1_id UUID NOT NULL REFERENCES creators(id),
+    creator2_id UUID NOT NULL REFERENCES creators(id),
+
+    -- Collaboration Details
+    collaboration_type TEXT NOT NULL,
+    -- 'content_collab', 'cross_promotion', 'giveaway',
+    -- 'brand_package', 'series', 'other'
+
+    title TEXT NOT NULL,
+    description TEXT,
+
+    -- AI Match Data
+    match_score FLOAT,
+    ai_suggestions JSONB,
+    -- {
+    --   "collaboration_ideas": [...],
+    --   "strengths": [...],
+    --   "potential_challenges": [...]
+    -- }
+
+    -- Status & Timeline
+    status TEXT DEFAULT 'proposed',
+    -- 'proposed', 'accepted', 'planning', 'active',
+    -- 'completed', 'declined', 'cancelled'
+
+    start_date DATE,
+    end_date DATE,
+
+    -- Content Details
+    planned_deliverables JSONB,
+    -- {
+    --   "content_type": "video",
+    --   "platform": "youtube",
+    --   "quantity": 2,
+    --   "schedule": [...]
+    -- }
+
+    completed_deliverables JSONB[],
+
+    -- Communication
+    initiator_id UUID REFERENCES creators(id),
+    proposal_message TEXT,
+    response_message TEXT,
+
+    -- Performance Tracking
+    total_views INTEGER DEFAULT 0,
+    total_engagement INTEGER DEFAULT 0,
+    audience_growth JSONB,
+    -- {
+    --   "creator1_new_followers": 450,
+    --   "creator2_new_followers": 520
+    -- }
+
+    -- Ratings (after completion)
+    creator1_rating INTEGER, -- 1-5
+    creator1_feedback TEXT,
+    creator2_rating INTEGER,
+    creator2_feedback TEXT,
+
+    -- Timestamps
+    proposed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    accepted_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+
+    UNIQUE(creator1_id, creator2_id, title),
+    CHECK (creator1_id != creator2_id)
 );
 
+-- Collaboration match suggestions cache
+CREATE TABLE IF NOT EXISTS collaboration_suggestions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    creator_id UUID NOT NULL REFERENCES creators(id),
+    suggested_creator_id UUID NOT NULL REFERENCES creators(id),
+
+    match_score FLOAT NOT NULL,
+    reasons JSONB,
+    collaboration_ideas JSONB,
+
+    calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+
+    UNIQUE(creator_id, suggested_creator_id)
+);
 
 
