@@ -6,6 +6,7 @@ from app.core.supabase_clients import supabase_anon as supabase
 from app.api.routes import auth
 from app.api.routes import gemini_generate
 from app.api.routes import campaigns
+from app.api.routes import groq_generate
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
 # Verify Supabase client initialization on startup
@@ -32,6 +33,7 @@ app.include_router(gemini_generate.router)
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(campaigns.router)
+app.include_router(groq_generate.router)
 
 @app.get("/")
 def root():
