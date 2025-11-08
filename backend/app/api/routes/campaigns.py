@@ -4,7 +4,7 @@ Campaign management routes for brand users.
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.supabase_clients import supabase_anon
 from uuid import UUID
 
@@ -109,8 +109,8 @@ async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., de
     if not campaign.slug:
         import re
         slug = re.sub(r'[^a-z0-9]+', '-', campaign.title.lower()).strip('-')
-        # Ensure uniqueness by checking existing slugs
-        base_slug = f"{slug}-{datetime.now().strftime('%Y%m%d')}"
+        # Ensure uniqueness by checking existing slugs (race condition handled below)
+        base_slug = f"{slug}-{datetime.now(timezone.utc).strftime('%Y%m%d')}"
         campaign.slug = base_slug
         counter = 1
         while True:
@@ -120,43 +120,52 @@ async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., de
             campaign.slug = f"{base_slug}-{counter}"
             counter += 1
 
-    try:
-        # Prepare campaign data
-        campaign_data = {
-            "brand_id": brand_id,
-            "title": campaign.title,
-            "slug": campaign.slug,
-            "short_description": campaign.short_description,
-            "description": campaign.description,
-            "status": campaign.status,
-            "platforms": campaign.platforms,
-            "deliverables": campaign.deliverables,
-            "target_audience": campaign.target_audience,
-            "budget_min": campaign.budget_min,
-            "budget_max": campaign.budget_max,
-            "preferred_creator_niches": campaign.preferred_creator_niches,
-            "preferred_creator_followers_range": campaign.preferred_creator_followers_range,
-            "starts_at": campaign.starts_at.isoformat() if campaign.starts_at else None,
-            "ends_at": campaign.ends_at.isoformat() if campaign.ends_at else None,
-            "is_featured": campaign.is_featured,
-        }
+    import time
+    max_attempts = 5
+    for attempt in range(max_attempts):
+        try:
+            # Prepare campaign data
+            campaign_data = {
+                "brand_id": brand_id,
+                "title": campaign.title,
+                "slug": campaign.slug,
+                "short_description": campaign.short_description,
+                "description": campaign.description,
+                "status": campaign.status,
+                "platforms": campaign.platforms,
+                "deliverables": campaign.deliverables,
+                "target_audience": campaign.target_audience,
+                "budget_min": campaign.budget_min,
+                "budget_max": campaign.budget_max,
+                "preferred_creator_niches": campaign.preferred_creator_niches,
+                "preferred_creator_followers_range": campaign.preferred_creator_followers_range,
+                "starts_at": campaign.starts_at.isoformat() if campaign.starts_at else None,
+                "ends_at": campaign.ends_at.isoformat() if campaign.ends_at else None,
+                "is_featured": campaign.is_featured,
+            }
 
-        # If status is active, set published_at
-        if campaign.status == "active":
-            campaign_data["published_at"] = datetime.now().isoformat()
+            # If status is active, set published_at
+            if campaign.status == "active":
+                campaign_data["published_at"] = datetime.now(timezone.utc).isoformat()
 
-        # Insert campaign
-        response = supabase.table("campaigns").insert(campaign_data).execute()
+            # Insert campaign
+            response = supabase.table("campaigns").insert(campaign_data).execute()
 
-        if not response.data:
-            raise HTTPException(status_code=500, detail="Failed to create campaign")
+            if not response.data:
+                raise HTTPException(status_code=500, detail="Failed to create campaign")
 
-        return response.data[0]
+            return response.data[0]
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating campaign: {str(e)}") from e
+        except HTTPException:
+            raise
+        except Exception as e:
+            # Check for unique constraint violation on slug
+            if "duplicate key value violates unique constraint" in str(e) and "slug" in str(e):
+                # Regenerate slug and retry
+                campaign.slug = f"{base_slug}-{int(time.time() * 1000)}"
+                continue
+            raise HTTPException(status_code=500, detail=f"Error creating campaign: {str(e)}") from e
+    raise HTTPException(status_code=500, detail="Could not generate a unique slug for the campaign after multiple attempts.")
 
 
 
@@ -292,20 +301,19 @@ async def update_campaign(
 
     try:
         # Verify campaign exists and belongs to this brand
-        existing = supabase.table("campaigns").select("id").eq("id", campaign_id).eq("brand_id", brand_id).single().execute()
+        existing = supabase.table("campaigns").select("id, published_at").eq("id", campaign_id).eq("brand_id", brand_id).single().execute()
 
         if not existing.data:
             raise HTTPException(status_code=404, detail="Campaign not found")
 
-
-        # Prepare update data (only include non-None fields)
-        update_data = {k: v for k, v in campaign.dict().items() if v is not None}
+        # Prepare update data (only include non-None fields) using Pydantic v2 API
+        update_data = campaign.model_dump(exclude_none=True)
 
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")
 
         # Update timestamp
-        update_data["updated_at"] = datetime.now().isoformat()
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
         # Serialize datetime fields to ISO format
         if "starts_at" in update_data and update_data["starts_at"] is not None:
@@ -316,10 +324,8 @@ async def update_campaign(
                 update_data["ends_at"] = update_data["ends_at"].isoformat()
 
         # If status changes to active and published_at is not set, set it
-        if update_data.get("status") == "active":
-            current = supabase.table("campaigns").select("published_at").eq("id", campaign_id).single().execute()
-            if current.data and not current.data.get("published_at"):
-                update_data["published_at"] = datetime.now().isoformat()
+        if update_data.get("status") == "active" and not existing.data.get("published_at"):
+            update_data["published_at"] = datetime.now(timezone.utc).isoformat()
 
         # Update campaign
         response = supabase.table("campaigns").update(update_data).eq("id", campaign_id).execute()
