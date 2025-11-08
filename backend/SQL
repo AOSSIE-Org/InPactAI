@@ -1,15 +1,22 @@
+-- Define custom ENUM types (required by several tables below)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_status') THEN
+    CREATE TYPE application_status AS ENUM ('applied', 'reviewing', 'accepted', 'rejected');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'invite_status') THEN
+    CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'declined', 'expired');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+    CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'completed', 'failed', 'refunded');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'deal_status') THEN
+    CREATE TYPE deal_status AS ENUM ('draft', 'proposed', 'negotiating', 'active', 'completed', 'cancelled');
+  END IF;
+END $$;
 
--- Table for user profiles
-create table if not exists profiles (
-  id uuid references auth.users(id) on delete cascade,
-  name text not null,
-  role text check (role in ('Creator', 'Brand')) not null,
-  created_at timestamp with time zone default timezone('utc', now()),
-  primary key (id)
-);
--- WARNING: This schema is for context only and is not meant to be run.
--- Table order and constraints may not be valid for execution.
--- i got this sceme from clicking the save as sql button in supabase
+
+-- This file is no longer maintained here.
+-- For the latest schema reference and documentation, see: docs/database/schema-reference.md
 
 CREATE TABLE public.brands (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
