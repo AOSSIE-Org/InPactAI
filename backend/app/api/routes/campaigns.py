@@ -84,10 +84,12 @@ async def get_brand_id_from_user(user_id: str) -> str:
             raise HTTPException(status_code=404, detail="Brand profile not found")
 
         return response.data["id"]
+    except HTTPException:
+        raise
     except Exception as e:
         if "PGRST116" in str(e):  # No rows returned
-            raise HTTPException(status_code=404, detail="Brand profile not found")
-        raise HTTPException(status_code=500, detail=f"Error fetching brand profile: {str(e)}")
+            raise HTTPException(status_code=404, detail="Brand profile not found") from e
+        raise HTTPException(status_code=500, detail=f"Error fetching brand profile: {str(e)}") from e
 
 
 @router.post("/campaigns", response_model=CampaignResponse, status_code=201)
@@ -107,7 +109,16 @@ async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., de
     if not campaign.slug:
         import re
         slug = re.sub(r'[^a-z0-9]+', '-', campaign.title.lower()).strip('-')
-        campaign.slug = f"{slug}-{datetime.now().strftime('%Y%m%d')}"
+        # Ensure uniqueness by checking existing slugs
+        base_slug = f"{slug}-{datetime.now().strftime('%Y%m%d')}"
+        campaign.slug = base_slug
+        counter = 1
+        while True:
+            existing = supabase.table("campaigns").select("id").eq("slug", campaign.slug).execute()
+            if not existing.data:
+                break
+            campaign.slug = f"{base_slug}-{counter}"
+            counter += 1
 
     try:
         # Prepare campaign data
@@ -142,8 +153,10 @@ async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., de
 
         return response.data[0]
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating campaign: {str(e)}") from e
 
 
 
@@ -213,13 +226,17 @@ async def get_campaigns(
 
         return response.data if response.data else []
 
+    except HTTPException:
+        raise
     except Exception as e:
-        import traceback
-        tb = traceback.format_exc()
+        # Log the full error internally
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.exception("Error fetching campaigns")
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching campaigns: {str(e)} | Traceback: {tb}"
-        )
+            detail="Error fetching campaigns. Please contact support if the issue persists."
+        ) from e
 
 
 @router.get("/campaigns/{campaign_id}", response_model=CampaignResponse)
@@ -247,10 +264,12 @@ async def get_campaign(
 
         return response.data
 
+    except HTTPException:
+        raise
     except Exception as e:
         if "PGRST116" in str(e):  # No rows returned
-            raise HTTPException(status_code=404, detail="Campaign not found")
-        raise HTTPException(status_code=500, detail=f"Error fetching campaign: {str(e)}")
+            raise HTTPException(status_code=404, detail="Campaign not found") from e
+        raise HTTPException(status_code=500, detail=f"Error fetching campaign: {str(e)}") from e
 
 
 @router.put("/campaigns/{campaign_id}", response_model=CampaignResponse)
@@ -314,8 +333,8 @@ async def update_campaign(
         raise
     except Exception as e:
         if "PGRST116" in str(e):
-            raise HTTPException(status_code=404, detail="Campaign not found")
-        raise HTTPException(status_code=500, detail=f"Error updating campaign: {str(e)}")
+            raise HTTPException(status_code=404, detail="Campaign not found") from e
+        raise HTTPException(status_code=500, detail=f"Error updating campaign: {str(e)}") from e
 
 
 @router.delete("/campaigns/{campaign_id}", status_code=204)
@@ -350,5 +369,5 @@ async def delete_campaign(
         raise
     except Exception as e:
         if "PGRST116" in str(e):
-            raise HTTPException(status_code=404, detail="Campaign not found")
-        raise HTTPException(status_code=500, detail=f"Error deleting campaign: {str(e)}")
+            raise HTTPException(status_code=404, detail="Campaign not found") from e
+        raise HTTPException(status_code=500, detail=f"Error deleting campaign: {str(e)}") from e
