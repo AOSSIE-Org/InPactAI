@@ -278,6 +278,7 @@ async def update_campaign(
         if not existing.data:
             raise HTTPException(status_code=404, detail="Campaign not found")
 
+
         # Prepare update data (only include non-None fields)
         update_data = {k: v for k, v in campaign.dict().items() if v is not None}
 
@@ -286,6 +287,14 @@ async def update_campaign(
 
         # Update timestamp
         update_data["updated_at"] = datetime.now().isoformat()
+
+        # Serialize datetime fields to ISO format
+        if "starts_at" in update_data and update_data["starts_at"] is not None:
+            if isinstance(update_data["starts_at"], datetime):
+                update_data["starts_at"] = update_data["starts_at"].isoformat()
+        if "ends_at" in update_data and update_data["ends_at"] is not None:
+            if isinstance(update_data["ends_at"], datetime):
+                update_data["ends_at"] = update_data["ends_at"].isoformat()
 
         # If status changes to active and published_at is not set, set it
         if update_data.get("status") == "active":
