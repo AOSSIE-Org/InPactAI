@@ -2,9 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.api.routes import health
-from app.services.supabase_client import supabase
+from app.core.supabase_clients import supabase_anon as supabase
 from app.api.routes import auth
 from app.api.routes import gemini_generate
+from app.api.routes import campaigns
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
 # Verify Supabase client initialization on startup
@@ -30,6 +31,7 @@ app.add_middleware(
 app.include_router(gemini_generate.router)
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(campaigns.router)
 
 @app.get("/")
 def root():
