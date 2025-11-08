@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 
-const Github = () => {
   const Github = () => {
    const openGithub = () => {
     window.open("https://github.com/AOSSIE-Org/InPactAI", "_blank", "noopener,noreferrer");
