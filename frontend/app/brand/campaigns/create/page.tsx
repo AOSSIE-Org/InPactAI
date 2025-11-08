@@ -140,7 +140,18 @@ export default function CreateCampaignPage() {
 
     try {
       setLoading(true);
-      const submitData = { ...formData, status };
+      const submitData = {
+        ...formData,
+        status,
+        budget_min: formData.budget_min
+          ? parseFloat(formData.budget_min)
+          : undefined,
+        budget_max: formData.budget_max
+          ? parseFloat(formData.budget_max)
+          : undefined,
+        starts_at: formData.starts_at || undefined,
+        ends_at: formData.ends_at || undefined,
+      };
       await createCampaign(submitData);
       router.push("/brand/campaigns");
     } catch (err: any) {
