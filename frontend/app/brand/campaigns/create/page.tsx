@@ -88,9 +88,12 @@ export default function CreateCampaignPage() {
 
   const addDeliverable = () => {
     if (!newDeliverable.platform || !newDeliverable.content_type) {
-      alert("Please select platform and content type");
+      setError(
+        "Please select both platform and content type for the deliverable"
+      );
       return;
     }
+    setError(null); // Clear any previous errors
     setFormData((prev) => ({
       ...prev,
       deliverables: [...prev.deliverables, { ...newDeliverable }],
