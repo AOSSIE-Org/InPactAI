@@ -84,9 +84,17 @@ export default function CampaignsPage() {
     setExpandedCampaign(expandedCampaign === campaignId ? null : campaignId);
   };
 
-  const filteredCampaigns = campaigns.filter((campaign) =>
-    campaign.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    if (!normalizedSearch) return true;
+    return (
+      campaign.title.toLowerCase().includes(normalizedSearch) ||
+      (campaign.short_description ?? "")
+        .toLowerCase()
+        .includes(normalizedSearch) ||
+      (campaign.description ?? "").toLowerCase().includes(normalizedSearch)
+    );
+  });
 
   return (
     <AuthGuard requiredRole="Brand">
