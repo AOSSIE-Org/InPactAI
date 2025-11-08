@@ -49,6 +49,7 @@ export interface TargetAudience {
   description?: string;
 }
 
+// For form state (input fields)
 export interface CampaignFormData {
   title: string;
   short_description: string;
@@ -63,6 +64,23 @@ export interface CampaignFormData {
   preferred_creator_followers_range: string;
   starts_at: string;
   ends_at: string;
+}
+
+// For API payloads
+export interface CampaignPayload {
+  title: string;
+  short_description?: string;
+  description?: string;
+  status: CampaignStatus;
+  platforms: string[];
+  deliverables: CampaignDeliverable[];
+  target_audience: TargetAudience;
+  budget_min?: number;
+  budget_max?: number;
+  preferred_creator_niches: string[];
+  preferred_creator_followers_range?: string;
+  starts_at?: string;
+  ends_at?: string;
 }
 
 export interface CampaignFilters {
