@@ -32,7 +32,8 @@ def get_jwt_token():
         json={
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
-        }
+        },
+        timeout=10
     )
 
     if response.status_code != 200:
