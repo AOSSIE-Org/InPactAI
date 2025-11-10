@@ -50,7 +50,8 @@ def test_protected_endpoint(token):
         f"{API_URL}/campaigns",
         headers={
             "Authorization": f"Bearer {token}"
-        }
+        },
+        timeout=10
     )
 
     print(f"Status: {response.status_code}")
