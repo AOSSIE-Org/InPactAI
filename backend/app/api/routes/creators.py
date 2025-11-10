@@ -7,11 +7,11 @@ from pydantic import BaseModel
 from typing import Optional, List, Tuple
 from math import exp
 from datetime import datetime
+import json
 from groq import Groq
 from app.core.config import settings
 from app.core.supabase_clients import supabase_anon
 from app.core.dependencies import get_current_creator
-
 router = APIRouter()
 
 
