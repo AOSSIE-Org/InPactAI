@@ -13,7 +13,7 @@ export default async function handler(
   try {
     // Validate NEXT_PUBLIC_API_URL
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl || !/^https:\/\//.test(apiUrl)) {
+    if (!apiUrl || !/^http:\/\//.test(apiUrl)) {
       return res.status(500).json({
         detail:
           "NEXT_PUBLIC_API_URL is missing or not a valid HTTPS URL. Please contact the administrator.",
