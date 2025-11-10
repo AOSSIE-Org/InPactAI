@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { getAuthToken, supabase } from "./supabaseClient";
 
 export interface UserProfile {
   id: string;
@@ -16,7 +16,9 @@ export async function getCurrentUser() {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  if (error) throw error;
+  if (error || !user) {
+    return null;
+  }
   return user;
 }
 
@@ -34,7 +36,10 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       .eq("id", user.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return null;
+    }
     return data as UserProfile;
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -53,16 +58,9 @@ export async function signOut() {
 /**
  * Check if user has a specific role
  */
-export async function checkUserRole(
-  requiredRole: "Creator" | "Brand"
-): Promise<boolean> {
-  try {
-    const profile = await getUserProfile();
-    return profile?.role === requiredRole;
-  } catch (error) {
-    console.error("Error checking user role:", error);
-    return false;
-  }
+export async function checkUserRole(): Promise<"Creator" | "Brand" | null> {
+  const profile = await getUserProfile();
+  return profile?.role || null;
 }
 
 /**
@@ -76,6 +74,88 @@ export async function hasCompletedOnboarding(): Promise<boolean> {
     console.error("Error checking onboarding status:", error);
     return false;
   }
+}
+
+/**
+ * Token refresh handling (automatic with Supabase)
+ */
+export async function ensureValidToken() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error("No active session");
+  }
+
+  // Supabase automatically refreshes if needed
+  return session.access_token;
+}
+
+/**
+ * Make authenticated API calls to backend
+ */
+export async function authenticatedFetch(url: string, options: RequestInit = {}) {
+  // Try to get token, refresh if needed
+  let token = await getAuthToken();
+
+  // If no token, try to refresh session
+  if (!token) {
+    try {
+      const { data: { session }, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error("Failed to refresh session:", error);
+        // Don't throw here - let the 401 response handle it
+        token = undefined;
+      } else {
+        token = session?.access_token || undefined;
+      }
+    } catch (err) {
+      console.error("Error refreshing token:", err);
+      token = undefined;
+    }
+  }
+
+  if (!token) {
+    // Return a response that will trigger 401, don't throw
+    // This allows the calling code to handle it gracefully
+    return new Response(
+      JSON.stringify({ error: "No authentication token available" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const headers = {
+    ...options.headers,
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  // If 401, try refreshing token once
+  if (response.status === 401) {
+    try {
+      const { data: { session }, error } = await supabase.auth.refreshSession();
+      if (!error && session?.access_token) {
+        // Retry with new token
+        const retryHeaders = {
+          ...options.headers,
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        };
+        return fetch(url, {
+          ...options,
+          headers: retryHeaders,
+        });
+      }
+    } catch (err) {
+      console.error("Error refreshing token on 401:", err);
+    }
+  }
+
+  return response;
 }
 
 /**
