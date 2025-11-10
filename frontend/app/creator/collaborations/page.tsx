@@ -225,6 +225,12 @@ export default function CollaborationsPage() {
             </button>
           </div>
 
+          {error && (
+            <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-red-800">
+              {error}
+            </div>
+          )}
+
           {activeTab === "browse" && (
           <>
           {/* Search Bar */}
@@ -246,14 +252,6 @@ export default function CollaborationsPage() {
               </button>
                 </div>
           </form>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-red-800">
-              {error}
-            </div>
-          )}
-
           {/* Loading State */}
           {isLoading ? (
             <div className="flex min-h-[60vh] items-center justify-center">
