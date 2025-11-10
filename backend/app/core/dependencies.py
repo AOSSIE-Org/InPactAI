@@ -164,19 +164,31 @@ async def get_current_brand(
         )
 
     # Fetch brand profile
-    response = supabase_anon.table('brands') \
-        .select('*') \
-        .eq('user_id', current_user['id']) \
-        .single() \
-        .execute()
+    try:
+        response = supabase_anon.table('brands') \
+            .select('*') \
+            .eq('user_id', current_user['id']) \
+            .single() \
+            .execute()
 
-    if not response.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Brand profile not found. Please complete onboarding."
-        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Brand profile not found. Please complete onboarding."
+            )
 
-    return response.data
+        return response.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Check if it's a "not found" error from Supabase
+        if "PGRST116" in str(e) or "No rows" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Brand profile not found. Please complete onboarding."
+            ) from e
+        # Re-raise other exceptions
+        raise
 
 
 async def get_optional_user(
