@@ -66,7 +66,8 @@ def test_invalid_token():
         f"{API_URL}/campaigns",
         headers={
             "Authorization": "Bearer invalid_token_here"
-        }
+        },
+        timeout=10
     )
 
     print(f"Invalid token status: {response.status_code}")
