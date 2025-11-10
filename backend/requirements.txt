@@ -23,4 +23,6 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 
 requests
+groq==0.11.0
 uvicorn==0.38.0
+pyjwt[crypto]==2.8.0

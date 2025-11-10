@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Application Settings
     app_name: Optional[str] = None
 
+    # JWT Authentication
+    SUPABASE_JWT_SECRET: str  # JWT Secret from Supabase Dashboard → Settings → API → JWT Settings
+
     model_config = {
         "env_file": ".env"
     }

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
 from app.core.supabase_clients import supabase_anon
+from app.core.dependencies import get_current_brand
 from uuid import UUID
 
 router = APIRouter()
@@ -73,37 +74,17 @@ class CampaignResponse(BaseModel):
     is_featured: bool
 
 
-async def get_brand_id_from_user(user_id: str) -> str:
-    """Get brand ID from user ID."""
-    supabase = supabase_anon
-
-    try:
-        response = supabase.table("brands").select("id").eq("user_id", user_id).single().execute()
-
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Brand profile not found")
-
-        return response.data["id"]
-    except HTTPException:
-        raise
-    except Exception as e:
-        if "PGRST116" in str(e):  # No rows returned
-            raise HTTPException(status_code=404, detail="Brand profile not found") from e
-        raise HTTPException(status_code=500, detail=f"Error fetching brand profile: {str(e)}") from e
-
-
 @router.post("/campaigns", response_model=CampaignResponse, status_code=201)
-async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., description="User ID from authentication")):
+async def create_campaign(campaign: CampaignCreate, brand: dict = Depends(get_current_brand)):
     """
     Create a new campaign for a brand.
 
-    - **user_id**: The authenticated user's ID (should be passed from auth middleware)
     - **campaign**: Campaign details matching the database schema
     """
     supabase = supabase_anon
 
-    # Get brand ID from user ID
-    brand_id = await get_brand_id_from_user(user_id)
+    # Get brand ID from authenticated brand profile
+    brand_id = brand['id']
 
     # Generate slug if not provided
     if not campaign.slug:
@@ -171,7 +152,7 @@ async def create_campaign(campaign: CampaignCreate, user_id: str = Query(..., de
 
 @router.get("/campaigns", response_model=List[CampaignResponse])
 async def get_campaigns(
-    user_id: str = Query(..., description="User ID from authentication"),
+    brand: dict = Depends(get_current_brand),
     status: Optional[str] = Query(None, description="Filter by status"),
     search: Optional[str] = Query(None, description="Search by title or description"),
     platform: Optional[str] = Query(None, description="Filter by platform"),
@@ -185,7 +166,6 @@ async def get_campaigns(
     """
     Get all campaigns for a brand with optional filters.
 
-    - **user_id**: The authenticated user's ID
     - **status**: Optional filter by campaign status
     - **search**: Optional search term for title or description
     - **platform**: Optional filter by platform
@@ -198,8 +178,8 @@ async def get_campaigns(
     """
     supabase = supabase_anon
 
-    # Get brand ID from user ID
-    brand_id = await get_brand_id_from_user(user_id)
+    # Get brand ID from authenticated brand profile
+    brand_id = brand['id']
 
     try:
         # Build query
@@ -251,18 +231,17 @@ async def get_campaigns(
 @router.get("/campaigns/{campaign_id}", response_model=CampaignResponse)
 async def get_campaign(
     campaign_id: str,
-    user_id: str = Query(..., description="User ID from authentication")
+    brand: dict = Depends(get_current_brand)
 ):
     """
     Get a single campaign by ID.
 
     - **campaign_id**: The campaign ID
-    - **user_id**: The authenticated user's ID
     """
     supabase = supabase_anon
 
-    # Get brand ID from user ID
-    brand_id = await get_brand_id_from_user(user_id)
+    # Get brand ID from authenticated brand profile
+    brand_id = brand['id']
 
     try:
         # Fetch campaign and verify ownership
@@ -285,19 +264,18 @@ async def get_campaign(
 async def update_campaign(
     campaign_id: str,
     campaign: CampaignUpdate,
-    user_id: str = Query(..., description="User ID from authentication")
+    brand: dict = Depends(get_current_brand)
 ):
     """
     Update an existing campaign.
 
     - **campaign_id**: The campaign ID
     - **campaign**: Updated campaign details
-    - **user_id**: The authenticated user's ID
     """
     supabase = supabase_anon
 
-    # Get brand ID from user ID
-    brand_id = await get_brand_id_from_user(user_id)
+    # Get brand ID from authenticated brand profile
+    brand_id = brand['id']
 
     try:
         # Verify campaign exists and belongs to this brand
@@ -346,18 +324,17 @@ async def update_campaign(
 @router.delete("/campaigns/{campaign_id}", status_code=204)
 async def delete_campaign(
     campaign_id: str,
-    user_id: str = Query(..., description="User ID from authentication")
+    brand: dict = Depends(get_current_brand)
 ):
     """
     Delete a campaign.
 
     - **campaign_id**: The campaign ID
-    - **user_id**: The authenticated user's ID
     """
     supabase = supabase_anon
 
-    # Get brand ID from user ID
-    brand_id = await get_brand_id_from_user(user_id)
+    # Get brand ID from authenticated brand profile
+    brand_id = brand['id']
 
     try:
         # Verify campaign exists and belongs to this brand

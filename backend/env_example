@@ -26,3 +26,9 @@ GEMINI_API_KEY=your-gemini-api-key-here
 # CORS Origins (comma-separated)
 
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# JWT Secret Key from Supabase
+# Location: Dashboard → Project Settings → API → JWT Settings → JWT Secret
+# Use the JWT Secret (NOT the anon key!)
+
+SUPABASE_JWT_SECRET=your-jwt-secret-from-supabase-dashboard
