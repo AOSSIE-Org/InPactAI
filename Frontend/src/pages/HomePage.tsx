@@ -110,7 +110,8 @@ const successStories = [
     followers: "2.1M",
     brand: "TechFlow",
     result: "500% ROI increase",
-    story: "Sarah's authentic tech reviews helped TechFlow launch their new smartphone with record-breaking pre-orders.",
+    story:
+      "Sarah's authentic tech reviews helped TechFlow launch their new smartphone with record-breaking pre-orders.",
     avatar: "/avatars/sarah.jpg",
     platform: "YouTube",
   },
@@ -120,7 +121,8 @@ const successStories = [
     followers: "850K",
     brand: "FitFuel",
     result: "300% engagement boost",
-    story: "Marcus's workout challenges with FitFuel products generated over 10M views and 50K+ app downloads.",
+    story:
+      "Marcus's workout challenges with FitFuel products generated over 10M views and 50K+ app downloads.",
     avatar: "/avatars/marcus.jpg",
     platform: "Instagram",
   },
@@ -130,7 +132,8 @@ const successStories = [
     followers: "1.2M",
     brand: "EcoStyle",
     result: "200% sales increase",
-    story: "Emma's sustainable fashion content helped EcoStyle become the top eco-friendly brand in their category.",
+    story:
+      "Emma's sustainable fashion content helped EcoStyle become the top eco-friendly brand in their category.",
     avatar: "/avatars/emma.jpg",
     platform: "TikTok",
   },
@@ -223,7 +226,8 @@ const brandShowcase = [
     name: "TechFlow",
     industry: "Technology",
     logo: "/brands/techflow.png",
-    description: "Leading smartphone manufacturer seeking tech reviewers and lifestyle creators",
+    description:
+      "Leading smartphone manufacturer seeking tech reviewers and lifestyle creators",
     followers: "2.5M",
     budget: "$5K - $50K",
     lookingFor: ["Tech Reviewers", "Lifestyle Creators", "Gaming Streamers"],
@@ -233,7 +237,8 @@ const brandShowcase = [
     name: "FitFuel",
     industry: "Health & Fitness",
     logo: "/brands/fitfuel.png",
-    description: "Premium fitness supplement brand looking for authentic fitness influencers",
+    description:
+      "Premium fitness supplement brand looking for authentic fitness influencers",
     followers: "1.8M",
     budget: "$3K - $25K",
     lookingFor: ["Fitness Trainers", "Nutrition Experts", "Wellness Coaches"],
@@ -243,17 +248,23 @@ const brandShowcase = [
     name: "EcoStyle",
     industry: "Sustainable Fashion",
     logo: "/brands/ecostyle.png",
-    description: "Eco-friendly fashion brand seeking sustainable lifestyle advocates",
+    description:
+      "Eco-friendly fashion brand seeking sustainable lifestyle advocates",
     followers: "950K",
     budget: "$2K - $20K",
-    lookingFor: ["Fashion Influencers", "Sustainability Advocates", "Lifestyle Creators"],
+    lookingFor: [
+      "Fashion Influencers",
+      "Sustainability Advocates",
+      "Lifestyle Creators",
+    ],
     activeCampaigns: 2,
   },
   {
     name: "GameZone",
     industry: "Gaming",
     logo: "/brands/gamezone.png",
-    description: "Gaming accessories company looking for esports and gaming content creators",
+    description:
+      "Gaming accessories company looking for esports and gaming content creators",
     followers: "3.2M",
     budget: "$4K - $40K",
     lookingFor: ["Gaming Streamers", "Esports Players", "Tech Reviewers"],
@@ -264,22 +275,24 @@ const brandShowcase = [
 // TrendingNichesSection: Fetches and displays trending niches from the backend
 function TrendingNichesSection() {
   // State for trending niches, loading, and error
-  const [niches, setNiches] = useState<{ name: string; insight: string; global_activity: number }[]>([]);
+  const [niches, setNiches] = useState<
+    { name: string; insight: string; global_activity: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch trending niches from the backend API on mount
   useEffect(() => {
     fetch("/api/trending-niches")
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch trending niches");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setNiches(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
@@ -289,7 +302,7 @@ function TrendingNichesSection() {
   if (error) return <div>Error: {error}</div>;
 
   // Emoji icons for visual variety in cards
-  const icons = ['🤖','🌱','🎮','💸','✈️','🧩'];
+  const icons = ["🤖", "🌱", "🎮", "💸", "✈️", "🧩"];
 
   // Modern glassmorphism card design for each trending niche
   return (
@@ -306,7 +319,9 @@ function TrendingNichesSection() {
             <span className="text-2xl">{icons[idx % icons.length]}</span>
           </div>
           {/* Niche name */}
-          <h3 className="text-xl font-bold text-gray-900 mb-2 mt-6 text-center relative z-10">{niche.name}</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2 mt-6 text-center relative z-10">
+            {niche.name}
+          </h3>
           {/* Niche insight as a quote */}
           <blockquote className="italic text-gray-700 mb-4 text-center border-l-4 border-purple-300 pl-3 relative z-10">
             “{niche.insight}”
@@ -319,13 +334,15 @@ function TrendingNichesSection() {
                 <div
                   className={`h-3 rounded-full transition-all duration-300 ${
                     niche.global_activity >= 4
-                      ? 'bg-gradient-to-r from-purple-500 to-blue-500'
-                      : 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                      ? "bg-gradient-to-r from-purple-500 to-blue-500"
+                      : "bg-gradient-to-r from-yellow-400 to-orange-500"
                   }`}
                   style={{ width: `${(niche.global_activity / 5) * 100}%` }}
                 />
               </div>
-              <span className="ml-2 font-semibold text-purple-700">{niche.global_activity}/5</span>
+              <span className="ml-2 font-semibold text-purple-700">
+                {niche.global_activity}/5
+              </span>
             </div>
           </div>
         </div>
@@ -338,35 +355,66 @@ function WhyChooseSection() {
   return (
     <section className="w-full py-20 bg-gradient-to-b from-white via-blue-50 to-purple-50">
       <div className="container mx-auto px-6 md:px-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Why Choose Inpact AI?</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
+          Why Choose Inpact AI?
+        </h2>
         <p className="text-lg text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-          Powerful tools for both brands and creators to connect, collaborate, and grow.
+          Powerful tools for both brands and creators to connect, collaborate,
+          and grow.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Brands Column */}
           <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-purple-100">
             <div className="flex items-center gap-3 mb-4">
               <Rocket className="h-8 w-8 text-purple-600" />
-              <span className="text-xl font-semibold text-purple-700">For Brands</span>
+              <span className="text-xl font-semibold text-purple-700">
+                For Brands
+              </span>
             </div>
             <ul className="space-y-4 text-gray-700 w-full">
-              <li className="flex items-start gap-3"><Handshake className="h-6 w-6 text-blue-500" /> AI-driven creator matching for your campaigns</li>
-              <li className="flex items-start gap-3"><BarChart3 className="h-6 w-6 text-green-500" /> Real-time performance analytics & ROI tracking</li>
-              <li className="flex items-start gap-3"><Layers className="h-6 w-6 text-pink-500" /> Smart pricing & budget optimization</li>
-              <li className="flex items-start gap-3"><MessageSquare className="h-6 w-6 text-orange-500" /> Streamlined communication & contract management</li>
+              <li className="flex items-start gap-3">
+                <Handshake className="h-6 w-6 text-blue-500" /> AI-driven
+                creator matching for your campaigns
+              </li>
+              <li className="flex items-start gap-3">
+                <BarChart3 className="h-6 w-6 text-green-500" /> Real-time
+                performance analytics & ROI tracking
+              </li>
+              <li className="flex items-start gap-3">
+                <Layers className="h-6 w-6 text-pink-500" /> Smart pricing &
+                budget optimization
+              </li>
+              <li className="flex items-start gap-3">
+                <MessageSquare className="h-6 w-6 text-orange-500" />{" "}
+                Streamlined communication & contract management
+              </li>
             </ul>
           </div>
           {/* Creators Column */}
           <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-blue-100">
             <div className="flex items-center gap-3 mb-4">
               <Users className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-semibold text-blue-700">For Creators</span>
+              <span className="text-xl font-semibold text-blue-700">
+                For Creators
+              </span>
             </div>
             <ul className="space-y-4 text-gray-700 w-full">
-              <li className="flex items-start gap-3"><TrendingUp className="h-6 w-6 text-purple-500" /> Get discovered by top brands in your niche</li>
-              <li className="flex items-start gap-3"><Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship deals & transparent payments</li>
-              <li className="flex items-start gap-3"><BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered content & contract assistant</li>
-              <li className="flex items-start gap-3"><Heart className="h-6 w-6 text-pink-500" /> Grow your audience & track your impact</li>
+              <li className="flex items-start gap-3">
+                <TrendingUp className="h-6 w-6 text-purple-500" /> Get
+                discovered by top brands in your niche
+              </li>
+              <li className="flex items-start gap-3">
+                <Award className="h-6 w-6 text-yellow-500" /> Fair sponsorship
+                deals & transparent payments
+              </li>
+              <li className="flex items-start gap-3">
+                <BookOpen className="h-6 w-6 text-indigo-500" /> AI-powered
+                content & contract assistant
+              </li>
+              <li className="flex items-start gap-3">
+                <Heart className="h-6 w-6 text-pink-500" /> Grow your audience &
+                track your impact
+              </li>
             </ul>
           </div>
         </div>
@@ -377,7 +425,7 @@ function WhyChooseSection() {
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
-  
+
   // Refs for scroll detection
   const featuresRef = useRef(null);
   const successStoriesRef = useRef(null);
@@ -419,10 +467,12 @@ export default function HomePage() {
       { root: null, rootMargin: "0px", threshold: 0.1 }
     );
     if (trendingRef.current) trendingObserver.observe(trendingRef.current);
-    if (successStoriesRef.current) brandsObserver.observe(successStoriesRef.current);
+    if (successStoriesRef.current)
+      brandsObserver.observe(successStoriesRef.current);
     return () => {
       if (trendingRef.current) trendingObserver.unobserve(trendingRef.current);
-      if (successStoriesRef.current) brandsObserver.unobserve(successStoriesRef.current);
+      if (successStoriesRef.current)
+        brandsObserver.unobserve(successStoriesRef.current);
     };
   }, [hasAnimatedTrending, hasAnimatedBrands]);
 
@@ -473,7 +523,7 @@ export default function HomePage() {
             <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
-            
+
             <div className="container relative z-10 px-0 md:px-0 max-w-7xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-24 items-center">
                 {/* Left Image */}
@@ -494,10 +544,16 @@ export default function HomePage() {
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                       <TrendingUp className="h-8 w-8 text-white" />
                     </div>
-                    <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg animate-bounce" style={{animationDelay: '0.5s'}}>
+                    <div
+                      className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg animate-bounce"
+                      style={{ animationDelay: "0.5s" }}
+                    >
                       <Users className="h-6 w-6 text-white" />
                     </div>
-                    <div className="absolute top-1/2 -right-8 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce" style={{animationDelay: '1s'}}>
+                    <div
+                      className="absolute top-1/2 -right-8 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce"
+                      style={{ animationDelay: "1s" }}
+                    >
                       <Zap className="h-5 w-5 text-white" />
                     </div>
                   </div>
@@ -506,15 +562,22 @@ export default function HomePage() {
                 <div className="flex flex-col items-center lg:items-start justify-center w-full h-full space-y-8 order-last px-6 md:px-12 lg:px-24">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 mb-6">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700">Welcome back!</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Welcome back!
+                    </span>
                   </div>
                   <div className="space-y-6 w-full">
                     {/* Main Welcome Heading */}
                     <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-tight w-full text-center lg:text-left">
-                      Welcome, <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">{user.user_metadata?.name || user.email?.split('@')[0]}</span>
+                      Welcome,{" "}
+                      <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">
+                        {user.user_metadata?.name || user.email?.split("@")[0]}
+                      </span>
                     </h1>
                     <p className="text-xl lg:text-2xl text-gray-700 max-w-2xl mx-auto lg:mx-0 leading-relaxed w-full text-center lg:text-left">
-                      Ready to grow your creator business? Explore new opportunities, track your performance, and connect with brands.
+                      Ready to grow your creator business? Explore new
+                      opportunities, track your performance, and connect with
+                      brands.
                     </p>
                   </div>
                   {/* Action Buttons */}
@@ -532,7 +595,10 @@ export default function HomePage() {
                       size="lg"
                       className="border-white/30 bg-white/10 backdrop-blur-sm text-gray-900 hover:bg-white/20 transition-all duration-300 px-8 py-4 text-lg"
                     >
-                      <Link to="/dashboard/sponsorships" className="flex items-center">
+                      <Link
+                        to="/dashboard/sponsorships"
+                        className="flex items-center"
+                      >
                         Browse Opportunities
                       </Link>
                     </Button>
@@ -541,15 +607,21 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row gap-8 justify-center mt-19">
                     <div className="flex flex-col items-center text-center">
                       <UserPlus className="h-10 w-10 mb-2 text-purple-600" />
-                      <span className="font-semibold text-gray-800">Create your profile</span>
+                      <span className="font-semibold text-gray-800">
+                        Create your profile
+                      </span>
                     </div>
                     <div className="flex flex-col items-center text-center">
                       <Sparkles className="h-10 w-10 mb-2 text-blue-600" />
-                      <span className="font-semibold text-gray-800">Get matched by AI</span>
+                      <span className="font-semibold text-gray-800">
+                        Get matched by AI
+                      </span>
                     </div>
                     <div className="flex flex-col items-center text-center">
                       <Handshake className="h-10 w-10 mb-2 text-green-600" />
-                      <span className="font-semibold text-gray-800">Collaborate & grow</span>
+                      <span className="font-semibold text-gray-800">
+                        Collaborate & grow
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -561,7 +633,10 @@ export default function HomePage() {
           <WhyChooseSection />
 
           {/* Trending Niches Section - Centered Grid, No Extra Right Space */}
-          <section ref={trendingRef} className="w-full py-24 bg-gradient-to-b from-blue-50 via-white to-purple-50 relative">
+          <section
+            ref={trendingRef}
+            className="w-full py-24 bg-gradient-to-b from-blue-50 via-white to-purple-50 relative"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50"></div>
             <div
               className={`max-w-7xl mx-auto relative z-10 px-2 sm:px-4 md:px-8 text-center transition-all duration-1000 transform ${
@@ -574,14 +649,18 @@ export default function HomePage() {
                 Trending Niches
               </h2>
               <p className="mt-4 text-lg text-gray-700 mb-12">
-                Discover the fastest-growing content categories and opportunities.
+                Discover the fastest-growing content categories and
+                opportunities.
               </p>
               <TrendingNichesSection />
             </div>
           </section>
 
           {/* Brand Showcase Section - Centered Grid, No Extra Right Space */}
-          <section ref={successStoriesRef} className="w-full py-24 bg-gradient-to-b from-purple-50 via-white to-blue-50 relative">
+          <section
+            ref={successStoriesRef}
+            className="w-full py-24 bg-gradient-to-b from-purple-50 via-white to-blue-50 relative"
+          >
             <div className="absolute inset-0 bg-white/50 backdrop-blur-sm"></div>
             <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10">
               <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 mb-4 text-center">
@@ -600,33 +679,47 @@ export default function HomePage() {
                       <div className="relative">
                         <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-500 rounded-xl flex items-center justify-center">
                           <span className="text-white font-bold text-xl">
-                            {brand.name.split('').slice(0, 2).join('')}
+                            {brand.name.split("").slice(0, 2).join("")}
                           </span>
                         </div>
                         <div className="absolute -inset-1 bg-gradient-to-br from-purple-400/20 to-blue-500/20 rounded-xl blur-sm"></div>
                       </div>
                       <div className="text-left flex-1">
-                        <h3 className="font-semibold text-gray-900 text-lg">{brand.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{brand.industry}</p>
-                        <p className="text-gray-700 text-sm">{brand.description}</p>
+                        <h3 className="font-semibold text-gray-900 text-lg">
+                          {brand.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {brand.industry}
+                        </p>
+                        <p className="text-gray-700 text-sm">
+                          {brand.description}
+                        </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                       <div>
                         <p className="text-gray-600">Followers</p>
-                        <p className="font-semibold text-gray-900">{brand.followers}</p>
+                        <p className="font-semibold text-gray-900">
+                          {brand.followers}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Budget Range</p>
-                        <p className="font-semibold text-green-600">{brand.budget}</p>
+                        <p className="font-semibold text-green-600">
+                          {brand.budget}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Active Campaigns</p>
-                        <p className="font-semibold text-blue-600">{brand.activeCampaigns}</p>
+                        <p className="font-semibold text-blue-600">
+                          {brand.activeCampaigns}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Looking For</p>
-                        <p className="font-semibold text-purple-600">{brand.lookingFor.length} types</p>
+                        <p className="font-semibold text-purple-600">
+                          {brand.lookingFor.length} types
+                        </p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -639,11 +732,13 @@ export default function HomePage() {
                         </span>
                       ))}
                     </div>
-                    <Button
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
-                    >
-                      <Link to="/dashboard/sponsorships" className="flex items-center justify-center">
-                        View Opportunities <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700">
+                      <Link
+                        to="/dashboard/sponsorships"
+                        className="flex items-center justify-center"
+                      >
+                        View Opportunities{" "}
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
@@ -653,7 +748,10 @@ export default function HomePage() {
           </section>
 
           {/* Footer */}
-          <footer ref={footerRef} className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative">
+          <footer
+            ref={footerRef}
+            className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative"
+          >
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
             <div
               className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
@@ -670,19 +768,32 @@ export default function HomePage() {
                 <span className="font-bold text-xl">Inpact</span>
               </div>
               <p className="text-gray-400">
-                Empowering creators to build meaningful partnerships and grow their businesses.
+                Empowering creators to build meaningful partnerships and grow
+                their businesses.
               </p>
               <div className="mt-6 flex justify-center space-x-6 text-sm text-gray-400">
-                <Link to="/dashboard" className="hover:text-white transition-colors">
+                <Link
+                  to="/dashboard"
+                  className="hover:text-white transition-colors"
+                >
                   Dashboard
                 </Link>
-                <Link to="/dashboard/sponsorships" className="hover:text-white transition-colors">
+                <Link
+                  to="/dashboard/sponsorships"
+                  className="hover:text-white transition-colors"
+                >
                   Opportunities
                 </Link>
-                <Link to="/dashboard/analytics" className="hover:text-white transition-colors">
+                <Link
+                  to="/dashboard/analytics"
+                  className="hover:text-white transition-colors"
+                >
                   Analytics
                 </Link>
-                <Link to="/dashboard/messages" className="hover:text-white transition-colors">
+                <Link
+                  to="/dashboard/messages"
+                  className="hover:text-white transition-colors"
+                >
                   Messages
                 </Link>
               </div>
@@ -712,7 +823,10 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             <ModeToggle />
             <div className="hidden md:flex gap-2">
-              <Button variant="ghost" className="text-gray-900 hover:bg-white/20">
+              <Button
+                variant="ghost"
+                className="text-gray-900 hover:bg-white/20"
+              >
                 <Link to="/login">Login</Link>
               </Button>
               <Button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700">
@@ -732,16 +846,17 @@ export default function HomePage() {
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
-          
+
           <div className="container relative z-10 px-6 md:px-12">
             <div className="grid lg:grid-cols-2 gap-24 items-center">
               {/* Left Content */}
               <div className="text-center lg:text-left space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 mb-6">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-gray-700">AI-Powered Platform</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    AI-Powered Platform
+                  </span>
                 </div>
-                
                 <div className="space-y-6">
                   {/* 3D Text Effect for "Inpact AI" */}
                   <div className="relative">
@@ -752,21 +867,24 @@ export default function HomePage() {
                       Creator Collaboration Platform
                     </h2>
                   </div>
-                  
+
                   <p className="text-xl lg:text-2xl text-gray-700 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                    Connect with brands, collaborate with creators, and optimize your partnerships through data-driven insights.
+                    Connect with brands, collaborate with creators, and optimize
+                    your partnerships through data-driven insights.
                   </p>
                 </div>
-                
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 text-lg group"
                   >
                     <Link to="/signup" className="flex items-center">
-                      Get Started <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      Get Started
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </Button>
+
                   <Button
                     variant="outline"
                     size="lg"
@@ -774,31 +892,38 @@ export default function HomePage() {
                   >
                     Learn More
                   </Button>
-                </div>
+                </div>{" "}
+                {/* ✅ make sure this closing div exists */}
                 {/* How It Works Row */}
                 <div className="flex flex-col sm:flex-row gap-8 justify-center mt-19">
                   <div className="flex flex-col items-center text-center">
                     <UserPlus className="h-10 w-10 mb-2 text-purple-600" />
-                    <span className="font-semibold text-gray-800">Create your profile</span>
+                    <span className="font-semibold text-gray-800">
+                      Create your profile
+                    </span>
                   </div>
                   <div className="flex flex-col items-center text-center">
                     <Sparkles className="h-10 w-10 mb-2 text-blue-600" />
-                    <span className="font-semibold text-gray-800">Get matched by AI</span>
+                    <span className="font-semibold text-gray-800">
+                      Get matched by AI
+                    </span>
                   </div>
                   <div className="flex flex-col items-center text-center">
                     <Handshake className="h-10 w-10 mb-2 text-green-600" />
-                    <span className="font-semibold text-gray-800">Collaborate & grow</span>
+                    <span className="font-semibold text-gray-800">
+                      Collaborate & grow
+                    </span>
                   </div>
                 </div>
               </div>
-              
+
               {/* Right Image */}
               <div className="relative order-first lg:order-last">
                 <div className="relative">
                   {/* 3D Glow Effect */}
                   <div className="absolute -inset-8 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 rounded-3xl blur-2xl animate-pulse"></div>
                   <div className="absolute -inset-4 bg-gradient-to-r from-purple-400/30 to-blue-400/30 rounded-2xl blur-xl"></div>
-                  
+
                   {/* Main Image */}
                   <div className="relative bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30 shadow-2xl">
                     <img
@@ -807,15 +932,21 @@ export default function HomePage() {
                       className="rounded-xl object-cover w-full h-auto shadow-lg"
                     />
                   </div>
-                  
+
                   {/* Floating Elements */}
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                     <TrendingUp className="h-8 w-8 text-white" />
                   </div>
-                  <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg animate-bounce" style={{animationDelay: '0.5s'}}>
+                  <div
+                    className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg animate-bounce"
+                    style={{ animationDelay: "0.5s" }}
+                  >
                     <Users className="h-6 w-6 text-white" />
                   </div>
-                  <div className="absolute top-1/2 -right-8 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce" style={{animationDelay: '1s'}}>
+                  <div
+                    className="absolute top-1/2 -right-8 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce"
+                    style={{ animationDelay: "1s" }}
+                  >
                     <Zap className="h-5 w-5 text-white" />
                   </div>
                 </div>
@@ -828,7 +959,10 @@ export default function HomePage() {
         <WhyChooseSection />
 
         {/* Success Stories Section */}
-        <section ref={successStoriesRef} className="w-full py-24 bg-gradient-to-b from-purple-50 via-white to-blue-50 relative">
+        <section
+          ref={successStoriesRef}
+          className="w-full py-24 bg-gradient-to-b from-purple-50 via-white to-blue-50 relative"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50"></div>
           <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10">
             <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 mb-4 text-center">
@@ -847,13 +981,18 @@ export default function HomePage() {
                     <div className="relative">
                       <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-lg">
-                          {story.creator.split(' ').map(n => n[0]).join('')}
+                          {story.creator
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </span>
                       </div>
                       <div className="absolute -inset-1 bg-gradient-to-br from-purple-400/20 to-blue-500/20 rounded-full blur-sm"></div>
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-gray-900">{story.creator}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {story.creator}
+                      </h3>
                       <p className="text-sm text-gray-600">{story.niche}</p>
                     </div>
                   </div>
@@ -882,7 +1021,10 @@ export default function HomePage() {
         </section>
 
         {/* Trending Niches Section */}
-        <section ref={trendingRef} className="w-full py-24 bg-gradient-to-b from-blue-50 via-white to-purple-50 relative">
+        <section
+          ref={trendingRef}
+          className="w-full py-24 bg-gradient-to-b from-blue-50 via-white to-purple-50 relative"
+        >
           <div className="absolute inset-0 bg-white/50 backdrop-blur-sm"></div>
           <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10">
             <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 mb-4 text-center">
@@ -896,7 +1038,10 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer ref={footerRef} className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative">
+        <footer
+          ref={footerRef}
+          className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative"
+        >
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
           <div
             className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
@@ -913,19 +1058,32 @@ export default function HomePage() {
               <span className="font-bold text-xl">Inpact</span>
             </div>
             <p className="text-gray-400">
-              Empowering creators to build meaningful partnerships and grow their businesses.
+              Empowering creators to build meaningful partnerships and grow
+              their businesses.
             </p>
             <div className="mt-6 flex justify-center space-x-6 text-sm text-gray-400">
-              <Link to="/dashboard" className="hover:text-white transition-colors">
+              <Link
+                to="/dashboard"
+                className="hover:text-white transition-colors"
+              >
                 Dashboard
               </Link>
-              <Link to="/dashboard/sponsorships" className="hover:text-white transition-colors">
+              <Link
+                to="/dashboard/sponsorships"
+                className="hover:text-white transition-colors"
+              >
                 Opportunities
               </Link>
-              <Link to="/dashboard/analytics" className="hover:text-white transition-colors">
+              <Link
+                to="/dashboard/analytics"
+                className="hover:text-white transition-colors"
+              >
                 Analytics
               </Link>
-              <Link to="/dashboard/messages" className="hover:text-white transition-colors">
+              <Link
+                to="/dashboard/messages"
+                className="hover:text-white transition-colors"
+              >
                 Messages
               </Link>
             </div>
