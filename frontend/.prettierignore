@@ -1,0 +1,26 @@
+# Ignore build output
+.next/
+dist/
+build/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore environment files
+.env*
+
+# Ignore lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore coverage and logs
+coverage/
+*.log
+
+# Ignore public assets
+public/
+
+# Ignore other config files
+.eslint*
+# ...existing code...

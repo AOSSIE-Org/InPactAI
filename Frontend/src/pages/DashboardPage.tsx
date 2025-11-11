@@ -1,237 +1,252 @@
+import React from "react"
 import { Link } from "react-router-dom"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { ModeToggle } from "../components/mode-toggle"
-import { UserNav } from "../components/user-nav"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card"
 import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
 import {
   BarChart3,
   Briefcase,
   DollarSign,
-  FileText,
-  Icon,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
   Rocket,
-  Search,
   Users,
+  RefreshCw,
+  TrendingUp,
+  Sparkles,
+  Heart,
 } from "lucide-react"
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { PerformanceMetrics } from "../components/dashboard/performance-metrics"
 import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
-import CollaborationsPage from "./Collaborations";
+import CreateCampaignDialog from "@/components/Campaign/CreateCampaign"
+import CollaborationsPage from "./Collaborations"
 
 export default function DashboardPage() {
-  const {logout, user} = useAuth();
+  const { user } = useAuth()
+
+  
 
   return (
-    <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)]">
-      <header className="sticky top-0 z-50 w-full border-b border-[hsl(214.3,31.8%,91.4%)] bg-[rgba(255,255,255,0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsla(0,0%,100%,0.6)]">
-        <div className="container flex h-16 items-center">
-          <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
-            <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
-            <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-  {[
-    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
-    { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
-    { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
-    { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-    { to: "/dashboard/messages", icon: MessageSquare, label: "Messages" },
-  ].map(({ to, icon: Icon, label }) => (
-    <Button
-      key={to}
-      variant="ghost"
-      size="sm"
-      className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
-      asChild
-    >
-      <Link to={to}>
-        <Icon className="h-5 w-5" />
-        <span className="sr-only">{label}</span>
-      </Link>
-    </Button>
-  ))}
-</div>
-<div className="ml-auto flex items-center space-x-3">
-  <div className="relative hidden md:flex">
-    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-    <Input
-      type="search"
-      placeholder="Search..."
-      className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
-    />
-  </div>
-  <ModeToggle />
-  <Button onClick={logout} variant="ghost">
-    <LogOut className="h-5 w-5" />  
-  </Button>
-  <UserNav />
-</div>
-</div>
-      </header>
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <div className="flex items-center space-x-2">
-            <Button className="bg-[hsl(262.1,83.3%,57.8%)] text-[hsl(210,40%,98%)] hover:bg-[hsl(262.1,73.3%,57.8%)]">
-              <DollarSign className="mr-2 h-4 w-4" />
-              New Campaign
-            </Button>
+    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Rocket className="h-6 w-6 text-purple-600" />
+            <span className="font-bold text-xl">Inpact</span>
+            <nav className="hidden md:flex items-center space-x-6 ml-6 text-sm text-gray-600">
+              <Link to="/dashboard" className="hover:text-purple-600 flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" /> Dashboard
+              </Link>
+              <Link to="/dashboard/sponsorships" className="hover:text-purple-600 flex items-center gap-2">
+                <Briefcase className="h-4 w-4" /> Sponsorships
+              </Link>
+              <Link to="/dashboard/collaborations" className="hover:text-purple-600 flex items-center gap-2">
+                <Users className="h-4 w-4" /> Collaborations
+              </Link>
+              <Link to="/dashboard/messages" className="hover:text-purple-600 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" /> Messages
+              </Link>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-4">
+           
+            <CreateCampaignDialog>
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg text-sm">
+                <DollarSign className="mr-2 h-4 w-4" /> New Campaign
+              </Button>
+            </CreateCampaignDialog>
           </div>
         </div>
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="bg-[hsl(210,40%,96.1%)]">
-            <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-white data-[state=active]:text-[hsl(222.2,47.4%,11.2%)] data-[state=active]:shadow-sm"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value="sponsorships" 
-              className="data-[state=active]:bg-white data-[state=active]:text-[hsl(222.2,47.4%,11.2%)] data-[state=active]:shadow-sm"
-            >
-              Sponsorships
-            </TabsTrigger>
-            <TabsTrigger 
-              value="collaborations" 
-              className="data-[state=active]:bg-white data-[state=active]:text-[hsl(222.2,47.4%,11.2%)] data-[state=active]:shadow-sm"
-            >
-              Collaborations
-            </TabsTrigger>
-            <TabsTrigger 
-              value="analytics" 
-              className="data-[state=active]:bg-white data-[state=active]:text-[hsl(222.2,47.4%,11.2%)] data-[state=active]:shadow-sm"
-            >
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[hsl(215.4,16.3%,46.9%)]">Total Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[hsl(222.2,84%,4.9%)]">$45,231.89</div>
-                  <p className="text-xs text-[hsl(215.4,16.3%,46.9%)]">+20.1% from last month</p>
-                </CardContent>
+      </header>
+
+      {/* MAIN CONTENT */}
+      <main className="w-full max-w-7xl mx-auto px-6 py-10 space-y-10">
+        {/* HERO SECTION */}
+        <section className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl p-8 shadow-lg">
+          <h1 className="text-3xl font-bold">
+            Welcome back, {user?.name || "Creator"} 👋
+          </h1>
+          <p className="mt-2 text-white/80">
+            Your performance, sponsorships, and collaborations — all in one place.
+          </p>
+        </section>
+
+        {/* PERFORMANCE OVERVIEW */}
+        <section>
+          <Card className="rounded-2xl border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle>Performance Overview</CardTitle>
+              <CardDescription>Monthly snapshot of your brand’s performance.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: "Revenue", icon: DollarSign, value: "$45,200", growth: "+18%" },
+                { title: "Active Campaigns", icon: Briefcase, value: "12", growth: "+2" },
+                { title: "Collaborations", icon: Users, value: "8", growth: "+3" },
+                { title: "Engagement", icon: BarChart3, value: "5.3%", growth: "+1.1%" },
+              ].map((i) => (
+                <div
+                  key={i.title}
+                  className="p-5 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm text-gray-600">{i.title}</h3>
+                    <i.icon className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <p className="text-2xl font-bold mt-3">{i.value}</p>
+                  <p className="text-xs text-green-600 mt-1">{i.growth} this month</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* PERFORMANCE CHARTS */}
+        <section>
+          <Card className="rounded-2xl border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle>Analytics & Trends</CardTitle>
+              <CardDescription>
+                Engagement rate, audience growth, and sponsorship conversions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PerformanceMetrics />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* RECENT ACTIVITY */}
+        <section>
+          <Card className="rounded-2xl border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Your latest sponsorships and collaboration updates.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RecentActivity />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* CREATOR COLLABORATIONS */}
+        <section className="w-full">
+          <Card className="rounded-2xl border-gray-200 shadow-sm w-full">
+            <CardHeader>
+              <CardTitle>Creator Collaborations</CardTitle>
+              <CardDescription>
+                Explore creators with aligned audiences and engagement.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 overflow-hidden">
+              <CollaborationsPage />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* AI-MATCHED SPONSORSHIPS */}
+        <section>
+          <Card className="rounded-2xl border-gray-200 shadow-sm">
+            <CardHeader className="flex justify-between items-center">
+              <div>
+                <CardTitle>AI-Matched Sponsorships</CardTitle>
+                <CardDescription>Smart recommendations for you.</CardDescription>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                <RefreshCw className="mr-1 h-4 w-4" /> Refresh
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <SponsorshipMatches creatorId={user?.id || ""} />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* INSIGHTS & TRENDS */}
+        <section>
+          <Card className="rounded-2xl border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle>Insights & Highlights</CardTitle>
+              <CardDescription>Key trends from your recent activity.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: TrendingUp,
+                  title: "Audience Growth Spike",
+                  desc: "+12% increase due to consistent posting.",
+                },
+                {
+                  icon: Sparkles,
+                  title: "Top Performing Post",
+                  desc: "‘AI in Tech’ gained 7k engagements last week.",
+                },
+                {
+                  icon: Heart,
+                  title: "Most Engaged Audience",
+                  desc: "18–24 age group contributes 42% engagement.",
+                },
+              ].map((x) => (
+                <div
+                  key={x.title}
+                  className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition"
+                >
+                  <x.icon className="h-5 w-5 text-purple-600 mb-2" />
+                  <h3 className="font-semibold">{x.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{x.desc}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* FINAL TABS SECTION */}
+        <section>
+          <Tabs defaultValue="analytics" className="w-full">
+            <TabsList className="bg-gray-100 rounded-lg w-fit mb-5 mx-auto">
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="sponsorships">Sponsorships</TabsTrigger>
+              <TabsTrigger value="collabs">Collaborations</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="analytics">
+              <Card className="rounded-2xl shadow-sm text-center py-10 w-full">
+                <h3 className="text-xl font-semibold">Analytics Overview</h3>
+                <p className="text-gray-500 mt-2">Comprehensive data coming soon.</p>
               </Card>
-              <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[hsl(215.4,16.3%,46.9%)]">Active Sponsorships</CardTitle>
-                  <Briefcase className="h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[hsl(222.2,84%,4.9%)]">12</div>
-                  <p className="text-xs text-[hsl(215.4,16.3%,46.9%)]">+3 from last month</p>
-                </CardContent>
+            </TabsContent>
+
+            <TabsContent value="sponsorships">
+              <Card className="rounded-2xl shadow-sm text-center py-10 w-full">
+                <h3 className="text-xl font-semibold">Sponsorship Insights</h3>
+                <p className="text-gray-500 mt-2">ROI and conversion tracking coming soon.</p>
               </Card>
-              <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[hsl(215.4,16.3%,46.9%)]">Collaborations</CardTitle>
-                  <Users className="h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[hsl(222.2,84%,4.9%)]">8</div>
-                  <p className="text-xs text-[hsl(215.4,16.3%,46.9%)]">+2 from last month</p>
-                </CardContent>
+            </TabsContent>
+
+            <TabsContent value="collabs">
+              <Card className="rounded-2xl shadow-sm text-center py-10 w-full">
+                <h3 className="text-xl font-semibold">Collaboration Analytics</h3>
+                <p className="text-gray-500 mt-2">Synergy graphs and overlap data soon.</p>
               </Card>
-              <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[hsl(215.4,16.3%,46.9%)]">Audience Growth</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-[hsl(222.2,84%,4.9%)]">+12.5%</div>
-                  <p className="text-xs text-[hsl(215.4,16.3%,46.9%)]">+2.1% from last month</p>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4 bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader>
-                  <CardTitle className="text-[hsl(222.2,84%,4.9%)]">Performance Metrics</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <PerformanceMetrics />
-                </CardContent>
-              </Card>
-              <Card className="col-span-3 bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader>
-                  <CardTitle className="text-[hsl(222.2,84%,4.9%)]">Recent Activity</CardTitle>
-                  <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Your latest interactions and updates</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentActivity />
-                </CardContent>
-              </Card>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4 bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader>
-                  <CardTitle className="text-[hsl(222.2,84%,4.9%)]">AI-Matched Sponsorships</CardTitle>
-                  <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Brands that match your audience and content</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SponsorshipMatches creatorId={user?.id || ""} />
-                </CardContent>
-              </Card>
-              <Card className="col-span-3 bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-                <CardHeader>
-                  <CardTitle className="text-[hsl(222.2,84%,4.9%)]">Creator Collaborations</CardTitle>
-                  <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Creators with complementary audiences</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CollaborationsPage />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          <TabsContent value="sponsorships" className="space-y-4">
-        <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-          <CardHeader>
-            <CardTitle className="text-[hsl(222.2,84%,4.9%)]">AI-Driven Sponsorship Matchmaking</CardTitle>
-            <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Discover brands that align with your audience and content style</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-[hsl(214.3,31.8%,91.4%)] bg-[hsl(210,40%,96.1%)] p-4">
-              <h3 className="text-lg font-semibold text-[hsl(222.2,84%,4.9%)]">Coming Soon</h3>
-              <p className="text-sm text-[hsl(215.4,16.3%,46.9%)]">
-                The full sponsorship matchmaking interface will be available here.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      <TabsContent value="collaborations" className="space-y-4">
-        <CollaborationsPage showHeader={false} />
-      </TabsContent>
-      <TabsContent value="analytics" className="space-y-4">
-        <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
-          <CardHeader>
-            <CardTitle className="text-[hsl(222.2,84%,4.9%)]">Performance Analytics & ROI Tracking</CardTitle>
-            <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Track sponsorship performance and campaign success</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-[hsl(214.3,31.8%,91.4%)] bg-[hsl(210,40%,96.1%)] p-4">
-              <h3 className="text-lg font-semibold text-[hsl(222.2,84%,4.9%)]">Coming Soon</h3>
-              <p className="text-sm text-[hsl(215.4,16.3%,46.9%)]">
-                The full analytics dashboard will be available here.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      </Tabs>
-    </main>
-  </div>
-    )
-  }
+            </TabsContent>
+          </Tabs>
+        </section>
+      </main>
+    </div>
+  )
+}
