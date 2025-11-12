@@ -36,7 +36,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setError(null);
-
+      console.log(data)
       // Step 1: Sign in with Supabase Auth
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 {...register("email")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500 text-gray-800"
                 placeholder="you@example.com"
                 disabled={isLoading}
                 autoComplete="email"
@@ -152,7 +152,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500 text-gray-800"
                   placeholder="••••••••"
                   disabled={isLoading}
                   autoComplete="current-password"

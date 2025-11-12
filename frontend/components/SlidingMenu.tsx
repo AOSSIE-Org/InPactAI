@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { X, Menu, Plus, Users } from "lucide-react";
 
 export type Role = "creator" | "brand";
 
@@ -12,151 +13,97 @@ export default function SlidingMenu({ role }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // Close on ESC
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Click outside to close
   useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (!open) return;
-      if (!panelRef.current) return;
+    const onClick = (e: MouseEvent) => {
+      if (!open || !panelRef.current) return;
       if (!panelRef.current.contains(e.target as Node)) setOpen(false);
-    }
+    };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  // Strict role comparison for reliable routing
   const normalizedRole = String(role).trim().toLowerCase();
   const basePath = normalizedRole === "brand" ? "/brand" : "/creator";
   const createCampaignPath = `${basePath}/createcampaign`;
 
   return (
     <>
-      {/* Hamburger Button */}
       <button
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        className="fixed top-4 left-4 z-50 inline-flex transform items-center justify-center rounded-md border bg-white/90 p-2 shadow-sm transition hover:scale-105 dark:bg-slate-900/90"
         onClick={() => setOpen((s) => !s)}
+        className="fixed top-4 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 backdrop-blur-sm shadow-md ring-1 ring-gray-200 transition-all duration-100 hover:scale-105 hover:shadow-lg active:scale-95"
       >
-        {/* simple hamburger icon */}
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-          />
-        </svg>
+        {open ? (
+          <X className="h-5 w-5 text-gray-700" />
+        ) : (
+          <Menu className="h-5 w-5 text-gray-700" />
+        )}
       </button>
 
-      {/* Backdrop */}
       <div
-        aria-hidden={!open}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
         onClick={() => setOpen(false)}
+        className={`fixed inset-0 z-40 bg-gray-800/40 backdrop-blur-sm transition-opacity duration-150 ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
       />
 
-      {/* Sliding panel */}
       <aside
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation"
-        className={`fixed top-0 left-0 z-50 flex h-full w-80 transform flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out sm:w-64 dark:bg-slate-900 ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col bg-white/95 backdrop-blur-md shadow-2xl ring-1 ring-gray-100 transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <div className="flex items-center justify-between border-b p-4 dark:border-slate-800">
-          <h3 className="text-lg font-semibold">Menu</h3>
+        <div className="flex items-center justify-between border-b border-gray-100 p-4">
+          <h3 className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-lg font-semibold text-transparent tracking-tight">
+            Menu
+          </h3>
           <button
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="rounded p-1 hover:bg-slate-100"
+            className="rounded-md p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ul className="space-y-1 text-gray-700">
             {normalizedRole === "creator" && (
               <li>
                 <Link
                   href="/creator/collaborations"
-                  className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:text-purple-700"
                 >
-                  <svg
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
+                  <Users className="h-5 w-5 text-purple-500" />
                   <span>Collaborations</span>
                 </Link>
               </li>
             )}
+
             <li>
               <Link
                 href={createCampaignPath}
-                className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:text-blue-700"
               >
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <Plus className="h-5 w-5 text-blue-500" />
                 <span>Create Campaign</span>
               </Link>
             </li>
-            {/* future actions listed here */}
           </ul>
         </nav>
 
-        <div className="mt-auto p-4 text-sm text-slate-500">
-          <p>
-            Logged in as{" "}
-            <strong className="text-slate-700 dark:text-slate-200">
-              {role}
-            </strong>
-          </p>
+        <div className="border-t border-gray-100 p-4 text-sm text-gray-500">
+          Logged in as{" "}
+          <strong className="text-gray-800 capitalize">{role}</strong>
         </div>
       </aside>
     </>

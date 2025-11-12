@@ -35,21 +35,23 @@ export default function CreatorHomePage() {
 
   return (
     <AuthGuard requiredRole="Creator">
-      <div className="min-h-screen bg-linear-to-br from-purple-50 via-white to-blue-50">
-        <SlidingMenu role="creator" />
-        {/* Header */}
-        <header className="border-b border-gray-200 bg-white">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <SlidingMenu role="creator" />
+        <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md shadow-sm">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-purple-600" />
-              <h1 className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-2xl font-bold text-transparent">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 shadow-sm">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl">
                 InPactAI
               </h1>
             </div>
+
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-transparent bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] disabled:opacity-60"
             >
               {isLoggingOut ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -66,7 +68,7 @@ export default function CreatorHomePage() {
           <div className="text-center">
             {/* Welcome Message */}
             <div className="mb-8">
-              <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-blue-500">
+              <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg">
                 <Sparkles className="h-10 w-10 text-white" />
               </div>
               <h2 className="mb-2 text-4xl font-bold text-gray-900">
@@ -79,7 +81,7 @@ export default function CreatorHomePage() {
             </div>
 
             {/* Info Card */}
-            <div className="mx-auto max-w-2xl rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
+            <div className="mx-auto max-w-2xl rounded-2xl border border-gray-100 bg-white/90 backdrop-blur-md p-8 shadow-xl">
               <div className="space-y-4">
                 <div className="flex items-start gap-3 text-left">
                   <div className="mt-2 h-2 w-2 rounded-full bg-purple-600"></div>
@@ -122,7 +124,7 @@ export default function CreatorHomePage() {
               </div>
 
               <div className="mt-8 border-t border-gray-200 pt-8">
-                <button className="rounded-lg bg-linear-to-r from-purple-600 to-blue-600 px-8 py-3 font-medium text-white transition-all hover:from-purple-700 hover:to-blue-700">
+                <button className="rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-3 font-medium text-white shadow-sm transition-all hover:from-purple-700 hover:to-blue-700 active:scale-[0.98]">
                   Complete Your Profile
                 </button>
               </div>
