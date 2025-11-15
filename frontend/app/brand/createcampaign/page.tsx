@@ -2,11 +2,39 @@
 
 import AuthGuard from "@/components/auth/AuthGuard";
 import SlidingMenu from "@/components/SlidingMenu";
-import { Eye, PlusCircle, Sparkles } from "lucide-react";
+import { getBrandDashboardStats } from "@/lib/api/analytics";
+import { Eye, Loader2, PlusCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function BrandCreateCampaign() {
   const router = useRouter();
+  const [stats, setStats] = useState({
+    totalCampaigns: 0,
+    activeCampaigns: 0,
+    applications: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const dashboardStats = await getBrandDashboardStats();
+      setStats({
+        totalCampaigns: dashboardStats.overview.total_campaigns,
+        activeCampaigns: dashboardStats.overview.active_campaigns,
+        applications: dashboardStats.overview.total_proposals,
+      });
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   return (
     <AuthGuard requiredRole="Brand">
@@ -117,7 +145,15 @@ export default function BrandCreateCampaign() {
                 <p className="text-sm font-medium text-gray-600">
                   Total Campaigns
                 </p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">-</p>
+                {statsLoading ? (
+                  <div className="mt-2 flex justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.totalCampaigns}
+                  </p>
+                )}
               </div>
             </div>
             <div className="rounded-xl bg-white p-6 shadow-md">
@@ -125,7 +161,15 @@ export default function BrandCreateCampaign() {
                 <p className="text-sm font-medium text-gray-600">
                   Active Campaigns
                 </p>
-                <p className="mt-2 text-3xl font-bold text-green-600">-</p>
+                {statsLoading ? (
+                  <div className="mt-2 flex justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-3xl font-bold text-green-600">
+                    {stats.activeCampaigns}
+                  </p>
+                )}
               </div>
             </div>
             <div className="rounded-xl bg-white p-6 shadow-md">
@@ -133,7 +177,15 @@ export default function BrandCreateCampaign() {
                 <p className="text-sm font-medium text-gray-600">
                   Applications
                 </p>
-                <p className="mt-2 text-3xl font-bold text-blue-600">-</p>
+                {statsLoading ? (
+                  <div className="mt-2 flex justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="mt-2 text-3xl font-bold text-blue-600">
+                    {stats.applications}
+                  </p>
+                )}
               </div>
             </div>
           </div>

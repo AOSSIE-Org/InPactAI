@@ -35,7 +35,10 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Allow error to be string or array of error objects
+  const [error, setError] = useState<
+    string | { msg?: string; detail?: string }[] | null
+  >(null);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -84,13 +87,18 @@ export default function SignupPage() {
           name: data.name,
           email: data.email,
           password: data.password,
-          role: data.accountType === "Creator" ? "creator" : "brand",
+          role: data.accountType, // Send as 'Creator' or 'Brand' (case-sensitive)
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData?.detail || "Signup failed. Please try again.");
+        // If errorData is an array (Pydantic validation error), set as array, else as string
+        if (Array.isArray(errorData)) {
+          setError(errorData);
+        } else {
+          setError(errorData?.detail || "Signup failed. Please try again.");
+        }
         setIsLoading(false);
         return;
       }
@@ -139,7 +147,13 @@ export default function SignupPage() {
         {error && (
           <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
             <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
-            <p className="text-sm text-red-800">{error}</p>
+            <div className="text-sm text-red-800">
+              {Array.isArray(error)
+                ? error.map((e, i) => (
+                    <div key={i}>{e.msg || e.detail || JSON.stringify(e)}</div>
+                  ))
+                : error}
+            </div>
           </div>
         )}
 

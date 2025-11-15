@@ -2,6 +2,7 @@
 
 import AuthGuard from "@/components/auth/AuthGuard";
 import SlidingMenu from "@/components/SlidingMenu";
+import { getBrandDashboardStats } from "@/lib/api/analytics";
 import { createCampaign } from "@/lib/campaignApi";
 import {
   AGE_GROUP_OPTIONS,
@@ -16,7 +17,7 @@ import {
 } from "@/types/campaign";
 import { ArrowLeft, Eye, Plus, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CreateCampaignPage() {
   const router = useRouter();
@@ -46,6 +47,14 @@ export default function CreateCampaignPage() {
     guidance: "",
     required: true,
   });
+
+  // Stats state
+  const [stats, setStats] = useState({
+    totalCampaigns: 0,
+    activeCampaigns: 0,
+    applications: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const updateField = (field: keyof CampaignFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -156,11 +165,34 @@ export default function CreateCampaignPage() {
         ends_at: formData.ends_at || undefined,
       };
       await createCampaign(submitData);
+      // Refresh stats before navigating
+      await loadStats();
       router.push("/brand/campaigns");
     } catch (err: any) {
       setError(err.message || "Failed to create campaign");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load stats on mount
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const dashboardStats = await getBrandDashboardStats();
+      setStats({
+        totalCampaigns: dashboardStats.overview.total_campaigns,
+        activeCampaigns: dashboardStats.overview.active_campaigns,
+        applications: dashboardStats.overview.total_proposals,
+      });
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    } finally {
+      setStatsLoading(false);
     }
   };
 

@@ -2,10 +2,10 @@
 
 import AuthGuard from "@/components/auth/AuthGuard";
 import SlidingMenu from "@/components/SlidingMenu";
-import { generateCollaborationIdeas, recommendCreatorForIdea, type CollaborationIdea, type RecommendCreatorResponse } from "@/lib/api/collaborations";
+import { generateCollaborationIdeas, recommendCreatorForIdea, proposeCollaboration, type CollaborationIdea, type RecommendCreatorResponse } from "@/lib/api/collaborations";
 import { getCreatorDetails, getCreatorRecommendations, listCreators, type CreatorBasic, type CreatorFull, type CreatorRecommendation } from "@/lib/api/creators";
 import { getUserProfile } from "@/lib/auth-helpers";
-import { ChevronDown, ChevronUp, ExternalLink, Facebook, Globe, Instagram, Lightbulb, Linkedin, Search, Sparkles, Twitch, Twitter, Users, X, Youtube } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Facebook, Globe, Instagram, Lightbulb, Linkedin, Search, Sparkles, Twitch, Twitter, Users, X, Youtube, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -27,6 +27,17 @@ export default function CollaborationsPage() {
   const [collabIdeaInput, setCollabIdeaInput] = useState("");
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
   const [ideaRecommendation, setIdeaRecommendation] = useState<RecommendCreatorResponse | null>(null);
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<CollaborationIdea | null>(null);
+  const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
+  const [proposalData, setProposalData] = useState({
+    title: "",
+    description: "",
+    proposal_message: "",
+    start_date: "",
+    end_date: "",
+  });
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
 
   useEffect(() => {
     loadCreators();
@@ -178,6 +189,55 @@ export default function CollaborationsPage() {
       setError(err?.message || "Failed to get recommendation. Please try again.");
     } finally {
       setIsLoadingRecommendation(false);
+    }
+  };
+
+  const handleProposeCollaboration = (idea: CollaborationIdea, creatorId: string) => {
+    setSelectedIdea(idea);
+    setSelectedCreatorId(creatorId);
+    setProposalData({
+      title: idea.title,
+      description: idea.description,
+      proposal_message: `Hi! I'd love to collaborate on "${idea.title}". ${idea.description}`,
+      start_date: "",
+      end_date: "",
+    });
+    setShowProposalModal(true);
+  };
+
+  const handleSubmitProposal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCreatorId || !selectedIdea) return;
+
+    setIsSubmittingProposal(true);
+    setError(null);
+
+    try {
+      await proposeCollaboration({
+        target_creator_id: selectedCreatorId,
+        collaboration_type: selectedIdea.collaboration_type,
+        title: proposalData.title,
+        description: proposalData.description,
+        proposal_message: proposalData.proposal_message,
+        start_date: proposalData.start_date || undefined,
+        end_date: proposalData.end_date || undefined,
+      });
+      setShowProposalModal(false);
+      setSelectedIdea(null);
+      setSelectedCreatorId(null);
+      setProposalData({
+        title: "",
+        description: "",
+        proposal_message: "",
+        start_date: "",
+        end_date: "",
+      });
+      alert("Collaboration proposal sent successfully!");
+    } catch (err: any) {
+      console.error("Failed to propose collaboration:", err);
+      setError(err?.message || "Failed to send proposal. Please try again.");
+    } finally {
+      setIsSubmittingProposal(false);
     }
   };
 
@@ -581,14 +641,23 @@ export default function CollaborationsPage() {
                               <p className="mt-2 text-xs text-gray-500 italic">
                                 {collaborationIdeas[0].why_it_works}
                               </p>
-                              {collaborationIdeas.length > 1 && (
+                              <div className="mt-4 flex gap-2">
                                 <button
-                                  onClick={() => setShowIdeasPopup(true)}
-                                  className="mt-4 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                  onClick={() => handleProposeCollaboration(collaborationIdeas[0], expandedDetails.id)}
+                                  className="flex-1 flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
                                 >
-                                  Show More Ideas ({collaborationIdeas.length - 1} more)
+                                  <Send className="h-4 w-4" />
+                                  Propose Collaboration
                                 </button>
-                              )}
+                                {collaborationIdeas.length > 1 && (
+                                  <button
+                                    onClick={() => setShowIdeasPopup(true)}
+                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                  >
+                                    More Ideas ({collaborationIdeas.length - 1})
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -868,14 +937,23 @@ export default function CollaborationsPage() {
                                   <p className="mt-2 text-xs text-gray-500 italic">
                                     {collaborationIdeas[0].why_it_works}
                                   </p>
-                                  {collaborationIdeas.length > 1 && (
+                                  <div className="mt-4 flex gap-2">
                                     <button
-                                      onClick={() => setShowIdeasPopup(true)}
-                                      className="mt-4 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                      onClick={() => handleProposeCollaboration(collaborationIdeas[0], expandedDetails.id)}
+                                      className="flex-1 flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
                                     >
-                                      Show More Ideas ({collaborationIdeas.length - 1} more)
+                                      <Send className="h-4 w-4" />
+                                      Propose Collaboration
                                     </button>
-                                  )}
+                                    {collaborationIdeas.length > 1 && (
+                                      <button
+                                        onClick={() => setShowIdeasPopup(true)}
+                                        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                      >
+                                        More Ideas ({collaborationIdeas.length - 1})
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -935,6 +1013,19 @@ export default function CollaborationsPage() {
                         <p className="text-xs font-medium text-blue-900">Why it works:</p>
                         <p className="mt-1 text-xs text-blue-800">{idea.why_it_works}</p>
                       </div>
+                      <button
+                        onClick={() => {
+                          const creatorId = expandedCreator || recommended.find(r => r.id === expandedCreator)?.id;
+                          if (creatorId) {
+                            handleProposeCollaboration(idea, creatorId);
+                            setShowIdeasPopup(false);
+                          }
+                        }}
+                        className="mt-4 w-full flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
+                      >
+                        <Send className="h-4 w-4" />
+                        Propose This Collaboration
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -950,6 +1041,101 @@ export default function CollaborationsPage() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Proposal Modal */}
+        {showProposalModal && selectedIdea && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
+              {/* Header */}
+              <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+                <div className="flex items-center gap-2">
+                  <Send className="h-5 w-5 text-purple-600" />
+                  <h2 className="text-xl font-bold text-gray-900">Propose Collaboration</h2>
+                </div>
+                <button
+                  onClick={() => setShowProposalModal(false)}
+                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmitProposal} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={proposalData.title}
+                    onChange={(e) => setProposalData({ ...proposalData, title: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={proposalData.description}
+                    onChange={(e) => setProposalData({ ...proposalData, description: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message to Creator *</label>
+                  <textarea
+                    value={proposalData.proposal_message}
+                    onChange={(e) => setProposalData({ ...proposalData, proposal_message: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    rows={4}
+                    required
+                    placeholder="Introduce yourself and explain why you'd like to collaborate..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date (Optional)</label>
+                    <input
+                      type="date"
+                      value={proposalData.start_date}
+                      onChange={(e) => setProposalData({ ...proposalData, start_date: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date (Optional)</label>
+                    <input
+                      type="date"
+                      value={proposalData.end_date}
+                      onChange={(e) => setProposalData({ ...proposalData, end_date: e.target.value })}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingProposal}
+                    className="flex-1 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmittingProposal ? "Sending..." : "Send Proposal"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowProposalModal(false)}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
