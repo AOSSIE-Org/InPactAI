@@ -24,70 +24,101 @@ async function getUserId(): Promise<string> {
 export async function fetchCampaigns(
   filters?: CampaignFilters
 ): Promise<Campaign[]> {
-  const userId = await getUserId();
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
 
   const params = new URLSearchParams({ user_id: userId });
-
-  if (filters?.status) {
-    params.append("status", filters.status);
-  }
-  if (filters?.search) {
-    params.append("search", filters.search);
-  }
-  if (filters?.platform) {
-    params.append("platform", filters.platform);
-  }
-  if (filters?.budget_min !== undefined) {
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.platform) params.append("platform", filters.platform);
+  if (filters?.budget_min !== undefined)
     params.append("budget_min", String(filters.budget_min));
-  }
-  if (filters?.budget_max !== undefined) {
+  if (filters?.budget_max !== undefined)
     params.append("budget_max", String(filters.budget_max));
-  }
-  if (filters?.starts_after) {
+  if (filters?.starts_after)
     params.append("starts_after", filters.starts_after);
-  }
-  if (filters?.ends_before) {
-    params.append("ends_before", filters.ends_before);
-  }
+  if (filters?.ends_before) params.append("ends_before", filters.ends_before);
 
   const response = await fetch(`${API_URL}/campaigns?${params.toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
   });
-
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to fetch campaigns");
   }
-
   return response.json();
+}
+
+/**
+ * Fetch campaigns for the current creator (through contracts/deals)
+ */
+export async function fetchCreatorCampaigns(): Promise<Campaign[]> {
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+
+  const response = await fetch(`${API_URL}/analytics/creator/campaigns`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Failed to fetch campaigns");
+  }
+  const result = await response.json();
+  return result.campaigns || [];
 }
 
 /**
  * Fetch a single campaign by ID
  */
 export async function fetchCampaignById(campaignId: string): Promise<Campaign> {
-  const userId = await getUserId();
-
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
   const params = new URLSearchParams({ user_id: userId });
-
   const response = await fetch(
     `${API_URL}/campaigns/${campaignId}?${params.toString()}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
     }
   );
-
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to fetch campaign");
   }
-
   return response.json();
 }
 
@@ -97,7 +128,16 @@ export async function fetchCampaignById(campaignId: string): Promise<Campaign> {
 export async function createCampaign(
   formData: CampaignPayload
 ): Promise<Campaign> {
-  const userId = await getUserId();
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
   const params = new URLSearchParams({ user_id: userId });
   // Normalize budget fields to handle zero and cleared values
   let budget_min: number | undefined = undefined;
@@ -123,6 +163,7 @@ export async function createCampaign(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -140,7 +181,16 @@ export async function updateCampaign(
   campaignId: string,
   formData: Partial<CampaignPayload>
 ): Promise<Campaign> {
-  const userId = await getUserId();
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
   const params = new URLSearchParams({ user_id: userId });
   // Normalize budget fields to handle zero and cleared values
   const payload: Partial<CampaignPayload> = { ...formData };
@@ -170,6 +220,7 @@ export async function updateCampaign(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: JSON.stringify(payload),
     }
@@ -185,24 +236,65 @@ export async function updateCampaign(
  * Delete a campaign
  */
 export async function deleteCampaign(campaignId: string): Promise<void> {
-  const userId = await getUserId();
-
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
   const params = new URLSearchParams({ user_id: userId });
-
   const response = await fetch(
     `${API_URL}/campaigns/${campaignId}?${params.toString()}`,
     {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
     }
   );
-
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "Failed to delete campaign");
   }
+}
+
+/**
+ * Fetch deliverables for a campaign
+ */
+export async function fetchCampaignDeliverables(
+  campaignId: string
+): Promise<{ deliverables: any[] }> {
+  const { supabase } = await import("@/lib/supabaseClient");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+  const userId = user.id;
+  const params = new URLSearchParams({ user_id: userId });
+  const response = await fetch(
+    `${API_URL}/campaigns/${campaignId}/deliverables?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Failed to fetch deliverables");
+  }
+  return response.json();
 }
 
 /**
