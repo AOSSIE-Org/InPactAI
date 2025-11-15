@@ -40,7 +40,7 @@ async def signup_user(payload: SignupRequest):
             create_res = supabase_admin.auth.admin.create_user({
                 "email": payload.email,
                 "password": payload.password,
-                # Don't auto-confirm for production (requires email verification)
+                # TEMP: Auto-confirm email for development/testing
                 "email_confirm": False
             })
         except AuthApiError as e:
@@ -95,7 +95,7 @@ async def signup_user(payload: SignupRequest):
             ) from insert_exc
 
         return SignupResponse(
-            message="Signup successful! Please check your inbox to verify your email.",
+            message="Signup successful! Check your email for verification link.",
             user_id=user_id
         )
     except HTTPException:

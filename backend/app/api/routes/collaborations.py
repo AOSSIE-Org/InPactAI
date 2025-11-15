@@ -628,3 +628,804 @@ Return ONLY the JSON object, no additional text or markdown formatting."""
             detail=f"Error recommending creator: {str(e)}"
         ) from e
 
+
+# ========== Collaboration Proposal & Management ==========
+
+class ProposeCollaborationRequest(BaseModel):
+    """Request model for proposing a collaboration."""
+    target_creator_id: str
+    collaboration_type: str
+    title: str
+    description: Optional[str] = None
+    proposal_message: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    planned_deliverables: Optional[dict] = None
+
+
+@router.post("/collaborations/propose", response_model=CollaborationResponse)
+async def propose_collaboration(
+    request: ProposeCollaborationRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Propose a collaboration to another creator.
+    """
+    supabase = supabase_anon
+    current_creator_id = creator['id']
+    target_creator_id = request.target_creator_id
+
+    # Prevent self-collaboration
+    if current_creator_id == target_creator_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot propose collaboration to yourself"
+        )
+
+    try:
+        # Verify target creator exists
+        target_response = supabase.table("creators") \
+            .select("id") \
+            .eq("id", target_creator_id) \
+            .eq("is_active", True) \
+            .single() \
+            .execute()
+
+        if not target_response.data:
+            raise HTTPException(status_code=404, detail="Target creator not found")
+
+        # Determine creator1 and creator2 (always use lower UUID first for consistency)
+        creator_ids = sorted([current_creator_id, target_creator_id])
+        creator1_id = creator_ids[0]
+        creator2_id = creator_ids[1]
+
+        # Check if collaboration already exists
+        existing = supabase.table("creator_collaborations") \
+            .select("id") \
+            .eq("creator1_id", creator1_id) \
+            .eq("creator2_id", creator2_id) \
+            .eq("title", request.title) \
+            .execute()
+
+        if existing.data:
+            raise HTTPException(
+                status_code=400,
+                detail="A collaboration with this title already exists between you and this creator"
+            )
+
+        # Create collaboration
+        collaboration_data = {
+            "creator1_id": creator1_id,
+            "creator2_id": creator2_id,
+            "collaboration_type": request.collaboration_type,
+            "title": request.title,
+            "description": request.description,
+            "status": "proposed",
+            "initiator_id": current_creator_id,
+            "proposal_message": request.proposal_message,
+            "start_date": request.start_date.isoformat() if request.start_date else None,
+            "end_date": request.end_date.isoformat() if request.end_date else None,
+            "planned_deliverables": request.planned_deliverables or {}
+        }
+
+        response = supabase.table("creator_collaborations") \
+            .insert(collaboration_data) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to create collaboration proposal")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error proposing collaboration: {str(e)}"
+        ) from e
+
+
+class AcceptDeclineRequest(BaseModel):
+    """Request model for accepting or declining a collaboration."""
+    response_message: Optional[str] = None
+
+
+@router.post("/collaborations/{collaboration_id}/accept", response_model=CollaborationResponse)
+async def accept_collaboration(
+    collaboration_id: str,
+    request: AcceptDeclineRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Accept a collaboration proposal.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Fetch collaboration
+        collab_response = supabase.table("creator_collaborations") \
+            .select("*") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        # Verify creator is the recipient (not the initiator)
+        if collaboration.get("initiator_id") == creator_id:
+            raise HTTPException(
+                status_code=400,
+                detail="You cannot accept your own proposal"
+            )
+
+        # Verify creator is involved
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You don't have access to this collaboration"
+            )
+
+        # Verify status is 'proposed'
+        if collaboration.get("status") != "proposed":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot accept collaboration with status: {collaboration.get('status')}"
+            )
+
+        # Update collaboration
+        update_data = {
+            "status": "accepted",
+            "accepted_at": datetime.now().isoformat(),
+            "response_message": request.response_message
+        }
+
+        response = supabase.table("creator_collaborations") \
+            .update(update_data) \
+            .eq("id", collaboration_id) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to accept collaboration")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error accepting collaboration: {str(e)}"
+        ) from e
+
+
+@router.post("/collaborations/{collaboration_id}/decline", response_model=CollaborationResponse)
+async def decline_collaboration(
+    collaboration_id: str,
+    request: AcceptDeclineRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Decline a collaboration proposal.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Fetch collaboration
+        collab_response = supabase.table("creator_collaborations") \
+            .select("*") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        # Verify creator is the recipient (not the initiator)
+        if collaboration.get("initiator_id") == creator_id:
+            raise HTTPException(
+                status_code=400,
+                detail="You cannot decline your own proposal"
+            )
+
+        # Verify creator is involved
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You don't have access to this collaboration"
+            )
+
+        # Verify status is 'proposed'
+        if collaboration.get("status") != "proposed":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot decline collaboration with status: {collaboration.get('status')}"
+            )
+
+        # Update collaboration
+        update_data = {
+            "status": "declined",
+            "response_message": request.response_message
+        }
+
+        response = supabase.table("creator_collaborations") \
+            .update(update_data) \
+            .eq("id", collaboration_id) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to decline collaboration")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error declining collaboration: {str(e)}"
+        ) from e
+
+
+# ========== Collaboration Workspace ==========
+
+class CollaborationWorkspaceResponse(BaseModel):
+    """Response model for collaboration workspace."""
+    collaboration: CollaborationResponse
+    deliverables: List[dict]
+    messages: List[dict]
+    assets: List[dict]
+    feedback: List[dict]
+    other_creator: dict
+
+
+@router.get("/collaborations/{collaboration_id}/workspace", response_model=CollaborationWorkspaceResponse)
+async def get_collaboration_workspace(
+    collaboration_id: str,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Get full collaboration workspace including deliverables, messages, and assets.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Fetch collaboration
+        collab_response = supabase.table("creator_collaborations") \
+            .select("*") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        # Verify creator is involved
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You don't have access to this collaboration"
+            )
+
+        # Get other creator info
+        other_creator_id = collaboration.get("creator2_id") if collaboration.get("creator1_id") == creator_id else collaboration.get("creator1_id")
+        other_creator_response = supabase.table("creators") \
+            .select("id, display_name, profile_picture_url, primary_niche") \
+            .eq("id", other_creator_id) \
+            .single() \
+            .execute()
+
+        other_creator = other_creator_response.data if other_creator_response.data else {}
+
+        # Get deliverables
+        deliverables_response = supabase.table("collaboration_deliverables") \
+            .select("*") \
+            .eq("collaboration_id", collaboration_id) \
+            .order("created_at", desc=False) \
+            .execute()
+
+        deliverables = deliverables_response.data or []
+
+        # Get messages
+        messages_response = supabase.table("collaboration_messages") \
+            .select("*") \
+            .eq("collaboration_id", collaboration_id) \
+            .order("created_at", desc=False) \
+            .execute()
+
+        messages = messages_response.data or []
+
+        # Get assets
+        assets_response = supabase.table("collaboration_assets") \
+            .select("*") \
+            .eq("collaboration_id", collaboration_id) \
+            .order("created_at", desc=True) \
+            .execute()
+
+        assets = assets_response.data or []
+
+        # Get feedback
+        feedback_response = supabase.table("collaboration_feedback") \
+            .select("*") \
+            .eq("collaboration_id", collaboration_id) \
+            .execute()
+
+        feedback = feedback_response.data or []
+
+        return CollaborationWorkspaceResponse(
+            collaboration=collaboration,
+            deliverables=deliverables,
+            messages=messages,
+            assets=assets,
+            feedback=feedback,
+            other_creator=other_creator
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching workspace: {str(e)}"
+        ) from e
+
+
+# ========== Deliverables Management ==========
+
+class CreateDeliverableRequest(BaseModel):
+    """Request model for creating a deliverable."""
+    description: str
+    due_date: Optional[date] = None
+
+
+@router.post("/collaborations/{collaboration_id}/deliverables", response_model=dict)
+async def create_deliverable(
+    collaboration_id: str,
+    request: CreateDeliverableRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Create a new deliverable for a collaboration.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Verify collaboration access
+        collab_response = supabase.table("creator_collaborations") \
+            .select("creator1_id, creator2_id, status") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        if collaboration.get("status") not in ["accepted", "planning", "active"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Can only add deliverables to accepted, planning, or active collaborations"
+            )
+
+        # Create deliverable
+        deliverable_data = {
+            "collaboration_id": collaboration_id,
+            "description": request.description,
+            "due_date": request.due_date.isoformat() if request.due_date else None,
+            "status": "pending"
+        }
+
+        response = supabase.table("collaboration_deliverables") \
+            .insert(deliverable_data) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to create deliverable")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating deliverable: {str(e)}"
+        ) from e
+
+
+class UpdateDeliverableRequest(BaseModel):
+    """Request model for updating a deliverable."""
+    description: Optional[str] = None
+    due_date: Optional[date] = None
+    status: Optional[str] = None
+    submission_url: Optional[str] = None
+
+
+@router.patch("/collaborations/{collaboration_id}/deliverables/{deliverable_id}", response_model=dict)
+async def update_deliverable(
+    collaboration_id: str,
+    deliverable_id: str,
+    request: UpdateDeliverableRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Update a deliverable.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Verify collaboration access
+        collab_response = supabase.table("creator_collaborations") \
+            .select("creator1_id, creator2_id") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        # Verify deliverable exists and belongs to collaboration
+        deliverable_response = supabase.table("collaboration_deliverables") \
+            .select("*") \
+            .eq("id", deliverable_id) \
+            .eq("collaboration_id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not deliverable_response.data:
+            raise HTTPException(status_code=404, detail="Deliverable not found")
+
+        # Build update data
+        update_data = {}
+        if request.description is not None:
+            update_data["description"] = request.description
+        if request.due_date is not None:
+            update_data["due_date"] = request.due_date.isoformat()
+        if request.status is not None:
+            update_data["status"] = request.status
+        if request.submission_url is not None:
+            update_data["submission_url"] = request.submission_url
+
+        response = supabase.table("collaboration_deliverables") \
+            .update(update_data) \
+            .eq("id", deliverable_id) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to update deliverable")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating deliverable: {str(e)}"
+        ) from e
+
+
+# ========== Messages ==========
+
+class SendMessageRequest(BaseModel):
+    """Request model for sending a message."""
+    message: str
+
+
+@router.post("/collaborations/{collaboration_id}/messages", response_model=dict)
+async def send_message(
+    collaboration_id: str,
+    request: SendMessageRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Send a message in a collaboration.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Verify collaboration access
+        collab_response = supabase.table("creator_collaborations") \
+            .select("creator1_id, creator2_id, status") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        if collaboration.get("status") in ["declined", "cancelled"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot send messages to declined or cancelled collaborations"
+            )
+
+        # Create message
+        message_data = {
+            "collaboration_id": collaboration_id,
+            "sender_id": creator_id,
+            "message": request.message
+        }
+
+        response = supabase.table("collaboration_messages") \
+            .insert(message_data) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to send message")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error sending message: {str(e)}"
+        ) from e
+
+
+# ========== Assets ==========
+
+class UploadAssetRequest(BaseModel):
+    """Request model for uploading an asset."""
+    url: str
+    type: Optional[str] = None
+
+
+@router.post("/collaborations/{collaboration_id}/assets", response_model=dict)
+async def upload_asset(
+    collaboration_id: str,
+    request: UploadAssetRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Upload/share an asset (file URL) in a collaboration.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Verify collaboration access
+        collab_response = supabase.table("creator_collaborations") \
+            .select("creator1_id, creator2_id, status") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        if collaboration.get("status") in ["declined", "cancelled"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot upload assets to declined or cancelled collaborations"
+            )
+
+        # Create asset
+        asset_data = {
+            "collaboration_id": collaboration_id,
+            "uploaded_by": creator_id,
+            "url": request.url,
+            "type": request.type
+        }
+
+        response = supabase.table("collaboration_assets") \
+            .insert(asset_data) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to upload asset")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading asset: {str(e)}"
+        ) from e
+
+
+# ========== Completion & Feedback ==========
+
+class CompleteCollaborationRequest(BaseModel):
+    """Request model for completing a collaboration."""
+    pass  # No additional fields needed
+
+
+@router.post("/collaborations/{collaboration_id}/complete", response_model=CollaborationResponse)
+async def complete_collaboration(
+    collaboration_id: str,
+    request: CompleteCollaborationRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Mark a collaboration as complete. Both creators must mark it complete.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Fetch collaboration
+        collab_response = supabase.table("creator_collaborations") \
+            .select("*") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        # Verify creator is involved
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        # Verify status allows completion
+        if collaboration.get("status") not in ["accepted", "planning", "active"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot complete collaboration with status: {collaboration.get('status')}"
+            )
+
+        # Check if all deliverables are completed
+        deliverables_response = supabase.table("collaboration_deliverables") \
+            .select("id, status") \
+            .eq("collaboration_id", collaboration_id) \
+            .execute()
+
+        deliverables = deliverables_response.data or []
+        if deliverables:
+            incomplete = [d for d in deliverables if d.get("status") != "completed"]
+            if incomplete:
+                raise HTTPException(
+                    status_code=400,
+                    detail="All deliverables must be completed before marking collaboration as complete"
+                )
+
+        # Update collaboration status
+        update_data = {
+            "status": "completed",
+            "completed_at": datetime.now().isoformat()
+        }
+
+        response = supabase.table("creator_collaborations") \
+            .update(update_data) \
+            .eq("id", collaboration_id) \
+            .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to complete collaboration")
+
+        return response.data[0]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error completing collaboration: {str(e)}"
+        ) from e
+
+
+class SubmitFeedbackRequest(BaseModel):
+    """Request model for submitting feedback."""
+    rating: int = Field(..., ge=1, le=5)
+    feedback: Optional[str] = None
+
+
+@router.post("/collaborations/{collaboration_id}/feedback", response_model=dict)
+async def submit_feedback(
+    collaboration_id: str,
+    request: SubmitFeedbackRequest,
+    creator: dict = Depends(get_current_creator)
+):
+    """
+    Submit feedback and rating for a completed collaboration.
+    """
+    supabase = supabase_anon
+    creator_id = creator['id']
+
+    try:
+        # Fetch collaboration
+        collab_response = supabase.table("creator_collaborations") \
+            .select("*") \
+            .eq("id", collaboration_id) \
+            .single() \
+            .execute()
+
+        if not collab_response.data:
+            raise HTTPException(status_code=404, detail="Collaboration not found")
+
+        collaboration = collab_response.data
+
+        # Verify creator is involved
+        if collaboration.get("creator1_id") != creator_id and collaboration.get("creator2_id") != creator_id:
+            raise HTTPException(status_code=403, detail="You don't have access to this collaboration")
+
+        # Verify collaboration is completed
+        if collaboration.get("status") != "completed":
+            raise HTTPException(
+                status_code=400,
+                detail="Can only submit feedback for completed collaborations"
+            )
+
+        # Determine the other creator (the one receiving feedback)
+        other_creator_id = collaboration.get("creator2_id") if collaboration.get("creator1_id") == creator_id else collaboration.get("creator1_id")
+
+        # Check if feedback already exists
+        existing_feedback = supabase.table("collaboration_feedback") \
+            .select("id") \
+            .eq("collaboration_id", collaboration_id) \
+            .eq("from_creator_id", creator_id) \
+            .eq("to_creator_id", other_creator_id) \
+            .execute()
+
+        feedback_data = {
+            "collaboration_id": collaboration_id,
+            "from_creator_id": creator_id,
+            "to_creator_id": other_creator_id,
+            "rating": request.rating,
+            "feedback": request.feedback
+        }
+
+        if existing_feedback.data and len(existing_feedback.data) > 0:
+            # Update existing feedback
+            response = supabase.table("collaboration_feedback") \
+                .update(feedback_data) \
+                .eq("id", existing_feedback.data[0]["id"]) \
+                .execute()
+        else:
+            # Create new feedback
+            response = supabase.table("collaboration_feedback") \
+                .insert(feedback_data) \
+                .execute()
+
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to submit feedback")
+
+        return response.data[0] if isinstance(response.data, list) else response.data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error submitting feedback: {str(e)}"
+        ) from e
+
