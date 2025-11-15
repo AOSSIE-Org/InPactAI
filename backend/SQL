@@ -336,7 +336,7 @@ CREATE TABLE public.profiles (
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 
--- collaboration tables 
+-- collaboration tables
 );
 CREATE TABLE IF NOT EXISTS creator_collaborations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -426,4 +426,255 @@ CREATE TABLE IF NOT EXISTS collaboration_suggestions (
     UNIQUE(creator_id, suggested_creator_id)
 );
 
+-- Collaboration deliverables table
+CREATE TABLE IF NOT EXISTS collaboration_deliverables (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+
+    title TEXT NOT NULL,
+    description TEXT,
+    content_type TEXT, -- 'video', 'post', 'story', 'reel', etc.
+    platform TEXT, -- 'youtube', 'instagram', 'tiktok', etc.
+    quantity INTEGER DEFAULT 1,
+    due_date DATE,
+
+    status TEXT DEFAULT 'pending', -- 'pending', 'in_progress', 'completed', 'approved'
+    assigned_to UUID REFERENCES creators(id), -- which creator is responsible
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Collaboration messages table (chat)
+CREATE TABLE IF NOT EXISTS collaboration_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES creators(id),
+
+    message TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text', -- 'text', 'system', 'file_shared'
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- For file sharing
+    attachment_url TEXT,
+    attachment_type TEXT -- 'image', 'video', 'document', 'link'
+);
+
+-- Collaboration assets table (shared files/URLs)
+CREATE TABLE IF NOT EXISTS collaboration_assets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+    uploaded_by UUID NOT NULL REFERENCES creators(id),
+
+    url TEXT NOT NULL,
+    asset_type TEXT, -- 'image', 'video', 'document', 'link', 'other'
+    title TEXT,
+    description TEXT,
+
+    -- Optional: link to a deliverable
+    deliverable_id UUID REFERENCES collaboration_deliverables(id),
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_collaboration_deliverables_collab_id ON collaboration_deliverables(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_deliverables_status ON collaboration_deliverables(status);
+CREATE INDEX IF NOT EXISTS idx_collaboration_messages_collab_id ON collaboration_messages(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_messages_created_at ON collaboration_messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_collaboration_assets_collab_id ON collaboration_assets(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_assets_uploaded_by ON collaboration_assets(uploaded_by);
+
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  proposed_amount numeric,
+  content_ideas text[] DEFAULT ARRAY[]::text[],
+  ideal_pricing text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  negotiation_status text DEFAULT 'none', -- 'none', 'open', 'finalized', 'declined'
+  negotiation_thread jsonb DEFAULT '[]'::jsonb, -- array of { sender_id, sender_role, message, timestamp }
+  current_terms jsonb DEFAULT '{}'::jsonb, -- latest terms snapshot
+  version integer DEFAULT 1,
+  contract_id uuid NULL,
+  CONSTRAINT proposals_pkey PRIMARY KEY (id),
+  CONSTRAINT proposals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_unique_campaign_creator UNIQUE (campaign_id, creator_id, brand_id)
+);
+-- Contracts table for finalized deals
+CREATE TABLE IF NOT EXISTS public.contracts (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  proposal_id uuid NOT NULL REFERENCES public.proposals(id) ON DELETE CASCADE,
+  brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+  creator_id uuid NOT NULL REFERENCES public.creators(id) ON DELETE CASCADE,
+  terms jsonb NOT NULL, -- snapshot of finalized terms
+  status text NOT NULL DEFAULT 'awaiting_signature', -- 'awaiting_signature', 'signed', 'active', 'completed', 'cancelled'
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now()
+);
+
+-- Indexes for contracts table
+CREATE INDEX IF NOT EXISTS idx_contracts_brand_id ON public.contracts(brand_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_creator_id ON public.contracts(creator_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_status ON public.contracts(status);
+
+-- Add updated_at trigger for contracts
+CREATE OR REPLACE FUNCTION update_contracts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_contracts_updated_at
+  BEFORE UPDATE ON public.contracts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_contracts_updated_at();
+
+-- Create indexes for proposals table
+CREATE INDEX IF NOT EXISTS idx_proposals_campaign_id ON public.proposals(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_brand_id ON public.proposals(brand_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_creator_id ON public.proposals(creator_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON public.proposals(status);
+CREATE INDEX IF NOT EXISTS idx_proposals_created_at ON public.proposals(created_at DESC);
+
+-- Add updated_at trigger for proposals
+CREATE OR REPLACE FUNCTION update_proposals_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_proposals_updated_at
+  BEFORE UPDATE ON public.proposals
+  FOR EACH ROW
+  EXECUTE FUNCTION update_proposals_updated_at();
+
+
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  proposed_amount numeric,
+  content_ideas text[] DEFAULT ARRAY[]::text[],
+  ideal_pricing text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT proposals_pkey PRIMARY KEY (id),
+  CONSTRAINT proposals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_unique_campaign_creator UNIQUE (campaign_id, creator_id, brand_id)
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_proposals_campaign_id ON public.proposals(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_brand_id ON public.proposals(brand_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_creator_id ON public.proposals(creator_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON public.proposals(status);
+CREATE INDEX IF NOT EXISTS idx_proposals_created_at ON public.proposals(created_at DESC);
+
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_proposals_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_proposals_updated_at
+  BEFORE UPDATE ON public.proposals
+  FOR EACH ROW
+  EXECUTE FUNCTION update_proposals_updated_at();
+
+
+-- Campaign Performance Analytics & ROI Tracking Tables
+
+-- 1. Table: campaign_deliverable_metrics
+-- Defines which metrics are tracked for each deliverable (including custom metrics)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metrics (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_id uuid NOT NULL REFERENCES public.campaign_deliverables(id) ON DELETE CASCADE,
+    name text NOT NULL, -- e.g., 'impressions', 'likes', 'comments', 'custom_metric'
+    display_name text,  -- For UI display, e.g., 'Total Likes'
+    target_value numeric, -- Brand's estimate/goal for this metric (nullable)
+    is_custom boolean DEFAULT false,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+-- 2. Table: campaign_deliverable_metric_updates
+-- Stores actual metric values reported by the creator (manual or AI-extracted)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_updates (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    value numeric,
+    demographics jsonb, -- For audience demographics if applicable
+    screenshot_url text, -- For proof upload (optional)
+    ai_extracted_data jsonb, -- Raw AI/OCR output (optional)
+    submitted_by uuid NOT NULL REFERENCES public.profiles(id),
+    submitted_at timestamp with time zone DEFAULT now()
+);
+
+-- 3. Table: campaign_deliverable_metric_feedback
+-- Stores brand feedback on each metric update
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_feedback (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    metric_update_id uuid NOT NULL REFERENCES public.campaign_deliverable_metric_updates(id) ON DELETE CASCADE,
+    brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+    feedback_text text,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+-- 4. Table: campaign_deliverable_metric_update_requests
+-- Tracks when a brand requests an update for a metric (or all metrics)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_update_requests (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+    creator_id uuid NOT NULL REFERENCES public.creators(id) ON DELETE CASCADE,
+    requested_at timestamp with time zone DEFAULT now(),
+    status text DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'cancelled'))
+);
+
+-- 5. Table: campaign_deliverable_metric_audit
+-- Keeps a history of all changes/updates for transparency (versioning)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_audit (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    old_value numeric,
+    new_value numeric,
+    changed_by uuid NOT NULL REFERENCES public.profiles(id),
+    changed_at timestamp with time zone DEFAULT now(),
+    change_reason text
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_campaign_deliverable_metrics_deliverable_id ON public.campaign_deliverable_metrics(campaign_deliverable_id);
+CREATE INDEX IF NOT EXISTS idx_metric_updates_metric_id ON public.campaign_deliverable_metric_updates(campaign_deliverable_metric_id);
+CREATE INDEX IF NOT EXISTS idx_metric_updates_submitted_by ON public.campaign_deliverable_metric_updates(submitted_by);
+CREATE INDEX IF NOT EXISTS idx_metric_feedback_update_id ON public.campaign_deliverable_metric_feedback(metric_update_id);
+CREATE INDEX IF NOT EXISTS idx_metric_feedback_brand_id ON public.campaign_deliverable_metric_feedback(brand_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_metric_id ON public.campaign_deliverable_metric_update_requests(campaign_deliverable_metric_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_brand_id ON public.campaign_deliverable_metric_update_requests(brand_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_creator_id ON public.campaign_deliverable_metric_update_requests(creator_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_status ON public.campaign_deliverable_metric_update_requests(status);
+CREATE INDEX IF NOT EXISTS idx_metric_audit_metric_id ON public.campaign_deliverable_metric_audit(campaign_deliverable_metric_id);
 
