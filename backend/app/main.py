@@ -9,6 +9,8 @@ from app.api.routes import campaigns
 from app.api.routes import groq_generate
 from app.api.routes import collaborations
 from app.api.routes import creators
+from app.api.routes import proposals
+from app.api.routes import analytics
 app = FastAPI(title="Inpact Backend", version="0.1.0")
 
 # Verify Supabase client initialization on startup
@@ -38,6 +40,8 @@ app.include_router(campaigns.router)
 app.include_router(groq_generate.router)
 app.include_router(collaborations.router)
 app.include_router(creators.router)
+app.include_router(proposals.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 def root():
