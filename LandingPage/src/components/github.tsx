@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 const Github = () => {
   const openLink = () => {
-    window.open("https://github.com/AOSSIE-Org/");
+    window.open("https://github.com/AOSSIE-Org/", "_blank", "noopener,noreferrer");
   }
   return (
     <StyledWrapper>
