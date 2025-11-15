@@ -483,6 +483,14 @@ export default function CampaignsPage() {
                         >
                           View Applications
                         </button>
+                        <button
+                          onClick={() =>
+                            router.push(`/brand/campaigns/${campaign.id}/find-creators`)
+                          }
+                          className="rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-2 font-semibold text-white transition-colors hover:from-purple-600 hover:to-purple-700"
+                        >
+                          Find Creators
+                        </button>
                       </div>
                     </div>
                   )}

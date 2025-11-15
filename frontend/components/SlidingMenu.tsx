@@ -36,6 +36,9 @@ export default function SlidingMenu({ role }: Props) {
   const normalizedRole = String(role).trim().toLowerCase();
   const basePath = normalizedRole === "brand" ? "/brand" : "/creator";
   const createCampaignPath = `${basePath}/createcampaign`;
+  const proposalsPath = `${basePath}/proposals`;
+  const contractsPath = `${basePath}/contracts`;
+  const analyticsPath = `${basePath}/analytics`;
 
   return (
     <>
@@ -77,27 +80,39 @@ export default function SlidingMenu({ role }: Props) {
         aria-label="Navigation"
         className={`fixed top-0 left-0 z-50 flex h-full w-80 transform flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out sm:w-64 dark:bg-slate-900 ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex items-center justify-between border-b p-4 dark:border-slate-800">
-          <h3 className="text-lg font-semibold">Menu</h3>
-          <button
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="rounded p-1 hover:bg-slate-100"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="flex flex-col border-b p-4 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <Link
+              href={`${basePath}/home`}
+              className="text-2xl font-extrabold text-blue-700 hover:underline focus:outline-none"
+              onClick={() => setOpen(false)}
+              aria-label="Go to InpactAI home"
             >
-              <path
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+              InpactAI
+            </Link>
+            <button
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="rounded p-1 hover:bg-slate-100"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
+            Menu
+          </h3>
         </div>
 
         <nav className="p-4">
@@ -125,9 +140,32 @@ export default function SlidingMenu({ role }: Props) {
                 </Link>
               </li>
             )}
+            {normalizedRole === "brand" && (
+              <li>
+                <Link
+                  href={createCampaignPath}
+                  className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  <span>Create Campaign</span>
+                </Link>
+              </li>
+            )}
             <li>
               <Link
-                href={createCampaignPath}
+                href={proposalsPath}
                 className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <svg
@@ -140,10 +178,52 @@ export default function SlidingMenu({ role }: Props) {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                <span>Create Campaign</span>
+                <span>Proposals</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={contractsPath}
+                className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h6l6 6v10a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span>Contracts</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={analyticsPath}
+                className="flex items-center gap-3 rounded px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                <span>Analytics</span>
               </Link>
             </li>
             {/* future actions listed here */}
