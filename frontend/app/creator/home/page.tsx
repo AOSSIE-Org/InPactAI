@@ -3,6 +3,7 @@
 import AuthGuard from "@/components/auth/AuthGuard";
 import SlidingMenu from "@/components/SlidingMenu";
 import CreatorDashboard from "@/components/dashboard/CreatorDashboard";
+import ProfileButton from "@/components/profile/ProfileButton";
 import { getUserProfile, signOut } from "@/lib/auth-helpers";
 import { Loader2, LogOut, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -47,18 +48,21 @@ export default function CreatorHomePage() {
                 InPactAI
               </h1>
             </div>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
-            >
-              {isLoggingOut ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="h-4 w-4" />
-              )}
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </button>
+            <div className="flex items-center gap-2">
+              <ProfileButton role="Creator" />
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+              >
+                {isLoggingOut ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="h-4 w-4" />
+                )}
+                {isLoggingOut ? "Logging out..." : "Logout"}
+              </button>
+            </div>
           </div>
         </header>
 
