@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { getUserProfile } from "@/lib/auth-helpers";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface ProfileButtonProps {
   role: "Brand" | "Creator";
@@ -25,14 +25,16 @@ export default function ProfileButton({ role }: ProfileButtonProps) {
 
       // Fetch profile image based on role
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const { supabase } = await import("@/lib/supabaseClient");
         const {
           data: { session },
         } = await supabase.auth.getSession();
         const accessToken = session?.access_token;
 
-        const endpoint = role === "Brand" ? "/brand/profile" : "/creator/profile";
+        const endpoint =
+          role === "Brand" ? "/brand/profile" : "/creator/profile";
         const response = await fetch(`${apiUrl}${endpoint}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -43,9 +45,7 @@ export default function ProfileButton({ role }: ProfileButtonProps) {
         if (response.ok) {
           const data = await response.json();
           const imageUrl =
-            role === "Brand"
-              ? data.company_logo_url
-              : data.profile_picture_url;
+            role === "Brand" ? data.company_logo_url : data.profile_picture_url;
           if (imageUrl) {
             setProfileImageUrl(imageUrl);
             setImageLoading(true);
@@ -112,11 +112,14 @@ export default function ProfileButton({ role }: ProfileButtonProps) {
                 setImageError(true);
                 setImageLoading(false);
               }}
-              onLoad={() => setImageLoading(false)}
+              onLoad={() => {
+                setImageLoading(false);
+                setImageError(false);
+              }}
             />
           </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-lg">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-lg font-semibold text-white">
             {getInitial()}
           </div>
         )}
@@ -127,4 +130,3 @@ export default function ProfileButton({ role }: ProfileButtonProps) {
     </button>
   );
 }
-
