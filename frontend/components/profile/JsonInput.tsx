@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 
 import { useState } from "react";
 
@@ -20,6 +21,11 @@ export default function JsonInput({
   );
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setTextValue(value ? JSON.stringify(value, null, 2) : "");
+    setError(null);
+  }, [value]);
+
   const handleBlur = () => {
     if (!textValue.trim()) {
       onChange(null);
@@ -38,7 +44,9 @@ export default function JsonInput({
 
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      <label className="mb-1 block text-sm font-medium text-gray-700">
+        {label}
+      </label>
       <textarea
         value={textValue}
         onChange={(e) => setTextValue(e.target.value)}
@@ -54,4 +62,3 @@ export default function JsonInput({
     </div>
   );
 }
-
