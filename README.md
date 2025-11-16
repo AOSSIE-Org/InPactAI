@@ -31,32 +31,38 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 ## ✨ Features
 
 ### AI-Driven Sponsorship Matchmaking
+
 - Automatically connects creators with brands based on audience demographics, engagement rates, and content style
 - Real-time matching algorithm powered by AI
 - Personalized recommendations for both creators and brands
 
 ### AI-Powered Creator Collaboration Hub
+
 - Facilitates partnerships between creators with complementary audiences and content niches
 - AI-suggested collaboration ideas based on audience overlap
 - Joint campaign planning and execution tools
 
 ### AI-Based Pricing & Deal Optimization
+
 - Provides fair sponsorship pricing recommendations based on engagement, market trends, and historical data
 - Dynamic pricing suggestions for different campaign types
 - Budget optimization for brands
 
 ### AI-Powered Negotiation & Contract Assistant
+
 - Assists in structuring deals, generating contracts, and optimizing terms using AI insights
 - Automated contract generation with customizable templates
 - Smart negotiation suggestions
 
 ### Performance Analytics & ROI Tracking
+
 - Enables brands and creators to track sponsorship performance, audience engagement, and campaign success
 - Real-time analytics dashboards
 - AI-powered insights and recommendations for future campaigns
 - Screenshot extraction and metric tracking using Gemini Vision API
 
 ### Campaign Management
+
 - Full lifecycle campaign management for brands
 - Creator proposal system with status tracking
 - Deliverable tracking and metric submission
@@ -67,6 +73,7 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 ## 🛠 Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 16.0.1 (React 19.2.0)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
@@ -79,6 +86,7 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 - **Icons**: Lucide React
 
 ### Backend
+
 - **Framework**: FastAPI 0.120.3
 - **Language**: Python 3.13+
 - **Database**: Supabase (PostgreSQL)
@@ -90,6 +98,7 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 - **Validation**: Pydantic
 
 ### Database & Services
+
 - **Database**: Supabase PostgreSQL
 - **Authentication**: Supabase Auth
 - **Storage**: Supabase Storage (for images and files)
@@ -178,6 +187,7 @@ InPactAI/
 Before you begin, ensure you have the following installed on your system:
 
 ### Required Software
+
 - **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
 - **npm** (comes with Node.js) or **yarn**
 - **Python** (3.11 or higher) - [Download](https://www.python.org/downloads/)
@@ -185,11 +195,13 @@ Before you begin, ensure you have the following installed on your system:
 - **Git** - [Download](https://git-scm.com/downloads)
 
 ### Required Accounts & API Keys
+
 - **Supabase Account** - [Sign up](https://supabase.com/)
 - **Groq API Key** (for AI features) - [Get API Key](https://console.groq.com/)
 - **Google Gemini API Key** (for AI features) - [Get API Key](https://makersuite.google.com/app/apikey)
 
 ### Recommended Tools
+
 - **VS Code** or any modern code editor
 - **Postman** or **Insomnia** (for API testing)
 - **Supabase CLI** (optional, for local development)
@@ -243,6 +255,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 **How to get Supabase credentials:**
+
 1. Go to [Supabase Dashboard](https://app.supabase.com/)
 2. Log in and create a new project (or select an existing one)
 3. Navigate to **Project Settings** → **API**
@@ -373,6 +386,7 @@ SUPABASE_JWT_SECRET=your-jwt-secret-from-supabase-dashboard
 #### Step 2: Verify Tables
 
 After running the schema, verify that the following tables exist:
+
 - `profiles`
 - `brands`
 - `creators`
@@ -397,24 +411,24 @@ ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
 
 #### Frontend Environment Variables (`.env.local`)
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes | `https://xxxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key | Yes | `eyJhbGc...` |
-| `NEXT_PUBLIC_API_URL` | Backend API URL | Yes | `http://localhost:8000` |
+| Variable                        | Description              | Required | Example                     |
+| ------------------------------- | ------------------------ | -------- | --------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL     | Yes      | `https://xxxxx.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key | Yes      | `eyJhbGc...`                |
+| `NEXT_PUBLIC_API_URL`           | Backend API URL          | Yes      | `http://localhost:8000`     |
 
 #### Backend Environment Variables (`.env`)
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `SUPABASE_URL` | Supabase project URL | Yes | `https://xxxxx.supabase.co` |
-| `SUPABASE_KEY` | Supabase anon key | Yes | `eyJhbGc...` |
-| `SUPABASE_SERVICE_KEY` | Supabase service role key | Yes | `eyJhbGc...` |
-| `SUPABASE_JWT_SECRET` | JWT secret from Supabase | Yes | `your-jwt-secret` |
-| `DATABASE_URL` | PostgreSQL connection string | No | `postgresql://...` |
-| `GROQ_API_KEY` | Groq API key for AI | No | `gsk_xxxxx` |
-| `GEMINI_API_KEY` | Gemini API key for AI | No | `AIzaSy...` |
-| `ALLOWED_ORIGINS` | CORS allowed origins | No | `http://localhost:3000` |
+| Variable               | Description                  | Required | Example                     |
+| ---------------------- | ---------------------------- | -------- | --------------------------- |
+| `SUPABASE_URL`         | Supabase project URL         | Yes      | `https://xxxxx.supabase.co` |
+| `SUPABASE_KEY`         | Supabase anon key            | Yes      | `eyJhbGc...`                |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key    | Yes      | `eyJhbGc...`                |
+| `SUPABASE_JWT_SECRET`  | JWT secret from Supabase     | Yes      | `your-jwt-secret`           |
+| `DATABASE_URL`         | PostgreSQL connection string | No       | `postgresql://...`          |
+| `GROQ_API_KEY`         | Groq API key for AI          | No       | `gsk_xxxxx`                 |
+| `GEMINI_API_KEY`       | Gemini API key for AI        | No       | `AIzaSy...`                 |
+| `ALLOWED_ORIGINS`      | CORS allowed origins         | No       | `http://localhost:3000`     |
 
 ---
 
@@ -425,11 +439,13 @@ ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
 #### Start Backend Server
 
 1. Navigate to the backend app directory:
+
    ```bash
    cd backend/app
    ```
 
 2. Activate virtual environment (if using one):
+
    ```bash
    source ../venv/bin/activate  # macOS/Linux
    # or
@@ -437,26 +453,29 @@ ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
    ```
 
 3. Start the FastAPI server:
+
    ```bash
    uvicorn main:app --reload
    ```
 
    The backend will be available at: `http://localhost:8000`
-
    - API Documentation: `http://localhost:8000/docs` (Swagger UI)
    - Alternative Docs: `http://localhost:8000/redoc` (ReDoc)
 
 #### Start Frontend Server
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Start the Next.js development server:
    ```bash
-npm run dev
-```
+   npm run dev
+   ```
+
+````
 
    The frontend will be available at: `http://localhost:3000`
 
@@ -468,7 +487,7 @@ npm run dev
 cd frontend
 npm run build
 npm start
-```
+````
 
 #### Build Backend
 
@@ -482,17 +501,20 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ## 📚 API Documentation
 
 ### Base URL
+
 - **Development**: `http://localhost:8000`
 - **Production**: Your production backend URL
 
 ### Main API Endpoints
 
 #### Authentication
+
 - `POST /api/auth/signup` - User registration
 - `POST /api/auth/login` - User login
 - `GET /api/auth/me` - Get current user profile
 
 #### Campaigns
+
 - `GET /campaigns` - List campaigns (with filters)
 - `POST /campaigns` - Create new campaign
 - `GET /campaigns/{campaign_id}` - Get campaign details
@@ -500,6 +522,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 - `DELETE /campaigns/{campaign_id}` - Delete campaign
 
 #### Proposals
+
 - `GET /proposals` - List proposals
 - `POST /proposals` - Create proposal
 - `GET /proposals/{proposal_id}` - Get proposal details
@@ -509,37 +532,44 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 - `POST /proposals/{proposal_id}/reject` - Reject proposal
 
 #### Contracts
+
 - `GET /contracts` - List contracts
 - `GET /contracts/{contract_id}` - Get contract details
 - `POST /contracts` - Create contract
 - `PUT /contracts/{contract_id}` - Update contract
 
 #### Collaborations
+
 - `GET /collaborations` - List collaborations
 - `POST /collaborations` - Create collaboration
 - `GET /collaborations/{collaboration_id}` - Get collaboration details
 
 #### Creators
+
 - `GET /creators` - List creators (with search/filters)
 - `GET /creators/{creator_id}` - Get creator profile
 
 #### Analytics
+
 - `GET /analytics/campaigns/{campaign_id}` - Get campaign analytics
 - `POST /analytics/metrics` - Create metric
 - `POST /analytics/metrics/{metric_id}/submit` - Submit metric value
 - `POST /analytics/screenshots/extract` - Extract metrics from screenshot
 
 #### AI Generation
+
 - `POST /api/groq/generate` - Generate content using Groq
 - `POST /api/gemini/generate` - Generate content using Gemini
 
 #### Health Check
+
 - `GET /health` - Health check endpoint
 - `GET /health/supabase` - Supabase connection check
 
 ### Interactive API Documentation
 
 Once the backend is running, visit:
+
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
 
@@ -680,31 +710,37 @@ graph TD;
 #### Frontend Issues
 
 **Issue: "Missing Supabase environment variables"**
+
 - **Solution**: Ensure `.env.local` exists in the `frontend` directory with all required variables
 - Check that variable names start with `NEXT_PUBLIC_` for client-side access
 
 **Issue: "NEXT_PUBLIC_API_URL is missing or not valid"**
+
 - **Solution**: For local development, set `NEXT_PUBLIC_API_URL=http://localhost:8000`
 - For production, ensure it's a valid HTTPS URL
 
 **Issue: Build fails with TypeScript errors**
+
 - **Solution**: Run `npm install` to ensure all dependencies are installed
 - Check that TypeScript version is compatible (v5+)
 
 #### Backend Issues
 
 **Issue: "Supabase client initialization failed"**
+
 - **Solution**:
   - Verify `SUPABASE_URL` and `SUPABASE_KEY` in `.env`
   - Check that your Supabase project is active
   - Ensure network connectivity to Supabase
 
 **Issue: "JWT verification failed"**
+
 - **Solution**:
   - Verify `SUPABASE_JWT_SECRET` matches the JWT Secret in Supabase dashboard
   - Ensure you're using the JWT Secret, not the anon key
 
 **Issue: Database connection errors**
+
 - **Solution**:
   - Check `DATABASE_URL` format (if using direct connection)
   - For IPv4 networks, use Session Pooler connection string
@@ -712,6 +748,7 @@ graph TD;
   - Check Supabase project status
 
 **Issue: "Module not found" errors**
+
 - **Solution**:
   - Activate virtual environment: `source venv/bin/activate`
   - Reinstall dependencies: `pip install -r requirements.txt`
@@ -719,10 +756,12 @@ graph TD;
 #### Database Issues
 
 **Issue: Tables don't exist**
+
 - **Solution**: Run the SQL schema script in Supabase SQL Editor
 - Check that all ENUM types are created before tables
 
 **Issue: "onboarding_completed column doesn't exist"**
+
 - **Solution**: Run the ALTER TABLE command:
   ```sql
   ALTER TABLE profiles
@@ -732,11 +771,13 @@ graph TD;
 #### API Issues
 
 **Issue: CORS errors**
+
 - **Solution**:
   - Add frontend URL to `ALLOWED_ORIGINS` in backend `.env`
   - Ensure backend CORS middleware is configured correctly
 
 **Issue: 401 Unauthorized errors**
+
 - **Solution**:
   - Verify JWT token is being sent in request headers
   - Check token expiration
@@ -745,6 +786,7 @@ graph TD;
 ### Getting Help
 
 If you encounter issues not covered here:
+
 1. Check the [Issues](https://github.com/AOSSIE-Org/InPact/issues) page
 2. Review the documentation in the `docs/` and `guides/` directories
 3. Reach out on Discord or create a new issue
@@ -757,23 +799,36 @@ We welcome contributions from the community! Here's how you can help:
 
 ### Contribution Process
 
-1. **Fork the Repository**
+1. **Fork the Repository on GitHub**
+   - Go to [https://github.com/AOSSIE-Org/InPact](https://github.com/AOSSIE-Org/InPact) and click the "Fork" button in the top right.
+
+2. **Clone Your Fork Locally**
+
    ```bash
-   git fork https://github.com/AOSSIE-Org/InPact.git
+   git clone <your-fork-url>
+   cd InPact
    ```
 
-2. **Create a Feature Branch**
+3. **Add the Original Repository as Upstream Remote**
+
+   ```bash
+   git remote add upstream https://github.com/AOSSIE-Org/InPact.git
+   ```
+
+4. **Create a Feature Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
-3. **Make Your Changes**
+5. **Make Your Changes**
    - Write clean, documented code
    - Follow existing code style
    - Add tests if applicable
    - Update documentation as needed
 
-4. **Commit Your Changes**
+6. **Commit Your Changes**
+
    ```bash
    git commit -m "Add: Description of your feature"
    ```
@@ -784,12 +839,13 @@ We welcome contributions from the community! Here's how you can help:
    - `Update:` for updates to existing features
    - `Docs:` for documentation changes
 
-5. **Push to Your Fork**
+7. **Push to Your Fork**
+
    ```bash
    git push origin feature/your-feature-name
    ```
 
-6. **Open a Pull Request**
+8. **Open a Pull Request**
    - Go to the repository on GitHub
    - Click "New Pull Request"
    - Select your branch
