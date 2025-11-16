@@ -1,14 +1,27 @@
 "use client";
 
 import AuthGuard from "@/components/auth/AuthGuard";
-import SlidingMenu from "@/components/SlidingMenu";
-import ProfileButton from "@/components/profile/ProfileButton";
-import CollapsibleSection from "@/components/profile/CollapsibleSection";
 import ArrayInput from "@/components/profile/ArrayInput";
+import CollapsibleSection from "@/components/profile/CollapsibleSection";
 import JsonInput from "@/components/profile/JsonInput";
+import ProfileButton from "@/components/profile/ProfileButton";
+import SlidingMenu from "@/components/SlidingMenu";
+import {
+  aiFillCreatorProfile,
+  CreatorProfile,
+  getCreatorProfile,
+  updateCreatorProfile,
+} from "@/lib/api/profile";
 import { signOut } from "@/lib/auth-helpers";
-import { getCreatorProfile, updateCreatorProfile, aiFillCreatorProfile, CreatorProfile } from "@/lib/api/profile";
-import { Sparkles, Loader2, LogOut, Edit2, Save, X, ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit2,
+  Loader2,
+  LogOut,
+  Save,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -74,7 +87,10 @@ export default function CreatorProfilePage() {
       const result = await aiFillCreatorProfile(aiInput);
 
       if (!result.data || Object.keys(result.data).length === 0) {
-        alert(result.message || "No new data could be extracted from your input. Please provide more specific information.");
+        alert(
+          result.message ||
+            "No new data could be extracted from your input. Please provide more specific information."
+        );
         return;
       }
 
@@ -85,7 +101,7 @@ export default function CreatorProfilePage() {
           // Properly handle arrays, objects, and primitives
           if (Array.isArray(value)) {
             updated[key] = value;
-          } else if (typeof value === 'object' && value !== null) {
+          } else if (typeof value === "object" && value !== null) {
             updated[key] = value;
           } else {
             updated[key] = value;
@@ -104,10 +120,13 @@ export default function CreatorProfilePage() {
 
       // Show success message
       const fieldCount = Object.keys(result.data).length;
-      alert(`Success! ${fieldCount} field${fieldCount !== 1 ? 's' : ''} ${fieldCount !== 1 ? 'were' : 'was'} filled. Please review and save your changes.`);
+      alert(
+        `Success! ${fieldCount} field${fieldCount !== 1 ? "s" : ""} ${fieldCount !== 1 ? "were" : "was"} filled. Please review and save your changes.`
+      );
     } catch (error: any) {
       console.error("Error with AI fill:", error);
-      const errorMessage = error?.message || "Failed to generate profile data. Please try again.";
+      const errorMessage =
+        error?.message || "Failed to generate profile data. Please try again.";
       alert(errorMessage);
     } finally {
       setAiLoading(false);
@@ -200,7 +219,9 @@ export default function CreatorProfilePage() {
           {/* Profile Header */}
           <div className="mb-8 rounded-lg bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-900">Creator Profile</h2>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Creator Profile
+              </h2>
               <div className="flex items-center gap-2">
                 {!isEditing ? (
                   <>
@@ -248,8 +269,12 @@ export default function CreatorProfilePage() {
             {/* Completion Bar */}
             <div className="mb-6">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Profile Completion</span>
-                <span className="text-sm font-semibold text-gray-900">{completionPercentage}%</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Profile Completion
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {completionPercentage}%
+                </span>
               </div>
               <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
                 <div
@@ -266,27 +291,37 @@ export default function CreatorProfilePage() {
             <CollapsibleSection title="Basic Information" defaultOpen={true}>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Display Name *</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Display Name *
+                  </label>
                   <input
                     type="text"
                     value={formData.display_name || ""}
-                    onChange={(e) => updateField("display_name", e.target.value)}
+                    onChange={(e) =>
+                      updateField("display_name", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Primary Niche *</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Primary Niche *
+                  </label>
                   <input
                     type="text"
                     value={formData.primary_niche || ""}
-                    onChange={(e) => updateField("primary_niche", e.target.value)}
+                    onChange={(e) =>
+                      updateField("primary_niche", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Tagline</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Tagline
+                  </label>
                   <input
                     type="text"
                     value={formData.tagline || ""}
@@ -296,7 +331,9 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Website URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Website URL
+                  </label>
                   <input
                     type="url"
                     value={formData.website_url || ""}
@@ -306,7 +343,9 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Bio</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Bio
+                  </label>
                   <textarea
                     value={formData.bio || ""}
                     onChange={(e) => updateField("bio", e.target.value)}
@@ -316,21 +355,29 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Profile Picture URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Profile Picture URL
+                  </label>
                   <input
                     type="url"
                     value={formData.profile_picture_url || ""}
-                    onChange={(e) => updateField("profile_picture_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("profile_picture_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Cover Image URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Cover Image URL
+                  </label>
                   <input
                     type="url"
                     value={formData.cover_image_url || ""}
-                    onChange={(e) => updateField("cover_image_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("cover_image_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -339,7 +386,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Secondary Niches"
                     values={formData.secondary_niches || []}
-                    onChange={(values) => updateArrayField("secondary_niches", values)}
+                    onChange={(values) =>
+                      updateArrayField("secondary_niches", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -347,7 +396,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Content Types"
                     values={formData.content_types || []}
-                    onChange={(values) => updateArrayField("content_types", values)}
+                    onChange={(values) =>
+                      updateArrayField("content_types", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -355,7 +406,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Content Language"
                     values={formData.content_language || []}
-                    onChange={(values) => updateArrayField("content_language", values)}
+                    onChange={(values) =>
+                      updateArrayField("content_language", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -366,48 +419,70 @@ export default function CreatorProfilePage() {
             <CollapsibleSection title="Social Media">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Instagram Handle</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Instagram Handle
+                  </label>
                   <input
                     type="text"
                     value={formData.instagram_handle || ""}
-                    onChange={(e) => updateField("instagram_handle", e.target.value)}
+                    onChange={(e) =>
+                      updateField("instagram_handle", e.target.value)
+                    }
                     disabled={!isEditing}
                     placeholder="@username"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Instagram URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Instagram URL
+                  </label>
                   <input
                     type="url"
                     value={formData.instagram_url || ""}
-                    onChange={(e) => updateField("instagram_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("instagram_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Instagram Followers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Instagram Followers
+                  </label>
                   <input
                     type="number"
                     value={formData.instagram_followers || ""}
-                    onChange={(e) => updateField("instagram_followers", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "instagram_followers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">YouTube Handle</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    YouTube Handle
+                  </label>
                   <input
                     type="text"
                     value={formData.youtube_handle || ""}
-                    onChange={(e) => updateField("youtube_handle", e.target.value)}
+                    onChange={(e) =>
+                      updateField("youtube_handle", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">YouTube URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    YouTube URL
+                  </label>
                   <input
                     type="url"
                     value={formData.youtube_url || ""}
@@ -417,27 +492,41 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">YouTube Subscribers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    YouTube Subscribers
+                  </label>
                   <input
                     type="number"
                     value={formData.youtube_subscribers || ""}
-                    onChange={(e) => updateField("youtube_subscribers", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "youtube_subscribers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">TikTok Handle</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    TikTok Handle
+                  </label>
                   <input
                     type="text"
                     value={formData.tiktok_handle || ""}
-                    onChange={(e) => updateField("tiktok_handle", e.target.value)}
+                    onChange={(e) =>
+                      updateField("tiktok_handle", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">TikTok URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    TikTok URL
+                  </label>
                   <input
                     type="url"
                     value={formData.tiktok_url || ""}
@@ -447,27 +536,41 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">TikTok Followers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    TikTok Followers
+                  </label>
                   <input
                     type="number"
                     value={formData.tiktok_followers || ""}
-                    onChange={(e) => updateField("tiktok_followers", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "tiktok_followers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitter Handle</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitter Handle
+                  </label>
                   <input
                     type="text"
                     value={formData.twitter_handle || ""}
-                    onChange={(e) => updateField("twitter_handle", e.target.value)}
+                    onChange={(e) =>
+                      updateField("twitter_handle", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitter URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitter URL
+                  </label>
                   <input
                     type="url"
                     value={formData.twitter_url || ""}
@@ -477,27 +580,41 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitter Followers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitter Followers
+                  </label>
                   <input
                     type="number"
                     value={formData.twitter_followers || ""}
-                    onChange={(e) => updateField("twitter_followers", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "twitter_followers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitch Handle</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitch Handle
+                  </label>
                   <input
                     type="text"
                     value={formData.twitch_handle || ""}
-                    onChange={(e) => updateField("twitch_handle", e.target.value)}
+                    onChange={(e) =>
+                      updateField("twitch_handle", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitch URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitch URL
+                  </label>
                   <input
                     type="url"
                     value={formData.twitch_url || ""}
@@ -507,41 +624,65 @@ export default function CreatorProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Twitch Followers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Twitch Followers
+                  </label>
                   <input
                     type="number"
                     value={formData.twitch_followers || ""}
-                    onChange={(e) => updateField("twitch_followers", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "twitch_followers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">LinkedIn URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    LinkedIn URL
+                  </label>
                   <input
                     type="url"
                     value={formData.linkedin_url || ""}
-                    onChange={(e) => updateField("linkedin_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("linkedin_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Facebook URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Facebook URL
+                  </label>
                   <input
                     type="url"
                     value={formData.facebook_url || ""}
-                    onChange={(e) => updateField("facebook_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("facebook_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Total Followers</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Total Followers
+                  </label>
                   <input
                     type="number"
                     value={formData.total_followers || ""}
-                    onChange={(e) => updateField("total_followers", parseInt(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "total_followers",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -561,52 +702,88 @@ export default function CreatorProfilePage() {
             <CollapsibleSection title="Audience & Analytics">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Total Reach</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Total Reach
+                  </label>
                   <input
                     type="number"
                     value={formData.total_reach || ""}
-                    onChange={(e) => updateField("total_reach", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "total_reach",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Average Views</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Average Views
+                  </label>
                   <input
                     type="number"
                     value={formData.average_views || ""}
-                    onChange={(e) => updateField("average_views", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "average_views",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Engagement Rate (%)</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Engagement Rate (%)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.engagement_rate || ""}
-                    onChange={(e) => updateField("engagement_rate", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "engagement_rate",
+                        raw === "" ? undefined : parseFloat(raw)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Average Engagement per Post</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Average Engagement per Post
+                  </label>
                   <input
                     type="number"
                     value={formData.average_engagement_per_post || ""}
-                    onChange={(e) => updateField("average_engagement_per_post", parseInt(e.target.value) || undefined)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      updateField(
+                        "average_engagement_per_post",
+                        raw === "" ? undefined : parseInt(raw, 10)
+                      );
+                    }}
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Primary Audience Age</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Primary Audience Age
+                  </label>
                   <input
                     type="text"
                     value={formData.audience_age_primary || ""}
-                    onChange={(e) => updateField("audience_age_primary", e.target.value)}
+                    onChange={(e) =>
+                      updateField("audience_age_primary", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -615,7 +792,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Secondary Audience Age"
                     values={formData.audience_age_secondary || []}
-                    onChange={(values) => updateArrayField("audience_age_secondary", values)}
+                    onChange={(values) =>
+                      updateArrayField("audience_age_secondary", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -623,7 +802,9 @@ export default function CreatorProfilePage() {
                   <JsonInput
                     label="Audience Gender Split (JSON)"
                     value={formData.audience_gender_split || null}
-                    onChange={(value) => updateField("audience_gender_split", value)}
+                    onChange={(value) =>
+                      updateField("audience_gender_split", value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -631,7 +812,9 @@ export default function CreatorProfilePage() {
                   <JsonInput
                     label="Audience Locations (JSON)"
                     value={formData.audience_locations || null}
-                    onChange={(value) => updateField("audience_locations", value)}
+                    onChange={(value) =>
+                      updateField("audience_locations", value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -639,16 +822,25 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Audience Interests"
                     values={formData.audience_interests || []}
-                    onChange={(values) => updateArrayField("audience_interests", values)}
+                    onChange={(values) =>
+                      updateArrayField("audience_interests", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Best Performing Content Type</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Best Performing Content Type
+                  </label>
                   <input
                     type="text"
                     value={formData.best_performing_content_type || ""}
-                    onChange={(e) => updateField("best_performing_content_type", e.target.value)}
+                    onChange={(e) =>
+                      updateField(
+                        "best_performing_content_type",
+                        e.target.value
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -657,7 +849,9 @@ export default function CreatorProfilePage() {
                   <JsonInput
                     label="Peak Posting Times (JSON)"
                     value={formData.peak_posting_times || null}
-                    onChange={(value) => updateField("peak_posting_times", value)}
+                    onChange={(value) =>
+                      updateField("peak_posting_times", value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -668,66 +862,105 @@ export default function CreatorProfilePage() {
             <CollapsibleSection title="Content & Rates">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Years of Experience</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Years of Experience
+                  </label>
                   <input
                     type="number"
                     value={formData.years_of_experience || ""}
-                    onChange={(e) => updateField("years_of_experience", parseInt(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "years_of_experience",
+                        parseInt(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Posting Frequency</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Posting Frequency
+                  </label>
                   <input
                     type="text"
                     value={formData.posting_frequency || ""}
-                    onChange={(e) => updateField("posting_frequency", e.target.value)}
+                    onChange={(e) =>
+                      updateField("posting_frequency", e.target.value)
+                    }
                     disabled={!isEditing}
                     placeholder="e.g., Daily, 3x/week"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Rate per Post</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Rate per Post
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.rate_per_post || ""}
-                    onChange={(e) => updateField("rate_per_post", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "rate_per_post",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Rate per Video</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Rate per Video
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.rate_per_video || ""}
-                    onChange={(e) => updateField("rate_per_video", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "rate_per_video",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Rate per Story</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Rate per Story
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.rate_per_story || ""}
-                    onChange={(e) => updateField("rate_per_story", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "rate_per_story",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Rate per Reel</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Rate per Reel
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.rate_per_reel || ""}
-                    onChange={(e) => updateField("rate_per_reel", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "rate_per_reel",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -737,30 +970,45 @@ export default function CreatorProfilePage() {
                     <input
                       type="checkbox"
                       checked={formData.rate_negotiable || false}
-                      onChange={(e) => updateField("rate_negotiable", e.target.checked)}
+                      onChange={(e) =>
+                        updateField("rate_negotiable", e.target.checked)
+                      }
                       disabled={!isEditing}
                       className="h-4 w-4 rounded border-gray-300"
                     />
-                    <label className="text-sm font-medium text-gray-700">Rate Negotiable</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Rate Negotiable
+                    </label>
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Minimum Deal Value</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Minimum Deal Value
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.minimum_deal_value || ""}
-                    onChange={(e) => updateField("minimum_deal_value", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "minimum_deal_value",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Preferred Payment Terms</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Preferred Payment Terms
+                  </label>
                   <input
                     type="text"
                     value={formData.preferred_payment_terms || ""}
-                    onChange={(e) => updateField("preferred_payment_terms", e.target.value)}
+                    onChange={(e) =>
+                      updateField("preferred_payment_terms", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -770,11 +1018,18 @@ export default function CreatorProfilePage() {
                     <input
                       type="checkbox"
                       checked={formData.accepts_product_only_deals || false}
-                      onChange={(e) => updateField("accepts_product_only_deals", e.target.checked)}
+                      onChange={(e) =>
+                        updateField(
+                          "accepts_product_only_deals",
+                          e.target.checked
+                        )
+                      }
                       disabled={!isEditing}
                       className="h-4 w-4 rounded border-gray-300"
                     />
-                    <label className="text-sm font-medium text-gray-700">Accepts Product-Only Deals</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Accepts Product-Only Deals
+                    </label>
                   </div>
                 </div>
               </div>
@@ -788,29 +1043,44 @@ export default function CreatorProfilePage() {
                     <input
                       type="checkbox"
                       checked={formData.content_creation_full_time || false}
-                      onChange={(e) => updateField("content_creation_full_time", e.target.checked)}
+                      onChange={(e) =>
+                        updateField(
+                          "content_creation_full_time",
+                          e.target.checked
+                        )
+                      }
                       disabled={!isEditing}
                       className="h-4 w-4 rounded border-gray-300"
                     />
-                    <label className="text-sm font-medium text-gray-700">Content Creation Full-Time</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Content Creation Full-Time
+                    </label>
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Team Size</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Team Size
+                  </label>
                   <input
                     type="number"
                     value={formData.team_size || ""}
-                    onChange={(e) => updateField("team_size", parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      updateField("team_size", parseInt(e.target.value) || 1)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Equipment Quality</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Equipment Quality
+                  </label>
                   <input
                     type="text"
                     value={formData.equipment_quality || ""}
-                    onChange={(e) => updateField("equipment_quality", e.target.value)}
+                    onChange={(e) =>
+                      updateField("equipment_quality", e.target.value)
+                    }
                     disabled={!isEditing}
                     placeholder="e.g., Professional, Semi-Professional"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
@@ -820,7 +1090,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Editing Software"
                     values={formData.editing_software || []}
-                    onChange={(values) => updateArrayField("editing_software", values)}
+                    onChange={(values) =>
+                      updateArrayField("editing_software", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -828,7 +1100,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Collaboration Types"
                     values={formData.collaboration_types || []}
-                    onChange={(values) => updateArrayField("collaboration_types", values)}
+                    onChange={(values) =>
+                      updateArrayField("collaboration_types", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -836,7 +1110,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Preferred Brands Style"
                     values={formData.preferred_brands_style || []}
-                    onChange={(values) => updateArrayField("preferred_brands_style", values)}
+                    onChange={(values) =>
+                      updateArrayField("preferred_brands_style", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -844,7 +1120,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Not Interested In"
                     values={formData.not_interested_in || []}
-                    onChange={(values) => updateArrayField("not_interested_in", values)}
+                    onChange={(values) =>
+                      updateArrayField("not_interested_in", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -858,7 +1136,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Portfolio Links"
                     values={formData.portfolio_links || []}
-                    onChange={(values) => updateArrayField("portfolio_links", values)}
+                    onChange={(values) =>
+                      updateArrayField("portfolio_links", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -866,7 +1146,9 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Past Brand Collaborations"
                     values={formData.past_brand_collaborations || []}
-                    onChange={(values) => updateArrayField("past_brand_collaborations", values)}
+                    onChange={(values) =>
+                      updateArrayField("past_brand_collaborations", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -874,16 +1156,22 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Case Study Links"
                     values={formData.case_study_links || []}
-                    onChange={(values) => updateArrayField("case_study_links", values)}
+                    onChange={(values) =>
+                      updateArrayField("case_study_links", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Media Kit URL</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Media Kit URL
+                  </label>
                   <input
                     type="url"
                     value={formData.media_kit_url || ""}
-                    onChange={(e) => updateField("media_kit_url", e.target.value)}
+                    onChange={(e) =>
+                      updateField("media_kit_url", e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
@@ -898,26 +1186,39 @@ export default function CreatorProfilePage() {
                   <ArrayInput
                     label="Search Keywords"
                     values={formData.search_keywords || []}
-                    onChange={(values) => updateArrayField("search_keywords", values)}
+                    onChange={(values) =>
+                      updateArrayField("search_keywords", values)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Matching Score Base</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Matching Score Base
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.matching_score_base || ""}
-                    onChange={(e) => updateField("matching_score_base", parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      updateField(
+                        "matching_score_base",
+                        parseFloat(e.target.value) || undefined
+                      )
+                    }
                     disabled={!isEditing}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">AI Profile Summary</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    AI Profile Summary
+                  </label>
                   <textarea
                     value={formData.ai_profile_summary || ""}
-                    onChange={(e) => updateField("ai_profile_summary", e.target.value)}
+                    onChange={(e) =>
+                      updateField("ai_profile_summary", e.target.value)
+                    }
                     disabled={!isEditing}
                     rows={4}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
@@ -930,11 +1231,14 @@ export default function CreatorProfilePage() {
 
         {/* AI Fill Modal */}
         {showAiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
             <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-              <h3 className="mb-4 text-xl font-semibold text-gray-900">AI Profile Filling</h3>
+              <h3 className="mb-4 text-xl font-semibold text-gray-900">
+                AI Profile Filling
+              </h3>
               <p className="mb-4 text-sm text-gray-600">
-                Provide information about yourself, and AI will help fill in your profile fields automatically.
+                Provide information about yourself, and AI will help fill in
+                your profile fields automatically.
               </p>
               <textarea
                 value={aiInput}
@@ -978,4 +1282,3 @@ export default function CreatorProfilePage() {
     </AuthGuard>
   );
 }
-
