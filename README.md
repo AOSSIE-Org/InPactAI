@@ -107,7 +107,7 @@ VITE_YOUTUBE_API_KEY=your-youtube-api-key
 3. Copy **Project URL** → `VITE_SUPABASE_URL`
 4. Copy **anon public** key → `VITE_SUPABASE_ANON_KEY`
 
-**How to Youtube API Key**
+**How to get Youtube API Key**
 1. Log in to the [https://console.cloud.google.com/](https://console.cloud.google.com/)
 2. Create a new project or select an existing one from the project drop-down menu.
 3. In the Cloud Console, search for "YouTube Data API" in the search bar and select "YouTube Data API v3" from the results.
