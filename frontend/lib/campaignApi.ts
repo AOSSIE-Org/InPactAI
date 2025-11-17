@@ -4,7 +4,7 @@
 
 import { Campaign, CampaignFilters, CampaignPayload } from "@/types/campaign";
 
-const API_URL = "https://in-pact-ai-1k47.vercel.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * Get user ID from Supabase session

@@ -1,7 +1,10 @@
 // Gemini text generation API integration
 // Calls backend /generate endpoint securely
 export async function generateGeminiText(prompt: string): Promise<any> {
-  const apiUrl = "https://in-pact-ai-1k47.vercel.app";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL is not set in environment.");
+  }
   try {
     const res = await fetch(`${apiUrl}/generate`, {
       method: "POST",

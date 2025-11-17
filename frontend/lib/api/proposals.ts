@@ -10,7 +10,8 @@ import {
   Proposal,
 } from "@/types/proposals";
 
-const API_BASE_URL = "https://in-pact-ai-1k47.vercel.app";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
