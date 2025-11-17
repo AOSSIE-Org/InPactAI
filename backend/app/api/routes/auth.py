@@ -41,7 +41,7 @@ async def signup_user(payload: SignupRequest):
                 "email": payload.email,
                 "password": payload.password,
                 # TEMP: Auto-confirm email for development/testing
-                "email_confirm": False
+                "email_confirm": True
             })
         except AuthApiError as e:
             status = 409 if getattr(e, "code", None) == "user_already_exists" else getattr(e, "status", 400) or 400
