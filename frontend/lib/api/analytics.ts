@@ -416,3 +416,242 @@ export async function getCreatorDashboardStats(): Promise<CreatorDashboardStats>
   return parseJson<CreatorDashboardStats>(response);
 }
 
+// ==================== AI-Powered Analytics Endpoints ====================
+
+export interface PredictiveAnalyticsRequest {
+  campaign_id?: string;
+  metric_type?: string; // 'performance', 'roi', 'engagement'
+  forecast_periods?: number; // days
+}
+
+export interface PredictiveAnalyticsResponse {
+  forecast: {
+    predicted_value: number;
+    trend: string;
+    growth_rate: number;
+    forecasted_values: Array<{ date: string; value: number }>;
+  };
+  confidence: string;
+  factors: string[];
+  recommendations: string[];
+}
+
+export async function getPredictiveAnalytics(
+  request: PredictiveAnalyticsRequest
+): Promise<PredictiveAnalyticsResponse> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/analytics/ai/predictive`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    }
+  );
+  return parseJson<PredictiveAnalyticsResponse>(response);
+}
+
+export interface AutomatedInsightsResponse {
+  summary: string;
+  trends: string[];
+  anomalies: Array<{
+    metric: string;
+    description: string;
+    severity: string;
+  }>;
+  recommendations: string[];
+  key_metrics: Record<string, any>;
+}
+
+export async function getAutomatedInsights(
+  campaignId?: string
+): Promise<AutomatedInsightsResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/insights?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/insights`;
+  const response = await authenticatedFetch(url);
+  return parseJson<AutomatedInsightsResponse>(response);
+}
+
+export interface AudienceSegmentationResponse {
+  segments: Array<{
+    name: string;
+    size: number;
+    characteristics: string[];
+    demographics?: Record<string, any>;
+    interests?: string[];
+    engagement_score?: number;
+  }>;
+  visualization_data: Record<string, any>;
+}
+
+export async function getAudienceSegmentation(
+  campaignId?: string
+): Promise<AudienceSegmentationResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/audience-segmentation?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/audience-segmentation`;
+  const response = await authenticatedFetch(url);
+  return parseJson<AudienceSegmentationResponse>(response);
+}
+
+export interface SentimentAnalysisRequest {
+  text?: string;
+  campaign_id?: string;
+}
+
+export interface SentimentAnalysisResponse {
+  overall_sentiment: string;
+  sentiment_score: number;
+  positive_aspects: string[];
+  negative_aspects: string[];
+  recommendations: string[];
+}
+
+export async function analyzeSentiment(
+  request: SentimentAnalysisRequest
+): Promise<SentimentAnalysisResponse> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/analytics/ai/sentiment`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    }
+  );
+  return parseJson<SentimentAnalysisResponse>(response);
+}
+
+export interface AnomalyDetectionResponse {
+  anomalies: Array<{
+    metric: string;
+    date: string;
+    value: number;
+    expected_value: number;
+    deviation: number;
+    severity: string;
+    description: string;
+  }>;
+  summary: string;
+}
+
+export async function detectAnomalies(
+  campaignId?: string
+): Promise<AnomalyDetectionResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/anomaly-detection?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/anomaly-detection`;
+  const response = await authenticatedFetch(url);
+  return parseJson<AnomalyDetectionResponse>(response);
+}
+
+export interface AttributionModelingResponse {
+  attribution: Record<string, number>;
+  top_contributors: Array<{
+    name: string;
+    contribution_percent: number;
+    total_value: number;
+    insight: string;
+  }>;
+  insights: string[];
+}
+
+export async function getAttributionModeling(
+  campaignId?: string
+): Promise<AttributionModelingResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/attribution?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/attribution`;
+  const response = await authenticatedFetch(url);
+  return parseJson<AttributionModelingResponse>(response);
+}
+
+export interface BenchmarkingResponse {
+  your_metrics: Record<string, number>;
+  industry_benchmarks: Record<string, number>;
+  comparison: Record<string, {
+    your_value: number;
+    industry_avg: number;
+    percentile: number;
+    status: string;
+  }>;
+  recommendations: string[];
+}
+
+export async function getBenchmarking(
+  campaignId?: string
+): Promise<BenchmarkingResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/benchmarking?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/benchmarking`;
+  const response = await authenticatedFetch(url);
+  return parseJson<BenchmarkingResponse>(response);
+}
+
+export interface ChurnPredictionResponse {
+  churn_risk: Record<string, number>;
+  at_risk_segments: Array<{
+    segment: string;
+    risk_score: number;
+    indicators: string[];
+    recommendations: string[];
+  }>;
+  recommendations: string[];
+}
+
+export async function predictChurn(
+  campaignId?: string
+): Promise<ChurnPredictionResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/churn-prediction?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/churn-prediction`;
+  const response = await authenticatedFetch(url);
+  return parseJson<ChurnPredictionResponse>(response);
+}
+
+export interface NaturalLanguageQueryRequest {
+  query: string;
+  campaign_id?: string;
+}
+
+export interface NaturalLanguageQueryResponse {
+  answer: string;
+  data_sources: string[];
+  confidence: string;
+}
+
+export async function naturalLanguageQuery(
+  request: NaturalLanguageQueryRequest
+): Promise<NaturalLanguageQueryResponse> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/analytics/ai/natural-language-query`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    }
+  );
+  return parseJson<NaturalLanguageQueryResponse>(response);
+}
+
+export interface KPIOptimizationResponse {
+  current_kpis: Record<string, number>;
+  optimization_suggestions: Array<{
+    kpi: string;
+    current_value: number;
+    target_value: number;
+    suggestions: string[];
+    expected_impact: string;
+  }>;
+  priority_actions: string[];
+}
+
+export async function getKPIOptimization(
+  campaignId?: string
+): Promise<KPIOptimizationResponse> {
+  const url = campaignId
+    ? `${API_BASE_URL}/analytics/ai/kpi-optimization?campaign_id=${campaignId}`
+    : `${API_BASE_URL}/analytics/ai/kpi-optimization`;
+  const response = await authenticatedFetch(url);
+  return parseJson<KPIOptimizationResponse>(response);
+}
+

@@ -5,10 +5,12 @@ Supports brands defining metrics, creators submitting data, AI screenshot extrac
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from uuid import UUID
 import base64
 import httpx
+import json
+from groq import Groq
 from app.core.supabase_clients import supabase_anon
 from app.core.dependencies import get_current_brand, get_current_creator, get_current_user
 from app.core.config import settings

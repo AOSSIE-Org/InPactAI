@@ -59,7 +59,7 @@ Proposals management routes for brands and creators.
 class ProposalCreate(BaseModel):
     """Schema for creating a new proposal."""
     campaign_id: str
-    creator_id: str
+    creator_id: Optional[str] = None  # Optional: required for brands, auto-filled for creators
     subject: str = Field(..., min_length=1, max_length=255)
     message: str = Field(..., min_length=1)
     proposed_amount: Optional[float] = None
@@ -655,40 +655,104 @@ class AcceptNegotiationRequest(BaseModel):
 @router.post("/proposals", response_model=ProposalResponse, status_code=201)
 async def create_proposal(
     proposal: ProposalCreate,
-    brand: dict = Depends(get_current_brand)
+    current_user: dict = Depends(get_current_user)
 ):
-    """Create a new proposal from a brand to a creator."""
+    """Create a new proposal. Can be created by either a brand (to a creator) or a creator (to a brand)."""
     supabase = supabase_anon
-    brand_id = brand['id']
+    user_role = current_user.get('role')
 
     try:
-        # Verify campaign belongs to brand
-        campaign_resp = supabase.table("campaigns") \
-            .select("id, title, brand_id") \
-            .eq("id", proposal.campaign_id) \
-            .eq("brand_id", brand_id) \
-            .single() \
-            .execute()
+        # Determine if this is a brand or creator creating the proposal
+        if user_role == 'Brand':
+            # Brand creating proposal: they specify creator_id, brand_id from session
+            brand_resp = supabase.table("brands") \
+                .select("id, company_name") \
+                .eq("user_id", current_user['id']) \
+                .single() \
+                .execute()
 
-        if not campaign_resp.data:
-            raise HTTPException(status_code=404, detail="Campaign not found")
+            if not brand_resp.data:
+                raise HTTPException(status_code=404, detail="Brand profile not found")
 
-        # Verify creator exists
-        creator_resp = supabase.table("creators") \
-            .select("id, display_name") \
-            .eq("id", proposal.creator_id) \
-            .eq("is_active", True) \
-            .single() \
-            .execute()
+            brand_id = brand_resp.data['id']
+            brand_name = brand_resp.data.get("company_name", "Unknown Brand")
 
-        if not creator_resp.data:
-            raise HTTPException(status_code=404, detail="Creator not found")
+            if not proposal.creator_id:
+                raise HTTPException(status_code=400, detail="creator_id is required when creating a proposal as a brand")
+
+            creator_id = proposal.creator_id
+
+            # Verify campaign belongs to brand
+            campaign_resp = supabase.table("campaigns") \
+                .select("id, title, brand_id") \
+                .eq("id", proposal.campaign_id) \
+                .eq("brand_id", brand_id) \
+                .single() \
+                .execute()
+
+            if not campaign_resp.data:
+                raise HTTPException(status_code=404, detail="Campaign not found or does not belong to you")
+
+        elif user_role == 'Creator':
+            # Creator creating proposal: they specify campaign_id, creator_id from session, brand_id from campaign
+            creator_resp = supabase.table("creators") \
+                .select("id, display_name") \
+                .eq("user_id", current_user['id']) \
+                .eq("is_active", True) \
+                .single() \
+                .execute()
+
+            if not creator_resp.data:
+                raise HTTPException(status_code=404, detail="Creator profile not found or inactive")
+
+            creator_id = creator_resp.data['id']
+            creator_name = creator_resp.data.get("display_name", "Unknown Creator")
+
+            # Get campaign to find brand_id
+            campaign_resp = supabase.table("campaigns") \
+                .select("id, title, brand_id") \
+                .eq("id", proposal.campaign_id) \
+                .single() \
+                .execute()
+
+            if not campaign_resp.data:
+                raise HTTPException(status_code=404, detail="Campaign not found")
+
+            brand_id = campaign_resp.data.get("brand_id")
+            if not brand_id:
+                raise HTTPException(status_code=404, detail="Campaign has no associated brand")
+
+            # Get brand name
+            brand_resp = supabase.table("brands") \
+                .select("company_name") \
+                .eq("id", brand_id) \
+                .single() \
+                .execute()
+
+            brand_name = brand_resp.data.get("company_name", "Unknown Brand") if brand_resp.data else "Unknown Brand"
+
+        else:
+            raise HTTPException(status_code=403, detail="Only brands and creators can create proposals")
+
+        # For brands, verify creator exists and is active
+        if user_role == 'Brand':
+            creator_resp = supabase.table("creators") \
+                .select("id, display_name") \
+                .eq("id", creator_id) \
+                .eq("is_active", True) \
+                .single() \
+                .execute()
+
+            if not creator_resp.data:
+                raise HTTPException(status_code=404, detail="Creator not found or inactive")
+
+            creator_name = creator_resp.data.get("display_name", "Unknown Creator")
 
         # Check if proposal already exists
         existing = supabase.table("proposals") \
             .select("id") \
             .eq("campaign_id", proposal.campaign_id) \
-            .eq("creator_id", proposal.creator_id) \
+            .eq("creator_id", creator_id) \
             .eq("brand_id", brand_id) \
             .execute()
 
@@ -707,7 +771,7 @@ async def create_proposal(
         proposal_data = {
             "campaign_id": proposal.campaign_id,
             "brand_id": brand_id,
-            "creator_id": proposal.creator_id,
+            "creator_id": creator_id,
             "subject": proposal.subject,
             "message": clean_msg,
             "proposed_amount": proposal.proposed_amount,
@@ -725,8 +789,8 @@ async def create_proposal(
 
         normalized = normalize_proposal_record(
             proposal_obj,
-            brand_name=brand.get("company_name", "Unknown Brand"),
-            creator_name=creator_resp.data.get("display_name")
+            brand_name=brand_name,
+            creator_name=creator_name
         )
         normalized["campaign_title"] = campaign_resp.data.get("title")
 
@@ -752,11 +816,15 @@ async def get_sent_proposals(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0)
 ):
-    """Get all proposals sent by the current brand."""
+    """
+    Get all proposals for the current brand.
+    This includes proposals sent by the brand to creators AND proposals sent by creators to the brand.
+    """
     supabase = supabase_anon
     brand_id = brand['id']
 
     try:
+        # Get all proposals where this brand is involved (both sent by brand and received from creators)
         query = supabase.table("proposals") \
             .select("*, campaigns(title), creators(display_name)") \
             .eq("brand_id", brand_id) \
@@ -3524,4 +3592,1145 @@ Return your response as JSON with this structure:
         raise HTTPException(
             status_code=500,
             detail=f"Error drafting proposal: {str(e)}"
+        ) from e
+
+
+# ============================================================================
+# NEGOTIATION AI FEATURES
+# ============================================================================
+
+class SentimentAnalysisRequest(BaseModel):
+    """Request for sentiment analysis of negotiation messages."""
+    messages: List[str] = Field(..., description="List of messages to analyze")
+
+
+class SentimentAnalysisResponse(BaseModel):
+    """Response for sentiment analysis."""
+    overall_sentiment: str = Field(..., description="Overall sentiment: positive, neutral, negative, or mixed")
+    sentiment_score: float = Field(..., description="Sentiment score from -1 (negative) to 1 (positive)")
+    detected_tone: List[str] = Field(default_factory=list, description="Detected tones: e.g., 'hesitant', 'confident', 'conflict'")
+    guidance: str = Field(..., description="Actionable guidance based on sentiment")
+    alerts: List[str] = Field(default_factory=list, description="Alerts for concerning patterns")
+
+
+@router.post("/proposals/{proposal_id}/negotiation/analyze-sentiment", response_model=SentimentAnalysisResponse)
+async def analyze_negotiation_sentiment(
+    proposal_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Analyze sentiment of negotiation messages to detect tone and provide guidance."""
+    supabase = supabase_anon
+    proposal = fetch_proposal_by_id(proposal_id)
+
+    # Verify user has access
+    user_role = user.get("role")
+    if user_role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != proposal["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif user_role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != proposal["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    thread = normalize_negotiation_thread(proposal.get("negotiation_thread"))
+    messages = [entry.get("message", "") for entry in thread if entry.get("type") == "message" and entry.get("message")]
+
+    if not messages:
+        return SentimentAnalysisResponse(
+            overall_sentiment="neutral",
+            sentiment_score=0.0,
+            detected_tone=[],
+            guidance="No messages found in this negotiation yet.",
+            alerts=[]
+        )
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        messages_text = "\n".join([f"Message {i+1}: {msg}" for i, msg in enumerate(messages)])
+
+        prompt = f"""Analyze the sentiment and tone of these negotiation messages from a business collaboration context:
+
+{messages_text}
+
+Provide a comprehensive sentiment analysis including:
+1. Overall sentiment (positive, neutral, negative, or mixed)
+2. Sentiment score from -1 (very negative) to 1 (very positive)
+3. Detected tones (e.g., hesitant, confident, conflict, enthusiastic, defensive, collaborative)
+4. Actionable guidance for the user on how to proceed
+5. Any alerts for concerning patterns (conflict, hesitation, negative signals)
+
+Return your response as JSON with this exact structure:
+{{
+  "overall_sentiment": "positive|neutral|negative|mixed",
+  "sentiment_score": 0.75,
+  "detected_tone": ["confident", "collaborative"],
+  "guidance": "The negotiation shows positive momentum. Consider...",
+  "alerts": []
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert business communication analyst. Analyze negotiation messages and provide actionable insights. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_completion_tokens=800,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return SentimentAnalysisResponse(
+            overall_sentiment=result.get("overall_sentiment", "neutral"),
+            sentiment_score=float(result.get("sentiment_score", 0.0)),
+            detected_tone=result.get("detected_tone", []),
+            guidance=result.get("guidance", "Continue the negotiation with professional communication."),
+            alerts=result.get("alerts", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error analyzing sentiment: {str(e)}"
+        ) from e
+
+
+class MessageDraftRequest(BaseModel):
+    """Request for AI message drafting assistance."""
+    context: str = Field(..., description="Context or intent for the message")
+    tone: Optional[str] = Field("professional", description="Desired tone: professional, polite, persuasive, friendly")
+    current_negotiation_state: Optional[str] = Field(None, description="Current state of negotiation")
+
+
+class MessageDraftResponse(BaseModel):
+    """Response for message drafting."""
+    draft: str = Field(..., description="AI-generated message draft")
+    suggestions: List[str] = Field(default_factory=list, description="Additional suggestions or tips")
+
+
+@router.post("/proposals/{proposal_id}/negotiation/draft-message", response_model=MessageDraftResponse)
+async def draft_negotiation_message(
+    proposal_id: str,
+    payload: MessageDraftRequest,
+    user: dict = Depends(get_current_user)
+):
+    """AI assistance for drafting negotiation messages."""
+    supabase = supabase_anon
+    proposal = fetch_proposal_by_id(proposal_id)
+
+    # Verify user has access
+    user_role = user.get("role")
+    sender_name = "User"
+    if user_role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != proposal["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        sender_name = brand_profile.get("company_name", "Brand")
+    elif user_role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != proposal["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        sender_name = creator_profile.get("display_name", "Creator")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    thread = normalize_negotiation_thread(proposal.get("negotiation_thread"))
+    recent_messages = thread[-5:] if len(thread) > 5 else thread
+    conversation_context = "\n".join([
+        f"{entry.get('sender_role')}: {entry.get('message', '')}"
+        for entry in recent_messages
+        if entry.get("type") == "message"
+    ])
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        prompt = f"""You are helping {sender_name} draft a negotiation message.
+
+PROPOSAL CONTEXT:
+- Subject: {proposal.get('subject', 'N/A')}
+- Campaign: {proposal.get('campaign_title', 'N/A')}
+
+RECENT CONVERSATION:
+{conversation_context if conversation_context else 'This is the start of the negotiation.'}
+
+USER'S INTENT:
+{payload.context}
+
+DESIRED TONE: {payload.tone}
+
+CURRENT NEGOTIATION STATE: {payload.current_negotiation_state or 'Active negotiation'}
+
+Draft a {payload.tone} negotiation message that:
+1. Is clear and professional
+2. Addresses the user's intent
+3. Maintains a {payload.tone} tone
+4. Is appropriate for the negotiation context
+5. Moves the conversation forward constructively
+
+Return your response as JSON with this structure:
+{{
+  "draft": "The complete message draft here",
+  "suggestions": ["Tip 1", "Tip 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert at writing professional business negotiation messages. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_completion_tokens=600,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return MessageDraftResponse(
+            draft=result.get("draft", "I would like to discuss the proposal further."),
+            suggestions=result.get("suggestions", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error drafting message: {str(e)}"
+        ) from e
+
+
+class DealProbabilityResponse(BaseModel):
+    """Response for deal probability prediction."""
+    probability: float = Field(..., description="Probability of successful deal (0.0 to 1.0)")
+    confidence: str = Field(..., description="Confidence level: high, medium, low")
+    factors: List[str] = Field(default_factory=list, description="Key factors influencing the prediction")
+    recommendations: List[str] = Field(default_factory=list, description="Recommendations to improve deal probability")
+
+
+@router.get("/proposals/{proposal_id}/negotiation/deal-probability", response_model=DealProbabilityResponse)
+async def predict_deal_probability(
+    proposal_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """Predict the likelihood of a negotiation resulting in a successful deal."""
+    supabase = supabase_anon
+    proposal = fetch_proposal_by_id(proposal_id)
+
+    # Verify user has access
+    user_role = user.get("role")
+    if user_role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != proposal["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif user_role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != proposal["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    thread = normalize_negotiation_thread(proposal.get("negotiation_thread"))
+    messages = [entry.get("message", "") for entry in thread if entry.get("type") == "message"]
+
+    # Get historical data (simplified - could be enhanced with actual historical success rates)
+    try:
+        # Count similar successful negotiations (simplified approach)
+        similar_proposals = supabase.table("proposals") \
+            .select("id, status, negotiation_status") \
+            .eq("brand_id", proposal["brand_id"]) \
+            .eq("creator_id", proposal["creator_id"]) \
+            .in_("negotiation_status", ["finalized", "open"]) \
+            .execute()
+
+        historical_success_rate = 0.5  # Default
+        if similar_proposals.data:
+            finalized = sum(1 for p in similar_proposals.data if p.get("negotiation_status") == "finalized")
+            historical_success_rate = finalized / len(similar_proposals.data) if similar_proposals.data else 0.5
+    except:
+        historical_success_rate = 0.5
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        conversation_summary = "\n".join([f"Message {i+1}: {msg}" for i, msg in enumerate(messages)]) if messages else "No messages yet."
+
+        prompt = f"""Analyze this business negotiation and predict the probability of a successful deal.
+
+PROPOSAL DETAILS:
+- Subject: {proposal.get('subject', 'N/A')}
+- Status: {proposal.get('status', 'N/A')}
+- Negotiation Status: {proposal.get('negotiation_status', 'N/A')}
+- Proposed Amount: {proposal.get('proposed_amount', 'N/A')}
+- Version: {proposal.get('version', 1)}
+
+CONVERSATION HISTORY:
+{conversation_summary}
+
+HISTORICAL SUCCESS RATE: {historical_success_rate:.2%}
+
+CURRENT TERMS:
+{json.dumps(proposal.get('current_terms', {}), indent=2) if proposal.get('current_terms') else 'No terms set yet.'}
+
+Based on:
+1. Conversation tone and engagement
+2. Progress in negotiation
+3. Terms alignment
+4. Historical patterns
+5. Communication quality
+
+Predict the probability (0.0 to 1.0) of this negotiation resulting in a successful deal.
+
+Return your response as JSON with this structure:
+{{
+  "probability": 0.75,
+  "confidence": "high|medium|low",
+  "factors": ["Factor 1", "Factor 2"],
+  "recommendations": ["Recommendation 1", "Recommendation 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert business analyst specializing in deal prediction. Analyze negotiations and provide probability estimates. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_completion_tokens=600,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        probability = float(result.get("probability", 0.5))
+        # Clamp probability between 0 and 1
+        probability = max(0.0, min(1.0, probability))
+
+        return DealProbabilityResponse(
+            probability=probability,
+            confidence=result.get("confidence", "medium"),
+            factors=result.get("factors", []),
+            recommendations=result.get("recommendations", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error predicting deal probability: {str(e)}"
+        ) from e
+
+
+class TranslationRequest(BaseModel):
+    """Request for message translation."""
+    text: str = Field(..., description="Text to translate")
+    target_language: str = Field(..., description="Target language code (e.g., 'es', 'fr', 'de', 'zh')")
+    source_language: Optional[str] = Field(None, description="Source language code (auto-detect if not provided)")
+
+
+class TranslationResponse(BaseModel):
+    """Response for translation."""
+    translated_text: str = Field(..., description="Translated text")
+    detected_language: Optional[str] = Field(None, description="Detected source language")
+    confidence: Optional[float] = Field(None, description="Translation confidence score")
+
+
+@router.post("/proposals/{proposal_id}/negotiation/translate", response_model=TranslationResponse)
+async def translate_negotiation_message(
+    proposal_id: str,
+    payload: TranslationRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Translate negotiation messages for cross-border negotiations."""
+    supabase = supabase_anon
+    proposal = fetch_proposal_by_id(proposal_id)
+
+    # Verify user has access
+    user_role = user.get("role")
+    if user_role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != proposal["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif user_role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != proposal["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not payload.text.strip():
+        raise HTTPException(status_code=400, detail="Text to translate cannot be empty")
+
+    # Language code mapping
+    language_names = {
+        "es": "Spanish", "fr": "French", "de": "German", "zh": "Chinese",
+        "ja": "Japanese", "ko": "Korean", "pt": "Portuguese", "it": "Italian",
+        "ru": "Russian", "ar": "Arabic", "hi": "Hindi", "nl": "Dutch",
+        "sv": "Swedish", "pl": "Polish", "tr": "Turkish"
+    }
+
+    target_language_name = language_names.get(payload.target_language.lower(), payload.target_language)
+    source_language_name = language_names.get(payload.source_language.lower(), payload.source_language) if payload.source_language else None
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        prompt = f"""Translate the following business negotiation message to {target_language_name}.
+
+Maintain:
+- Professional tone
+- Business context and meaning
+- All numbers, dates, and technical terms accurately
+- Cultural appropriateness for business communication
+
+Source text:
+{payload.text}
+
+Provide the translation and detect the source language if not specified.
+
+Return your response as JSON with this structure:
+{{
+  "translated_text": "Translated text here",
+  "detected_language": "en",
+  "confidence": 0.95
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert translator specializing in business and professional communication. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_completion_tokens=500,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return TranslationResponse(
+            translated_text=result.get("translated_text", payload.text),
+            detected_language=result.get("detected_language") or payload.source_language,
+            confidence=float(result.get("confidence", 0.9)) if result.get("confidence") else None
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error translating message: {str(e)}"
+        ) from e
+
+
+# ============================================================================
+# CONTRACT AI FEATURES
+# ============================================================================
+
+class ContractQuestionRequest(BaseModel):
+    """Request for contract question answering."""
+    question: str = Field(..., description="Question about the contract")
+
+
+class ContractQuestionResponse(BaseModel):
+    """Response for contract question."""
+    answer: str = Field(..., description="AI-generated answer to the question")
+    relevant_clauses: List[str] = Field(default_factory=list, description="Relevant contract clauses referenced")
+
+
+@router.post("/contracts/{contract_id}/ask-question", response_model=ContractQuestionResponse)
+async def ask_contract_question(
+    contract_id: str,
+    payload: ContractQuestionRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Allow users to ask questions about the contract and get AI-powered answers."""
+    supabase = supabase_anon
+
+    # Verify access
+    contract_resp = supabase.table("contracts") \
+        .select("*, proposals(*)") \
+        .eq("id", contract_id) \
+        .single() \
+        .execute()
+
+    if not contract_resp.data:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract = contract_resp.data
+    role = user.get("role")
+
+    if role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != contract["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != contract["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        contract_terms = json.dumps(contract.get("terms", {}), indent=2)
+        proposal = contract.get("proposals", {}) if isinstance(contract.get("proposals"), dict) else {}
+
+        prompt = f"""You are a contract analysis assistant. Answer the user's question about this contract.
+
+CONTRACT TERMS:
+{contract_terms}
+
+PROPOSAL CONTEXT:
+- Subject: {proposal.get('subject', 'N/A')}
+- Campaign: {proposal.get('campaign_title', 'N/A')}
+- Proposed Amount: {proposal.get('proposed_amount', 'N/A')}
+
+USER'S QUESTION:
+{payload.question}
+
+Provide a clear, accurate answer based on the contract terms. If the information is not in the contract, say so. Also identify which specific clauses or sections are relevant to the answer.
+
+Return your response as JSON with this structure:
+{{
+  "answer": "Clear answer to the question",
+  "relevant_clauses": ["Clause 1", "Clause 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert contract analyst. Answer questions accurately based on contract terms. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_completion_tokens=800,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return ContractQuestionResponse(
+            answer=result.get("answer", "I couldn't find a clear answer to that question in the contract."),
+            relevant_clauses=result.get("relevant_clauses", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error answering question: {str(e)}"
+        ) from e
+
+
+class ContractTemplateRequest(BaseModel):
+    """Request for contract template generation."""
+    deal_type: str = Field(..., description="Type of deal (e.g., 'sponsored content', 'brand ambassadorship')")
+    deliverables: Optional[List[str]] = Field(default_factory=list, description="List of deliverables")
+    payment_amount: Optional[float] = Field(None, description="Payment amount")
+    duration: Optional[str] = Field(None, description="Contract duration")
+    additional_requirements: Optional[str] = Field(None, description="Additional requirements or notes")
+
+
+class ContractTemplateResponse(BaseModel):
+    """Response for contract template."""
+    template: Dict[str, Any] = Field(..., description="Generated contract template as JSON")
+    suggestions: List[str] = Field(default_factory=list, description="Suggestions for the contract")
+
+
+@router.post("/contracts/generate-template", response_model=ContractTemplateResponse)
+async def generate_contract_template(
+    payload: ContractTemplateRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Generate draft contract templates for new deals based on best practices."""
+    if user.get("role") not in ("Brand", "Creator"):
+        raise HTTPException(status_code=403, detail="Only brands and creators can generate templates")
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        # Get user's previous contracts for reference
+        supabase = supabase_anon
+        role = user.get("role")
+        previous_contracts = []
+
+        try:
+            if role == "Brand":
+                brand_profile = fetch_brand_profile_by_user_id(user["id"])
+                if brand_profile:
+                    contracts_resp = supabase.table("contracts") \
+                        .select("terms") \
+                        .eq("brand_id", brand_profile["id"]) \
+                        .limit(5) \
+                        .execute()
+                    previous_contracts = [c.get("terms") for c in (contracts_resp.data or []) if c.get("terms")]
+            else:
+                creator_profile = fetch_creator_profile_by_user_id(user["id"])
+                if creator_profile:
+                    contracts_resp = supabase.table("contracts") \
+                        .select("terms") \
+                        .eq("creator_id", creator_profile["id"]) \
+                        .limit(5) \
+                        .execute()
+                    previous_contracts = [c.get("terms") for c in (contracts_resp.data or []) if c.get("terms")]
+        except:
+            pass  # Continue without previous contracts if fetch fails
+
+        previous_examples = json.dumps(previous_contracts[:3], indent=2) if previous_contracts else "None available"
+
+        prompt = f"""Generate a professional contract template for a brand-creator collaboration deal.
+
+DEAL TYPE: {payload.deal_type}
+DELIVERABLES: {', '.join(payload.deliverables) if payload.deliverables else 'To be specified'}
+PAYMENT AMOUNT: {payload.payment_amount or 'To be negotiated'}
+DURATION: {payload.duration or 'To be specified'}
+ADDITIONAL REQUIREMENTS: {payload.additional_requirements or 'None'}
+
+PREVIOUS CONTRACT EXAMPLES (for reference):
+{previous_examples}
+
+Generate a comprehensive contract template that includes:
+1. Parties involved
+2. Scope of work and deliverables
+3. Payment terms and schedule
+4. Timeline and deadlines
+5. Content usage rights
+6. Exclusivity clauses (if applicable)
+7. Termination conditions
+8. Dispute resolution
+9. Confidentiality
+10. Any other relevant standard clauses
+
+Return your response as JSON with this structure:
+{{
+  "template": {{
+    "parties": {{"brand": "...", "creator": "..."}},
+    "scope_of_work": "...",
+    "deliverables": [...],
+    "payment_terms": {{"amount": ..., "schedule": "..."}},
+    "timeline": "...",
+    "content_rights": "...",
+    "exclusivity": "...",
+    "termination": "...",
+    "dispute_resolution": "...",
+    "confidentiality": "..."
+  }},
+  "suggestions": ["Suggestion 1", "Suggestion 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert contract lawyer specializing in influencer marketing agreements. Generate professional contract templates. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5,
+            max_completion_tokens=2000,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return ContractTemplateResponse(
+            template=result.get("template", {}),
+            suggestions=result.get("suggestions", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating template: {str(e)}"
+        ) from e
+
+
+class ContractTranslationRequest(BaseModel):
+    """Request for contract translation."""
+    target_language: str = Field(..., description="Target language code (e.g., 'es', 'fr', 'de')")
+
+
+class ContractTranslationResponse(BaseModel):
+    """Response for contract translation."""
+    translated_terms: Dict[str, Any] = Field(..., description="Translated contract terms")
+    detected_language: Optional[str] = Field(None, description="Detected source language")
+
+
+@router.post("/contracts/{contract_id}/translate", response_model=ContractTranslationResponse)
+async def translate_contract(
+    contract_id: str,
+    payload: ContractTranslationRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Translate contracts into the user's preferred language."""
+    supabase = supabase_anon
+
+    # Verify access
+    contract_resp = supabase.table("contracts") \
+        .select("*") \
+        .eq("id", contract_id) \
+        .single() \
+        .execute()
+
+    if not contract_resp.data:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract = contract_resp.data
+    role = user.get("role")
+
+    if role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != contract["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != contract["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Language code mapping
+    language_names = {
+        "es": "Spanish", "fr": "French", "de": "German", "zh": "Chinese",
+        "ja": "Japanese", "ko": "Korean", "pt": "Portuguese", "it": "Italian",
+        "ru": "Russian", "ar": "Arabic", "hi": "Hindi", "nl": "Dutch",
+        "sv": "Swedish", "pl": "Polish", "tr": "Turkish"
+    }
+
+    target_language_name = language_names.get(payload.target_language.lower(), payload.target_language)
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        contract_terms = json.dumps(contract.get("terms", {}), indent=2)
+
+        prompt = f"""Translate the following contract terms to {target_language_name}.
+
+Maintain:
+- Legal accuracy and precision
+- Professional business tone
+- All numbers, dates, and technical terms exactly as they are
+- Contract structure and formatting
+- Cultural appropriateness for business communication
+
+CONTRACT TERMS (JSON):
+{contract_terms}
+
+Return the translated contract as JSON with the same structure, and detect the source language.
+
+Return your response as JSON with this structure:
+{{
+  "translated_terms": {{...translated contract JSON...}},
+  "detected_language": "en"
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert legal translator specializing in business contracts. Translate contracts accurately while maintaining legal precision. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_completion_tokens=3000,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return ContractTranslationResponse(
+            translated_terms=result.get("translated_terms", contract.get("terms", {})),
+            detected_language=result.get("detected_language", "en")
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error translating contract: {str(e)}"
+        ) from e
+
+
+class ClauseExplanationRequest(BaseModel):
+    """Request for clause explanation."""
+    clause_text: str = Field(..., description="The clause text to explain")
+    clause_context: Optional[str] = Field(None, description="Context about where this clause appears in the contract")
+
+
+class ClauseExplanationResponse(BaseModel):
+    """Response for clause explanation."""
+    explanation: str = Field(..., description="Plain-language explanation of the clause")
+    key_points: List[str] = Field(default_factory=list, description="Key points to understand")
+    implications: List[str] = Field(default_factory=list, description="What this means for the user")
+
+
+@router.post("/contracts/{contract_id}/explain-clause", response_model=ClauseExplanationResponse)
+async def explain_contract_clause(
+    contract_id: str,
+    payload: ClauseExplanationRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Provide plain-language explanations for complex legal clauses."""
+    supabase = supabase_anon
+
+    # Verify access
+    contract_resp = supabase.table("contracts") \
+        .select("*") \
+        .eq("id", contract_id) \
+        .single() \
+        .execute()
+
+    if not contract_resp.data:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract = contract_resp.data
+    role = user.get("role")
+
+    if role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != contract["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != contract["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        contract_terms = json.dumps(contract.get("terms", {}), indent=2)
+        user_role_label = "creator" if role == "Creator" else "brand"
+
+        prompt = f"""Explain this contract clause in plain, easy-to-understand language for a {user_role_label}.
+
+CONTRACT TERMS (for context):
+{contract_terms}
+
+CLAUSE TO EXPLAIN:
+{payload.clause_text}
+
+CONTEXT: {payload.clause_context or 'General contract clause'}
+
+Provide:
+1. A clear, plain-language explanation of what this clause means
+2. Key points the user should understand
+3. What this means for their rights and responsibilities
+
+Use simple language, avoid legal jargon, and be specific about what the user needs to know.
+
+Return your response as JSON with this structure:
+{{
+  "explanation": "Clear explanation in plain language",
+  "key_points": ["Point 1", "Point 2"],
+  "implications": ["Implication 1", "Implication 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a legal educator who explains complex contract clauses in simple, understandable terms. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_completion_tokens=800,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return ClauseExplanationResponse(
+            explanation=result.get("explanation", "Unable to explain this clause."),
+            key_points=result.get("key_points", []),
+            implications=result.get("implications", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error explaining clause: {str(e)}"
+        ) from e
+
+
+class ContractSummaryResponse(BaseModel):
+    """Response for contract summarization."""
+    summary: str = Field(..., description="Concise summary of the contract")
+    key_terms: Dict[str, Any] = Field(..., description="Key terms extracted (payment, timeline, deliverables, etc.)")
+    obligations: Dict[str, List[str]] = Field(..., description="Obligations for each party")
+    important_dates: List[str] = Field(default_factory=list, description="Important dates and deadlines")
+
+
+@router.get("/contracts/{contract_id}/summarize", response_model=ContractSummaryResponse)
+async def summarize_contract(
+    contract_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """AI can generate concise summaries of lengthy contracts, highlighting key terms, payment details, and obligations."""
+    supabase = supabase_anon
+
+    # Verify access
+    contract_resp = supabase.table("contracts") \
+        .select("*, proposals(*)") \
+        .eq("id", contract_id) \
+        .single() \
+        .execute()
+
+    if not contract_resp.data:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    contract = contract_resp.data
+    role = user.get("role")
+
+    if role == "Brand":
+        brand_profile = fetch_brand_profile_by_user_id(user["id"])
+        if not brand_profile or brand_profile.get("id") != contract["brand_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif role == "Creator":
+        creator_profile = fetch_creator_profile_by_user_id(user["id"])
+        if not creator_profile or creator_profile.get("id") != contract["creator_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    try:
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ API key not configured")
+
+        groq_client = Groq(api_key=settings.groq_api_key)
+
+        contract_terms = json.dumps(contract.get("terms", {}), indent=2)
+        proposal = contract.get("proposals", {}) if isinstance(contract.get("proposals"), dict) else {}
+
+        prompt = f"""Create a concise, easy-to-understand summary of this contract.
+
+CONTRACT TERMS:
+{contract_terms}
+
+PROPOSAL CONTEXT:
+- Subject: {proposal.get('subject', 'N/A')}
+- Campaign: {proposal.get('campaign_title', 'N/A')}
+
+Generate a summary that highlights:
+1. Overall purpose and scope of the agreement
+2. Key terms (payment amount, schedule, deliverables, timeline)
+3. Obligations for each party (brand and creator)
+4. Important dates and deadlines
+5. Key rights and responsibilities
+
+Return your response as JSON with this structure:
+{{
+  "summary": "Overall summary paragraph",
+  "key_terms": {{
+    "payment": "...",
+    "timeline": "...",
+    "deliverables": [...],
+    "content_rights": "..."
+  }},
+  "obligations": {{
+    "brand": ["Obligation 1", "Obligation 2"],
+    "creator": ["Obligation 1", "Obligation 2"]
+  }},
+  "important_dates": ["Date 1", "Date 2"]
+}}"""
+
+        completion = groq_client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert contract analyst. Create clear, concise summaries of contracts. Always respond with valid JSON only."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_completion_tokens=1200,
+            response_format={"type": "json_object"}
+        )
+
+        content = completion.choices[0].message.content if completion.choices else "{}"
+        content = content.strip()
+
+        # Clean JSON response
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+
+        result = json.loads(content)
+
+        return ContractSummaryResponse(
+            summary=result.get("summary", "Contract summary unavailable."),
+            key_terms=result.get("key_terms", {}),
+            obligations=result.get("obligations", {"brand": [], "creator": []}),
+            important_dates=result.get("important_dates", [])
+        )
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error summarizing contract: {str(e)}"
         ) from e

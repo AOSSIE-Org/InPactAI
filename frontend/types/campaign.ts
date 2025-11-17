@@ -23,6 +23,8 @@ export interface Campaign {
   starts_at?: string;
   ends_at?: string;
   is_featured: boolean;
+  is_open_for_applications?: boolean;
+  is_on_campaign_wall?: boolean;
 }
 
 export type CampaignStatus =
@@ -81,6 +83,8 @@ export interface CampaignPayload {
   preferred_creator_followers_range?: string;
   starts_at?: string;
   ends_at?: string;
+  is_open_for_applications?: boolean;
+  is_on_campaign_wall?: boolean;
 }
 
 export interface CampaignFilters {
