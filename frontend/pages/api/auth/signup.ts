@@ -11,15 +11,8 @@ export default async function handler(
   }
 
   try {
-    // Validate NEXT_PUBLIC_API_URL
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl || !/^http:\/\//.test(apiUrl)) {
-      return res.status(500).json({
-        detail:
-          "NEXT_PUBLIC_API_URL is missing or not a valid HTTPS URL. Please contact the administrator.",
-      });
-    }
     // Forward the request to FastAPI backend
+    const apiUrl = "https://in-pact-ai-1k47.vercel.app";
     const backendRes = await fetch(`${apiUrl}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

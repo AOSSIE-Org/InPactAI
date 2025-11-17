@@ -25,8 +25,7 @@ export default function ProfileButton({ role }: ProfileButtonProps) {
 
       // Fetch profile image based on role
       try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const apiUrl = "https://in-pact-ai-1k47.vercel.app";
         const { supabase } = await import("@/lib/supabaseClient");
         const {
           data: { session },

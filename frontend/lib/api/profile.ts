@@ -1,7 +1,7 @@
 type Nullable<T> = T | null;
 import { authenticatedFetch } from "../auth-helpers";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = "https://in-pact-ai-1k47.vercel.app";
 
 export interface BrandProfile {
   id: string;

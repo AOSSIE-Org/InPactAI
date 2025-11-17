@@ -24,6 +24,8 @@ AI_API_KEY=your-openai-api-key-optional
 GEMINI_API_KEY=your-gemini-api-key-here
 
 # CORS Origins (comma-separated)
+# For production, include your production frontend URL(s)
+# Example: ALLOWED_ORIGINS=https://your-frontend-domain.com,https://www.your-frontend-domain.com
 
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 
