@@ -40,9 +40,12 @@ interface CreatorMatch {
 }
 
 export default function FindCreatorsPage() {
-  const params = useParams();
+  const params = useParams<{ campaign_id?: string | string[] }>();
   const router = useRouter();
-  const campaignId = params.campaign_id as string;
+  const campaignIdValue = Array.isArray(params?.campaign_id)
+    ? params?.campaign_id[0]
+    : params?.campaign_id;
+  const campaignId = campaignIdValue ?? "";
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [creators, setCreators] = useState<CreatorMatch[]>([]);
@@ -66,10 +69,15 @@ export default function FindCreatorsPage() {
   const [multipleMatches, setMultipleMatches] = useState<any[] | null>(null);
 
   useEffect(() => {
+    if (!campaignId) return;
     loadData();
   }, [campaignId]);
 
   const loadData = async () => {
+    if (!campaignId) {
+      setError("Campaign ID is missing. Please return to campaigns and try again.");
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -98,6 +106,10 @@ export default function FindCreatorsPage() {
   const handleDraftProposal = async (creatorId: string) => {
     try {
       setDraftingProposal(true);
+      if (!campaignId) {
+        alert("Campaign ID is missing. Please go back and try again.");
+        return;
+      }
       let url = `${API_BASE_URL}/proposals/draft?campaign_id=${campaignId}&creator_id=${creatorId}`;
       if (proposalData.content_idea) {
         url += `&content_idea=${encodeURIComponent(proposalData.content_idea)}`;
@@ -133,6 +145,10 @@ export default function FindCreatorsPage() {
     }
 
     try {
+      if (!campaignId) {
+        setSearchError("Campaign ID missing. Please go back and try again.");
+        return;
+      }
       setSearchingCreator(true);
       setSearchError(null);
       setMultipleMatches(null);
@@ -215,6 +231,10 @@ export default function FindCreatorsPage() {
 
   const handleSendProposal = async (creatorId: string) => {
     try {
+      if (!campaignId) {
+        alert("Campaign ID is missing. Please go back and try again.");
+        return;
+      }
       setSendingProposal(true);
       const url = `${API_BASE_URL}/proposals`;
       const response = await authenticatedFetch(url, {
@@ -257,6 +277,27 @@ export default function FindCreatorsPage() {
       setSendingProposal(false);
     }
   };
+
+  if (!campaignId) {
+    return (
+      <AuthGuard requiredRole="Brand">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
+          <div className="max-w-md text-center">
+            <h1 className="text-2xl font-semibold text-gray-900">Invalid campaign</h1>
+            <p className="mt-3 text-gray-600">
+              We couldn&apos;t determine which campaign you&apos;re trying to manage. Please return to the campaigns list and try again.
+            </p>
+            <button
+              onClick={() => router.push("/brand/campaigns")}
+              className="mt-6 rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-blue-700"
+            >
+              Go to campaigns
+            </button>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard requiredRole="Brand">

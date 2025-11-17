@@ -12,6 +12,7 @@ import {
   FeedbackCreateInput,
   UpdateRequestCreateInput,
   ScreenshotExtractionResult,
+  DeliverableMetricsResponse,
 } from "@/types/analytics";
 
 const API_BASE_URL =
@@ -311,15 +312,6 @@ export async function getPlatformDeliverables(
     `${API_BASE_URL}/analytics/creator/campaigns/${campaignId}/platform/${platform}/deliverables`
   );
   return parseJson<PlatformDeliverablesResponse>(response);
-}
-
-export interface DeliverableMetricsResponse {
-  metrics: CampaignDeliverableMetric[];
-  deliverable: {
-    id: string;
-    description: string;
-    status: string;
-  };
 }
 
 export async function getCreatorDeliverableMetrics(

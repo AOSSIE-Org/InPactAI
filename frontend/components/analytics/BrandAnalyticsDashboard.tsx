@@ -8,9 +8,11 @@ import {
   createFeedback,
   getDeliverableMetrics,
   AllDeliverablesResponse,
+} from "@/lib/api/analytics";
+import type {
   CampaignDeliverableMetric,
   MetricUpdate,
-} from "@/lib/api/analytics";
+} from "@/types/analytics";
 import {
   Plus,
   RefreshCw,

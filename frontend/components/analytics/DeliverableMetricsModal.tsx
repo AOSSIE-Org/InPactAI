@@ -15,9 +15,11 @@ import {
   getCreatorDeliverableMetrics,
   submitMetricValue,
   createCreatorComment,
+} from "@/lib/api/analytics";
+import type {
   DeliverableMetricsResponse,
   CampaignDeliverableMetric,
-} from "@/lib/api/analytics";
+} from "@/types/analytics";
 
 interface DeliverableMetricsModalProps {
   deliverableId: string;

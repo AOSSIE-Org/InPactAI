@@ -7,9 +7,23 @@ import {
   TabKey,
 } from "@/components/proposals/ProposalsWorkspace";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 
 export default function BrandProposalsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-600">
+          Loading proposals...
+        </div>
+      }
+    >
+      <BrandProposalsContent />
+    </Suspense>
+  );
+}
+
+function BrandProposalsContent() {
   const searchParams = useSearchParams();
 
   const initialTab = useMemo<TabKey>(() => {

@@ -12,6 +12,7 @@ export interface CampaignDeliverableMetric {
   created_at: string;
   latest_update?: MetricUpdate;
   latest_feedback?: MetricFeedback;
+  feedback?: MetricFeedback[];
   pending_requests?: UpdateRequest[];
 }
 
@@ -131,5 +132,14 @@ export interface ScreenshotExtractionResult {
   extracted_data: Record<string, any>;
   metric_name: string;
   suggested_value?: number;
+}
+
+export interface DeliverableMetricsResponse {
+  metrics: CampaignDeliverableMetric[];
+  deliverable: {
+    id: string;
+    description: string;
+    status: string;
+  };
 }
 

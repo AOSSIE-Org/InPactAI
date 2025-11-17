@@ -1,51 +1,51 @@
 "use client";
 
 import {
-  acceptNegotiation,
-  analyzeNegotiationSentiment,
-  deleteProposal,
-  draftNegotiationMessage,
-  fetchNegotiations,
-  fetchReceivedProposals,
-  fetchSentProposals,
-  getDealProbability,
-  postNegotiationMessage,
-  postProposalStatus,
-  startNegotiation,
-  translateNegotiationMessage,
-  updateNegotiationTerms,
-  type DealProbability,
-  type MessageDraft,
-  type SentimentAnalysis,
-  type Translation,
+    acceptNegotiation,
+    analyzeNegotiationSentiment,
+    deleteProposal,
+    draftNegotiationMessage,
+    fetchNegotiations,
+    fetchReceivedProposals,
+    fetchSentProposals,
+    getDealProbability,
+    postNegotiationMessage,
+    postProposalStatus,
+    startNegotiation,
+    translateNegotiationMessage,
+    updateNegotiationTerms,
+    type DealProbability,
+    type MessageDraft,
+    type SentimentAnalysis,
+    type Translation,
 } from "@/lib/api/proposals";
 import { generateGeminiText } from "@/lib/geminiApi";
 import {
-  AcceptNegotiationResponse,
-  NegotiationEntry,
-  Proposal,
+    AcceptNegotiationResponse,
+    NegotiationEntry,
+    Proposal,
 } from "@/types/proposals";
 import {
-  AlertTriangle,
-  BarChart3,
-  Check,
-  CheckCircle,
-  Clock,
-  FileText,
-  Languages,
-  Loader2,
-  Mail,
-  MessageCircle,
-  MessageSquare,
-  PlusCircle,
-  Send,
-  Shield,
-  Sparkles,
-  TrendingUp,
-  X,
-  XCircle
+    AlertTriangle,
+    BarChart3,
+    Check,
+    CheckCircle,
+    Clock,
+    FileText,
+    Languages,
+    Loader2,
+    Mail,
+    MessageCircle,
+    MessageSquare,
+    PlusCircle,
+    Send,
+    Shield,
+    Sparkles,
+    TrendingUp,
+    X,
+    XCircle
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 import ReactMarkdown from "react-markdown";
 
 export type TabKey = "proposals" | "negotiations";
@@ -77,7 +77,7 @@ interface AiReviewState {
   error: string | null;
 }
 
-const statusIconMap: Record<string, JSX.Element> = {
+const statusIconMap: Record<string, ReactElement> = {
   accepted: <CheckCircle className="h-5 w-5 text-green-500" />,
   declined: <XCircle className="h-5 w-5 text-red-500" />,
   withdrawn: <XCircle className="h-5 w-5 text-gray-500" />,

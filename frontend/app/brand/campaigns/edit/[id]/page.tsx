@@ -4,15 +4,16 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import SlidingMenu from "@/components/SlidingMenu";
 import { fetchCampaignById, updateCampaign } from "@/lib/campaignApi";
 import {
-    AGE_GROUP_OPTIONS,
-    CampaignDeliverable,
-    CampaignFormData,
-    CONTENT_TYPE_OPTIONS,
-    FOLLOWER_RANGE_OPTIONS,
-    GENDER_OPTIONS,
-    INCOME_LEVEL_OPTIONS,
-    NICHE_OPTIONS,
-    PLATFORM_OPTIONS,
+  AGE_GROUP_OPTIONS,
+  CampaignDeliverable,
+  CampaignFormData,
+  CampaignPayload,
+  CONTENT_TYPE_OPTIONS,
+  FOLLOWER_RANGE_OPTIONS,
+  GENDER_OPTIONS,
+  INCOME_LEVEL_OPTIONS,
+  NICHE_OPTIONS,
+  PLATFORM_OPTIONS,
 } from "@/types/campaign";
 import { ArrowLeft, Eye, Plus, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -20,8 +21,9 @@ import { useEffect, useState } from "react";
 
 export default function EditCampaignPage() {
   const router = useRouter();
-  const params = useParams();
-  const campaignId = params.id as string;
+  const params = useParams<{ id?: string | string[] }>();
+  const campaignIdValue = Array.isArray(params?.id) ? params?.id[0] : params?.id;
+  const campaignId = campaignIdValue ?? "";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -182,13 +184,18 @@ export default function EditCampaignPage() {
   const handleSubmit = async (status?: "draft" | "active") => {
     setError(null);
 
+    if (!campaignId) {
+      setError("Campaign ID is missing. Please navigate back and try again.");
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setSaving(true);
-      const submitData: Partial<CampaignFormData> = {
+      const submitData: Partial<CampaignPayload> = {
         ...formData,
         budget_min: formData.budget_min
           ? parseFloat(formData.budget_min)
@@ -200,7 +207,6 @@ export default function EditCampaignPage() {
         ends_at: formData.ends_at || undefined,
       };
 
-      // If status is provided, update it
       if (status) {
         submitData.status = status;
       }
@@ -213,6 +219,31 @@ export default function EditCampaignPage() {
       setSaving(false);
     }
   };
+
+  if (!campaignId) {
+    return (
+      <AuthGuard requiredRole="Brand">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          <SlidingMenu role="brand" />
+          <main className="mx-auto max-w-3xl px-4 py-12 text-center sm:px-6 lg:px-8">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Invalid campaign
+            </h1>
+            <p className="mt-3 text-gray-600">
+              We couldn&apos;t determine which campaign you wanted to edit. Please
+              return to your campaigns list and try again.
+            </p>
+            <button
+              onClick={() => router.push("/brand/campaigns")}
+              className="mt-6 rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-blue-700"
+            >
+              Go to campaigns
+            </button>
+          </main>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   if (loading) {
     return (

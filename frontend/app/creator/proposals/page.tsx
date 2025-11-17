@@ -7,9 +7,23 @@ import {
 } from "@/components/proposals/ProposalsWorkspace";
 import SlidingMenu from "@/components/SlidingMenu";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 export default function CreatorProposalsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 text-gray-600">
+          Loading proposals...
+        </div>
+      }
+    >
+      <CreatorProposalsContent />
+    </Suspense>
+  );
+}
+
+function CreatorProposalsContent() {
   const searchParams = useSearchParams();
 
   const initialTab = useMemo<TabKey>(() => {
@@ -34,20 +48,17 @@ export default function CreatorProposalsPage() {
   ];
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Simulate progress bar and rotating status messages (message every 3s, progress every 300ms)
   useEffect(() => {
     let progressInterval: NodeJS.Timeout | null = null;
     if (aiLoading) {
       setAiProgress(0);
       setAiStatusIdx(0);
-      // Progress bar increments every 300ms
       progressInterval = setInterval(() => {
         setAiProgress((prev) => {
           if (prev >= 100) return 100;
-          return prev + Math.floor(Math.random() * 5) + 2; // 2-6%
+          return prev + Math.floor(Math.random() * 5) + 2;
         });
       }, 300);
-      // Status message changes every 3 seconds
       aiIntervalRef.current = setInterval(() => {
         setAiStatusIdx((prev) => (prev + 1) % aiStatusMessages.length);
       }, 3000);
@@ -63,8 +74,6 @@ export default function CreatorProposalsPage() {
     };
     // eslint-disable-next-line
   }, [aiLoading]);
-
-  // Pass setAiLoading, aiLoading, aiProgress, aiStatusIdx, aiStatusMessages to ProposalsWorkspace or modal as needed
 
   return (
     <AuthGuard requiredRole="Creator">

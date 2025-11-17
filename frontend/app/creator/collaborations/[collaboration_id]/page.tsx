@@ -34,8 +34,11 @@ import { useEffect, useState, useRef } from "react";
 
 export default function CollaborationWorkspacePage() {
   const router = useRouter();
-  const params = useParams();
-  const collaborationId = params.collaboration_id as string;
+  const params = useParams<{ collaboration_id?: string | string[] }>();
+  const collaborationIdValue = Array.isArray(params?.collaboration_id)
+    ? params?.collaboration_id[0]
+    : params?.collaboration_id;
+  const collaborationId = collaborationIdValue ?? "";
 
   const [workspace, setWorkspace] = useState<CollaborationWorkspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,8 +69,12 @@ export default function CollaborationWorkspacePage() {
   const [feedback, setFeedback] = useState({ rating: 5, feedback: "" });
 
   useEffect(() => {
-    loadWorkspace();
     loadCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (!collaborationId) return;
+    loadWorkspace();
   }, [collaborationId]);
 
   useEffect(() => {
@@ -90,6 +97,10 @@ export default function CollaborationWorkspacePage() {
   };
 
   const loadWorkspace = async () => {
+    if (!collaborationId) {
+      setError("Collaboration ID is missing. Please return and try again.");
+      return;
+    }
     try {
       setIsLoading(true);
       setError(null);
@@ -103,8 +114,17 @@ export default function CollaborationWorkspacePage() {
     }
   };
 
+  const ensureCollaborationId = () => {
+    if (!collaborationId) {
+      setError("Collaboration ID is missing. Please return and try again.");
+      return false;
+    }
+    return true;
+  };
+
   const handleCreateDeliverable = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ensureCollaborationId()) return;
     try {
       setError(null);
       await createDeliverable(collaborationId, {
@@ -124,6 +144,7 @@ export default function CollaborationWorkspacePage() {
   };
 
   const handleUpdateDeliverableStatus = async (deliverableId: string, status: string) => {
+    if (!ensureCollaborationId()) return;
     try {
       setError(null);
       await updateDeliverable(collaborationId, deliverableId, { status });
@@ -137,6 +158,7 @@ export default function CollaborationWorkspacePage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageText.trim()) return;
+    if (!ensureCollaborationId()) return;
 
     try {
       setError(null);
@@ -151,6 +173,7 @@ export default function CollaborationWorkspacePage() {
 
   const handleUploadAsset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ensureCollaborationId()) return;
     try {
       setError(null);
       await uploadAsset(collaborationId, {
@@ -173,6 +196,7 @@ export default function CollaborationWorkspacePage() {
     if (!confirm("Are you sure all deliverables are complete? This will mark the collaboration as completed.")) {
       return;
     }
+    if (!ensureCollaborationId()) return;
     try {
       setError(null);
       await completeCollaboration(collaborationId);
@@ -185,6 +209,7 @@ export default function CollaborationWorkspacePage() {
 
   const handleSubmitFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ensureCollaborationId()) return;
     try {
       setError(null);
       await submitFeedback(collaborationId, feedback);
@@ -244,6 +269,28 @@ export default function CollaborationWorkspacePage() {
       console.error("Failed to get user profile:", err);
     }
   };
+
+  if (!collaborationId) {
+    return (
+      <AuthGuard requiredRole="Creator">
+        <div className="min-h-screen bg-linear-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center px-4">
+          <div className="max-w-md text-center">
+            <h1 className="text-2xl font-semibold text-gray-900">Invalid collaboration</h1>
+            <p className="mt-3 text-gray-600">
+              We couldn&apos;t determine which collaboration workspace to load. Please return to your collaborations list
+              and try again.
+            </p>
+            <button
+              onClick={() => router.push("/creator/collaborations/manage")}
+              className="mt-6 rounded-md bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700"
+            >
+              Go to collaborations
+            </button>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   if (isLoading) {
     return (
