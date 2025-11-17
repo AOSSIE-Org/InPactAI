@@ -1,8 +1,7 @@
 import { authenticatedFetch } from "@/lib/auth-helpers";
 import { Campaign } from "@/types/campaign";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -18,11 +17,16 @@ async function parseJson<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-function buildQuery(params?: Record<string, string | number | undefined>) {
+function buildQuery(
+  params?: Record<string, string | number | boolean | undefined>
+) {
   if (!params) return "";
   const query = Object.entries(params)
     .filter(([, value]) => value !== undefined && value !== "")
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+    )
     .join("&");
   return query ? `?${query}` : "";
 }
@@ -77,7 +81,9 @@ export async function fetchPublicCampaigns(params?: {
     offset: params?.offset,
   });
   // Use authenticatedFetch even though endpoint is "public" - user needs to be authenticated for Supabase RLS
-  const response = await authenticatedFetch(`${API_BASE_URL}/campaigns/public${query}`);
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/campaigns/public${query}`
+  );
   return parseJson<Campaign[]>(response);
 }
 
@@ -150,7 +156,9 @@ export async function createProposalFromApplication(
       method: "POST",
     }
   );
-  return parseJson<{ proposal: any; application_id: string; message: string }>(response);
+  return parseJson<{ proposal: any; application_id: string; message: string }>(
+    response
+  );
 }
 
 export async function fetchCreatorApplications(
@@ -164,5 +172,3 @@ export async function fetchCreatorApplications(
   );
   return parseJson<CampaignApplication[]>(response);
 }
-
-
