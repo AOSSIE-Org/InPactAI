@@ -73,110 +73,119 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 
 ### Prerequisites
 
-Ensure you have the following installed:
+Make sure you have these installed:
+- Node.js (v18 or higher) + npm
+- Python 3.9+ 
+- Git
+- A Supabase account (free tier is enough)
 
-- Node.js & npm
-- Python & FastAPI
-- Supabase account
+### Local Development Setup (Step-by-Step)
 
-### Installation
-
-#### 1. Clone the repository
-
-```sh
+#### 1. Clone the Repository
+```bash
 git clone https://github.com/AOSSIE-Org/InPact.git
-cd inpact
+cd InPact
 ```
 
 #### 2. Frontend Setup
 
-1. Navigate to the frontend directory:
-```sh
+```bash
 cd frontend
-```
-
-2. Install dependencies:
-```sh
 npm install
 ```
 
+Create a `.env` file in the `frontend/` folder:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
+VITE_YOUTUBE_API_KEY=your-youtube-api-key
+```
 
-3. Create a `.env` file using `.env-example` file:
+**How to get Supabase frontend keys:**
+1. Go to [https://app.supabase.com](https://app.supabase.com)
+2. Open your project → **Settings** → **API**
+3. Copy **Project URL** → `VITE_SUPABASE_URL`
+4. Copy **anon public** key → `VITE_SUPABASE_ANON_KEY`
 
+**How to get Youtube API Key**
+1. Log in to the [https://console.cloud.google.com/](https://console.cloud.google.com/)
+2. Create a new project or select an existing one from the project drop-down menu.
+3. In the Cloud Console, search for "YouTube Data API" in the search bar and select "YouTube Data API v3" from the results.
+4. Click the "Enable" button to enable the API for your project.
+5. Navigate to the "Credentials" tab in the left-hand menu.
+6. Click "Create Credentials" and then select "API key" from the dropdown menu and now use that api key.
 
+#### 3. Backend Setup (with Python Virtual Environment – Highly Recommended)
 
-4. Get your Supabase credentials:
-   - Go to [Supabase](https://supabase.com/)
-   - Log in and create a new project (or use existing)
-   - Go to Project Settings -> API
-   - Copy the "Project URL" and paste it as VITE_SUPABASE_URL
-   - Copy the "anon public" key and paste it as VITE_SUPABASE_ANON_KEY
-
-#### 3. Backend Setup
-
-1. Navigate to the backend directory:
-```sh
+```bash
 cd ../backend
-```
 
-2. Install dependencies:
-```sh
+# Create a virtual environment (isolates dependencies)
+python -m venv venv
+
+# Activate it
+# Windows:
+venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
+# Install backend dependencies
 pip install -r requirements.txt
-```
 
-
-3. Navigate to the app directory:
-```sh
 cd app
 ```
 
-4. Create a `.env` file using `.env-example` as a reference.
+#### 4. Create Backend `.env` File
 
-5. Obtain Supabase credentials:
+Create `.env` in `backend/app/` and fill all values:
 
-   - Go to [Supabase](https://supabase.com/)
-   - Log in and create a new project
-   - Click on the project and remember the project password
-   - Go to the **Connect** section at the top
-   - Select **SQLAlchemy** and copy the connection string:
+```env
+# Supabase Database Connection
+user=postgres
+password=YOUR_DB_PASSWORD
+host=db.yourproject.supabase.co
+port=5432
+dbname=postgres
 
-     ```sh
-     user=postgres
-     password=[YOUR-PASSWORD]
-     host=db.wveftanaurduixkyijhf.supabase.co
-     port=5432
-     dbname=postgres
-     ```
+# API Keys
+GROQ_API_KEY=your_groq_key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-public-key
+GEMINI_API_KEY=your_gemini_key
+YOUTUBE_API_KEY=your_youtube_key
+```
 
-     --OR--
+**Where to get each key (with direct links):**
 
-     [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
+| Variable            | Service                        | How to Get (Step-by-Step)                                                                                   |
+|---------------------|--------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `SUPABASE_URL` & `SUPABASE_KEY` | Supabase                  | Same as frontend → **Settings → API** → copy URL & anon key                                                |
+| `host` & `password` | Supabase PostgreSQL           | **Settings → Database → Connection info** → copy Host + the password you set when creating the project    |
+| `GROQ_API_KEY`      | Groq (fast AI inference)      | → [console.groq.com/keys](https://console.groq.com/keys) → Create API Key → copy (`gsk_...`)                |
+| `GEMINI_API_KEY`    | Google Gemini                 | → [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) → Create API key                |
+| `YOUTUBE_API_KEY`   | YouTube Data API v3           | 1. [console.cloud.google.com](https://console.cloud.google.com)<br>2. New Project → Enable YouTube Data API v3<br>3. Credentials → Create API Key |
 
-     ```sh
-      user=postgres.<project>
-      password=[YOUR-PASSWORD]
-      host=aws-<location>.pooler.supabase.com
-      port=5432
-      dbname=postgres
-     ```
+All are free for development use.
 
+#### 5. Start the Servers
 
-6. Get the Groq API key:
-   - Visit [Groq Console](https://console.groq.com/)
-   - Create an API key and paste it into the `.env` file
-
-#### 4. Start Development Servers
-
-
-1. Start the frontend server (from the frontend directory):
-```sh
+**Terminal 1 (Frontend):**
+```bash
+cd frontend
 npm run dev
 ```
+→ Opens at `http://localhost:5173`
 
-2. Start the backend server (from the backend/app directory):
-```sh
+**Terminal 2 (Backend – make sure venv is active):**
+```bash
+cd backend/app
 uvicorn main:app --reload
 ```
+→ Runs at `http://127.0.0.1:8000`
+
+You’re all set! Open `http://localhost:5173` and register/login.
+
+---
 
 ## Data Population
 
