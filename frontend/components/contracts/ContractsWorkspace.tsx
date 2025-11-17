@@ -3,22 +3,32 @@
 import {
     approveContractVersion,
     approveDeliverablesList,
+    askContractQuestion,
     createContractVersion,
     createOrUpdateDeliverablesList,
+    explainContractClause,
     fetchContractChatMessages,
     fetchContractDeliverables,
     fetchContractDetail,
     fetchContractVersions,
     fetchContracts,
+    generateContractTemplate,
     postContractChatMessage,
     requestContractStatusChange,
     respondToStatusChangeRequest,
     reviewDeliverable,
     submitDeliverable,
+    summarizeContract,
     trackSignedContractDownload,
     trackUnsignedContractDownload,
+    translateContract,
     updateSignedContractLink,
     updateUnsignedContractLink,
+    type ClauseExplanation,
+    type ContractQuestionAnswer,
+    type ContractSummary,
+    type ContractTemplate,
+    type ContractTranslation,
 } from "@/lib/api/proposals";
 import {
     Contract,
@@ -33,14 +43,19 @@ import {
     CheckCircle,
     Download,
     FileText,
+    HelpCircle,
     History,
+    Languages,
     Loader2,
     MessageCircle,
     Plus,
     Send,
+    Sparkles,
     Upload,
     X,
     XCircle,
+    FileCode,
+    BookOpen,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -144,6 +159,30 @@ export function ContractsWorkspace({ role }: ContractsWorkspaceProps) {
   const [creatingAmendment, setCreatingAmendment] = useState(false);
   const [approvingVersion, setApprovingVersion] = useState<string | null>(null);
 
+  // AI Features State
+  const [questionText, setQuestionText] = useState("");
+  const [questionAnswer, setQuestionAnswer] = useState<ContractQuestionAnswer | null>(null);
+  const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [contractSummary, setContractSummary] = useState<ContractSummary | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [clauseText, setClauseText] = useState("");
+  const [clauseContext, setClauseContext] = useState("");
+  const [clauseExplanation, setClauseExplanation] = useState<ClauseExplanation | null>(null);
+  const [loadingClause, setLoadingClause] = useState(false);
+  const [translationLanguage, setTranslationLanguage] = useState("es");
+  const [contractTranslation, setContractTranslation] = useState<ContractTranslation | null>(null);
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templateData, setTemplateData] = useState({
+    deal_type: "",
+    deliverables: "",
+    payment_amount: "",
+    duration: "",
+    additional_requirements: "",
+  });
+  const [generatedTemplate, setGeneratedTemplate] = useState<ContractTemplate | null>(null);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+
   const selectedContract = useMemo(() => {
     if (!selectedContractId) return null;
     if (contractDetail && contractDetail.id === selectedContractId) {
@@ -169,6 +208,14 @@ export function ContractsWorkspace({ role }: ContractsWorkspaceProps) {
       setContractVersions([]);
       setCurrentVersion(null);
     }
+    // Reset AI state when switching contracts
+    setQuestionAnswer(null);
+    setContractSummary(null);
+    setClauseExplanation(null);
+    setContractTranslation(null);
+    setQuestionText("");
+    setClauseText("");
+    setClauseContext("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedContractId]);
 
@@ -456,6 +503,103 @@ export function ContractsWorkspace({ role }: ContractsWorkspaceProps) {
     }
   }
 
+  // AI Feature Handlers
+  async function handleAskQuestion() {
+    if (!selectedContract || !questionText.trim()) {
+      setGlobalError("Please enter a question");
+      return;
+    }
+    setLoadingQuestion(true);
+    setQuestionAnswer(null);
+    try {
+      const result = await askContractQuestion(selectedContract.id, {
+        question: questionText.trim(),
+      });
+      setQuestionAnswer(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to get answer");
+    } finally {
+      setLoadingQuestion(false);
+    }
+  }
+
+  async function handleSummarizeContract() {
+    if (!selectedContract) return;
+    setLoadingSummary(true);
+    setContractSummary(null);
+    try {
+      const result = await summarizeContract(selectedContract.id);
+      setContractSummary(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to summarize contract");
+    } finally {
+      setLoadingSummary(false);
+    }
+  }
+
+  async function handleExplainClause() {
+    if (!selectedContract || !clauseText.trim()) {
+      setGlobalError("Please enter the clause text to explain");
+      return;
+    }
+    setLoadingClause(true);
+    setClauseExplanation(null);
+    try {
+      const result = await explainContractClause(selectedContract.id, {
+        clause_text: clauseText.trim(),
+        clause_context: clauseContext.trim() || undefined,
+      });
+      setClauseExplanation(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to explain clause");
+    } finally {
+      setLoadingClause(false);
+    }
+  }
+
+  async function handleTranslateContract() {
+    if (!selectedContract) return;
+    setLoadingTranslation(true);
+    setContractTranslation(null);
+    try {
+      const result = await translateContract(selectedContract.id, {
+        target_language: translationLanguage,
+      });
+      setContractTranslation(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to translate contract");
+    } finally {
+      setLoadingTranslation(false);
+    }
+  }
+
+  async function handleGenerateTemplate() {
+    if (!templateData.deal_type.trim()) {
+      setGlobalError("Please specify the deal type");
+      return;
+    }
+    setLoadingTemplate(true);
+    setGeneratedTemplate(null);
+    try {
+      const result = await generateContractTemplate({
+        deal_type: templateData.deal_type,
+        deliverables: templateData.deliverables
+          ? templateData.deliverables.split(",").map((d) => d.trim()).filter(Boolean)
+          : undefined,
+        payment_amount: templateData.payment_amount
+          ? parseFloat(templateData.payment_amount)
+          : undefined,
+        duration: templateData.duration || undefined,
+        additional_requirements: templateData.additional_requirements || undefined,
+      });
+      setGeneratedTemplate(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to generate template");
+    } finally {
+      setLoadingTemplate(false);
+    }
+  }
+
   async function handleUploadUnsignedLink(contractId: string) {
     if (!unsignedLinkInput.trim()) {
       setGlobalError("Please enter a valid link");
@@ -674,10 +818,222 @@ export function ContractsWorkspace({ role }: ContractsWorkspaceProps) {
                 </div>
 
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <h4 className="font-semibold text-gray-800">Agreed Terms</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-gray-800">Agreed Terms</h4>
+                    <button
+                      onClick={handleSummarizeContract}
+                      disabled={loadingSummary}
+                      className="flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                    >
+                      {loadingSummary ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <BookOpen className="h-3 w-3" />
+                      )}
+                      Summarize
+                    </button>
+                  </div>
                   <pre className="mt-2 max-h-72 overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
-                    {prettyPrintJson(selectedContract.terms)}
+                    {contractTranslation ? prettyPrintJson(contractTranslation.translated_terms) : prettyPrintJson(selectedContract.terms)}
                   </pre>
+                  {contractSummary && (
+                    <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                      <h5 className="text-sm font-semibold text-blue-900 mb-2">Contract Summary</h5>
+                      <p className="text-xs text-blue-800 mb-3">{contractSummary.summary}</p>
+                      <div className="space-y-2 text-xs">
+                        {contractSummary.key_terms.payment && (
+                          <div>
+                            <span className="font-medium">Payment: </span>
+                            <span>{contractSummary.key_terms.payment}</span>
+                          </div>
+                        )}
+                        {contractSummary.key_terms.timeline && (
+                          <div>
+                            <span className="font-medium">Timeline: </span>
+                            <span>{contractSummary.key_terms.timeline}</span>
+                          </div>
+                        )}
+                        {contractSummary.important_dates.length > 0 && (
+                          <div>
+                            <span className="font-medium">Important Dates: </span>
+                            <span>{contractSummary.important_dates.join(", ")}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Contract Assistant Section */}
+                <div className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-purple-900">
+                    <Sparkles className="h-5 w-5" />
+                    AI Contract Assistant
+                  </h4>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {/* Question Answering */}
+                    <div className="rounded-lg border border-purple-200 bg-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <HelpCircle className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-semibold text-gray-800">Ask Questions</span>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={questionText}
+                          onChange={(e) => setQuestionText(e.target.value)}
+                          onKeyPress={(e) => e.key === "Enter" && handleAskQuestion()}
+                          placeholder="e.g., When is payment due?"
+                          className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:border-purple-500 focus:outline-none"
+                        />
+                        <button
+                          onClick={handleAskQuestion}
+                          disabled={loadingQuestion || !questionText.trim()}
+                          className="w-full rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700 hover:bg-purple-200 disabled:opacity-50"
+                        >
+                          {loadingQuestion ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Ask"}
+                        </button>
+                        {questionAnswer && (
+                          <div className="mt-2 rounded border border-purple-200 bg-purple-50 p-2 text-xs">
+                            <p className="text-gray-700">{questionAnswer.answer}</p>
+                            {questionAnswer.relevant_clauses.length > 0 && (
+                              <p className="mt-1 text-gray-600">
+                                <span className="font-medium">Relevant: </span>
+                                {questionAnswer.relevant_clauses.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Clause Explanation */}
+                    <div className="rounded-lg border border-blue-200 bg-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileCode className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-gray-800">Explain Clause</span>
+                      </div>
+                      <div className="space-y-2">
+                        <textarea
+                          value={clauseText}
+                          onChange={(e) => setClauseText(e.target.value)}
+                          placeholder="Paste clause text..."
+                          rows={2}
+                          className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={clauseContext}
+                          onChange={(e) => setClauseContext(e.target.value)}
+                          placeholder="Context (optional)"
+                          className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                        />
+                        <button
+                          onClick={handleExplainClause}
+                          disabled={loadingClause || !clauseText.trim()}
+                          className="w-full rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                        >
+                          {loadingClause ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Explain"}
+                        </button>
+                        {clauseExplanation && (
+                          <div className="mt-2 rounded border border-blue-200 bg-blue-50 p-2 text-xs space-y-1">
+                            <p className="text-gray-700">{clauseExplanation.explanation}</p>
+                            {clauseExplanation.key_points.length > 0 && (
+                              <div>
+                                <span className="font-medium">Key Points: </span>
+                                <ul className="list-disc list-inside ml-2">
+                                  {clauseExplanation.key_points.map((point, i) => (
+                                    <li key={i}>{point}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Translation */}
+                  <div className="mt-3 rounded-lg border border-orange-200 bg-white p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Languages className="h-4 w-4 text-orange-600" />
+                      <span className="text-sm font-semibold text-gray-800">Translate Contract</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={translationLanguage}
+                        onChange={(e) => setTranslationLanguage(e.target.value)}
+                        className="rounded border border-gray-300 px-2 py-1 text-xs focus:border-orange-500 focus:outline-none"
+                      >
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="it">Italian</option>
+                        <option value="hi">Hindi</option>
+                        <option value="ar">Arabic</option>
+                      </select>
+                      <button
+                        onClick={handleTranslateContract}
+                        disabled={loadingTranslation}
+                        className="flex-1 rounded bg-orange-100 px-2 py-1 text-xs font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+                      >
+                        {loadingTranslation ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Translate"}
+                      </button>
+                      {contractTranslation && (
+                        <button
+                          onClick={() => setContractTranslation(null)}
+                          className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                    {contractTranslation && (
+                      <p className="mt-2 text-xs text-gray-600">
+                        Contract translated to {translationLanguage}. View translated terms above.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Template Generation */}
+                  <div className="mt-3 rounded-lg border border-green-200 bg-white p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-semibold text-gray-800">Generate Template</span>
+                      </div>
+                      <button
+                        onClick={() => setShowTemplateModal(true)}
+                        className="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+                      >
+                        New Template
+                      </button>
+                    </div>
+                    {generatedTemplate && (
+                      <div className="mt-2 rounded border border-green-200 bg-green-50 p-2 text-xs">
+                        <p className="font-medium text-green-900 mb-1">Template Generated!</p>
+                        <pre className="max-h-40 overflow-y-auto text-xs whitespace-pre-wrap">
+                          {JSON.stringify(generatedTemplate.template, null, 2)}
+                        </pre>
+                        {generatedTemplate.suggestions.length > 0 && (
+                          <div className="mt-2">
+                            <span className="font-medium">Suggestions: </span>
+                            <ul className="list-disc list-inside ml-2">
+                              {generatedTemplate.suggestions.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Contract Workflow Section */}
@@ -1566,6 +1922,151 @@ export function ContractsWorkspace({ role }: ContractsWorkspaceProps) {
                         >
                           Cancel
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Template Generation Modal */}
+                {showTemplateModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="relative w-full max-w-2xl rounded-xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setShowTemplateModal(false);
+                          setTemplateData({
+                            deal_type: "",
+                            deliverables: "",
+                            payment_amount: "",
+                            duration: "",
+                            additional_requirements: "",
+                          });
+                          setGeneratedTemplate(null);
+                        }}
+                        className="absolute top-3 right-3 text-gray-400 hover:text-gray-700"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <h3 className="text-xl font-bold text-gray-900">
+                        Generate Contract Template
+                      </h3>
+                      <p className="mt-2 text-sm text-gray-600">
+                        Create a draft contract template based on your requirements and previous agreements.
+                      </p>
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Deal Type *
+                          </label>
+                          <input
+                            type="text"
+                            value={templateData.deal_type}
+                            onChange={(e) => setTemplateData({ ...templateData, deal_type: e.target.value })}
+                            placeholder="e.g., Sponsored Content, Brand Ambassadorship, Product Review"
+                            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Deliverables (comma-separated)
+                          </label>
+                          <input
+                            type="text"
+                            value={templateData.deliverables}
+                            onChange={(e) => setTemplateData({ ...templateData, deliverables: e.target.value })}
+                            placeholder="e.g., 3 Instagram posts, 2 YouTube videos, 1 TikTok"
+                            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700">
+                              Payment Amount
+                            </label>
+                            <input
+                              type="number"
+                              value={templateData.payment_amount}
+                              onChange={(e) => setTemplateData({ ...templateData, payment_amount: e.target.value })}
+                              placeholder="e.g., 50000"
+                              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700">
+                              Duration
+                            </label>
+                            <input
+                              type="text"
+                              value={templateData.duration}
+                              onChange={(e) => setTemplateData({ ...templateData, duration: e.target.value })}
+                              placeholder="e.g., 3 months, 6 weeks"
+                              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Additional Requirements
+                          </label>
+                          <textarea
+                            value={templateData.additional_requirements}
+                            onChange={(e) => setTemplateData({ ...templateData, additional_requirements: e.target.value })}
+                            placeholder="Any specific requirements, exclusivity clauses, content guidelines, etc."
+                            rows={3}
+                            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleGenerateTemplate}
+                            disabled={loadingTemplate || !templateData.deal_type.trim()}
+                            className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {loadingTemplate ? (
+                              <>
+                                <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              "Generate Template"
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowTemplateModal(false);
+                              setTemplateData({
+                                deal_type: "",
+                                deliverables: "",
+                                payment_amount: "",
+                                duration: "",
+                                additional_requirements: "",
+                              });
+                              setGeneratedTemplate(null);
+                            }}
+                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        {generatedTemplate && (
+                          <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
+                            <h4 className="text-sm font-semibold text-green-900 mb-2">Generated Template</h4>
+                            <pre className="max-h-64 overflow-y-auto text-xs whitespace-pre-wrap bg-white p-3 rounded border">
+                              {JSON.stringify(generatedTemplate.template, null, 2)}
+                            </pre>
+                            {generatedTemplate.suggestions.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs font-semibold text-green-900 mb-1">Suggestions:</p>
+                                <ul className="list-disc list-inside text-xs text-green-800 space-y-1">
+                                  {generatedTemplate.suggestions.map((s, i) => (
+                                    <li key={i}>{s}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -24,9 +24,19 @@ import {
   Search,
   Target,
   Users,
+  Check,
+  X,
+  Clock,
+  UserCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { updateCampaign } from "@/lib/campaignApi";
+import {
+  fetchCampaignApplications,
+  updateApplicationStatus,
+  type CampaignApplication,
+} from "@/lib/api/campaignWall";
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -41,6 +51,10 @@ export default function CampaignsPage() {
   const [startsAfter, setStartsAfter] = useState<string>("");
   const [endsBefore, setEndsBefore] = useState<string>("");
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
+  const [openCampaignsFilter, setOpenCampaignsFilter] = useState<boolean>(false);
+  const [applications, setApplications] = useState<Record<string, CampaignApplication[]>>({});
+  const [loadingApplications, setLoadingApplications] = useState<Record<string, boolean>>({});
+  const [updatingCampaign, setUpdatingCampaign] = useState<string | null>(null);
 
   useEffect(() => {
     loadCampaigns();
@@ -80,12 +94,70 @@ export default function CampaignsPage() {
     loadCampaigns();
   };
 
-  const toggleExpand = (campaignId: string) => {
-    setExpandedCampaign(expandedCampaign === campaignId ? null : campaignId);
+  const toggleExpand = async (campaignId: string) => {
+    if (expandedCampaign === campaignId) {
+      setExpandedCampaign(null);
+    } else {
+      setExpandedCampaign(campaignId);
+      // Load applications when expanding
+      await loadApplications(campaignId);
+    }
+  };
+
+  const loadApplications = async (campaignId: string) => {
+    if (loadingApplications[campaignId]) return;
+    try {
+      setLoadingApplications((prev) => ({ ...prev, [campaignId]: true }));
+      const apps = await fetchCampaignApplications(campaignId);
+      setApplications((prev) => ({ ...prev, [campaignId]: apps }));
+    } catch (err: any) {
+      console.error("Failed to load applications:", err);
+      setError(err.message || "Failed to load applications");
+    } finally {
+      setLoadingApplications((prev) => ({ ...prev, [campaignId]: false }));
+    }
+  };
+
+  const handleToggleCampaignWall = async (campaign: Campaign, field: "is_open_for_applications" | "is_on_campaign_wall") => {
+    try {
+      setUpdatingCampaign(campaign.id);
+      const newValue = !campaign[field];
+      await updateCampaign(campaign.id, { [field]: newValue });
+      // Reload campaigns to reflect changes
+      await loadCampaigns();
+    } catch (err: any) {
+      console.error("Failed to update campaign:", err);
+      setError(err.message || "Failed to update campaign");
+    } finally {
+      setUpdatingCampaign(null);
+    }
+  };
+
+  const handleApplicationStatusChange = async (
+    campaignId: string,
+    applicationId: string,
+    newStatus: "reviewing" | "accepted" | "rejected"
+  ) => {
+    try {
+      await updateApplicationStatus(campaignId, applicationId, newStatus);
+      // Reload applications
+      await loadApplications(campaignId);
+      if (newStatus === "accepted") {
+        alert("Application accepted! You can now create a proposal.");
+      }
+    } catch (err: any) {
+      console.error("Failed to update application status:", err);
+      setError(err.message || "Failed to update application status");
+    }
   };
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredCampaigns = campaigns.filter((campaign) => {
+    // Filter by open campaigns if enabled
+    if (openCampaignsFilter && !campaign.is_open_for_applications) {
+      return false;
+    }
+    // Filter by search term
     if (!normalizedSearch) return true;
     return (
       campaign.title.toLowerCase().includes(normalizedSearch) ||
@@ -202,6 +274,15 @@ export default function CampaignsPage() {
               >
                 Search
               </button>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={openCampaignsFilter}
+                  onChange={(e) => setOpenCampaignsFilter(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Open for Applications</span>
+              </label>
             </div>
           </div>
 
@@ -465,6 +546,169 @@ export default function CampaignsPage() {
                           )}
                       </div>
 
+                      {/* Campaign Wall Settings */}
+                      <div className="md:col-span-2 mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                        <h4 className="mb-4 font-semibold text-gray-900">Campaign Wall Settings</h4>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <label className="text-sm font-medium text-gray-700">Open for Applications</label>
+                              <p className="text-xs text-gray-500 mt-1">Allow creators to apply to this campaign</p>
+                            </div>
+                            <button
+                              onClick={() => handleToggleCampaignWall(campaign, "is_open_for_applications")}
+                              disabled={updatingCampaign === campaign.id}
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                campaign.is_open_for_applications ? "bg-purple-600" : "bg-gray-300"
+                              } ${updatingCampaign === campaign.id ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                  campaign.is_open_for_applications ? "translate-x-6" : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <label className="text-sm font-medium text-gray-700">Show on Campaign Wall</label>
+                              <p className="text-xs text-gray-500 mt-1">Display this campaign on the public campaign wall</p>
+                            </div>
+                            <button
+                              onClick={() => handleToggleCampaignWall(campaign, "is_on_campaign_wall")}
+                              disabled={updatingCampaign === campaign.id || !campaign.is_open_for_applications}
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                campaign.is_on_campaign_wall && campaign.is_open_for_applications ? "bg-purple-600" : "bg-gray-300"
+                              } ${updatingCampaign === campaign.id || !campaign.is_open_for_applications ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                  campaign.is_on_campaign_wall && campaign.is_open_for_applications ? "translate-x-6" : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Applications Section */}
+                      {campaign.is_open_for_applications && (
+                        <div className="md:col-span-2 mt-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <UserCheck className="h-5 w-5" />
+                              Applications ({applications[campaign.id]?.length || 0})
+                            </h4>
+                            <button
+                              onClick={() => loadApplications(campaign.id)}
+                              className="text-sm text-purple-600 hover:text-purple-700"
+                            >
+                              Refresh
+                            </button>
+                          </div>
+                          {loadingApplications[campaign.id] ? (
+                            <div className="text-center py-8">
+                              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-purple-600"></div>
+                              <p className="mt-2 text-sm text-gray-600">Loading applications...</p>
+                            </div>
+                          ) : applications[campaign.id]?.length > 0 ? (
+                            <div className="space-y-4">
+                              {applications[campaign.id].map((app) => (
+                                <div key={app.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      {app.creator_profile_picture ? (
+                                        <img
+                                          src={app.creator_profile_picture}
+                                          alt={app.creator_name || "Creator"}
+                                          className="h-10 w-10 rounded-full"
+                                        />
+                                      ) : (
+                                        <div className="h-10 w-10 rounded-full bg-purple-100"></div>
+                                      )}
+                                      <div>
+                                        <p className="font-medium text-gray-900">{app.creator_name || "Unknown Creator"}</p>
+                                        <p className="text-xs text-gray-500">{new Date(app.created_at).toLocaleDateString()}</p>
+                                      </div>
+                                    </div>
+                                    <span
+                                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                        app.status === "accepted"
+                                          ? "bg-green-100 text-green-800"
+                                          : app.status === "rejected"
+                                          ? "bg-red-100 text-red-800"
+                                          : app.status === "reviewing"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-blue-100 text-blue-800"
+                                      }`}
+                                    >
+                                      {app.status}
+                                    </span>
+                                  </div>
+                                  {app.description && (
+                                    <p className="text-sm text-gray-700 mb-3">{app.description}</p>
+                                  )}
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                                    {app.payment_min && app.payment_max && (
+                                      <div>
+                                        <span className="text-gray-500">Payment: </span>
+                                        <span className="font-medium">
+                                          ₹{app.payment_min.toLocaleString()} - ₹{app.payment_max.toLocaleString()}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {app.timeline_days && (
+                                      <div>
+                                        <span className="text-gray-500">Timeline: </span>
+                                        <span className="font-medium">{app.timeline_days} days</span>
+                                      </div>
+                                    )}
+                                    {app.timeline_weeks && (
+                                      <div>
+                                        <span className="text-gray-500">Timeline: </span>
+                                        <span className="font-medium">{app.timeline_weeks} weeks</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {(app.status === "applied" || app.status === "reviewing") && (
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleApplicationStatusChange(campaign.id, app.id, "accepted")}
+                                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700"
+                                      >
+                                        <Check className="h-3 w-3" />
+                                        Accept
+                                      </button>
+                                      {app.status === "applied" && (
+                                        <button
+                                          onClick={() => handleApplicationStatusChange(campaign.id, app.id, "reviewing")}
+                                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                                        >
+                                          <Clock className="h-3 w-3" />
+                                          Review
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => handleApplicationStatusChange(campaign.id, app.id, "rejected")}
+                                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                                      >
+                                        <X className="h-3 w-3" />
+                                        Reject
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 bg-gray-50 rounded-lg">
+                              <UserCheck className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                              <p className="text-sm text-gray-600">No applications yet</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Actions */}
                       <div className="mt-6 flex gap-3">
                         <button
@@ -474,14 +718,6 @@ export default function CampaignsPage() {
                           className="rounded-lg bg-blue-500 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
                         >
                           Edit Campaign
-                        </button>
-                        <button
-                          onClick={() => {
-                            /* TODO: Implement view applications */
-                          }}
-                          className="rounded-lg border border-gray-300 bg-white px-6 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-                        >
-                          View Applications
                         </button>
                         <button
                           onClick={() =>

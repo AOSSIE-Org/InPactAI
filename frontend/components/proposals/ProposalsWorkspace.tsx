@@ -1,35 +1,49 @@
 "use client";
 
 import {
-    acceptNegotiation,
-    deleteProposal,
-    fetchNegotiations,
-    fetchReceivedProposals,
-    fetchSentProposals,
-    postNegotiationMessage,
-    postProposalStatus,
-    startNegotiation,
-    updateNegotiationTerms,
+  acceptNegotiation,
+  analyzeNegotiationSentiment,
+  deleteProposal,
+  draftNegotiationMessage,
+  fetchNegotiations,
+  fetchReceivedProposals,
+  fetchSentProposals,
+  getDealProbability,
+  postNegotiationMessage,
+  postProposalStatus,
+  startNegotiation,
+  translateNegotiationMessage,
+  updateNegotiationTerms,
+  type DealProbability,
+  type MessageDraft,
+  type SentimentAnalysis,
+  type Translation,
 } from "@/lib/api/proposals";
 import { generateGeminiText } from "@/lib/geminiApi";
 import {
-    AcceptNegotiationResponse,
-    NegotiationEntry,
-    Proposal,
+  AcceptNegotiationResponse,
+  NegotiationEntry,
+  Proposal,
 } from "@/types/proposals";
 import {
-    Check,
-    CheckCircle,
-    Clock,
-    FileText,
-    Loader2,
-    Mail,
-    MessageCircle,
-    PlusCircle,
-    Send,
-    Shield,
-    X,
-    XCircle
+  AlertTriangle,
+  BarChart3,
+  Check,
+  CheckCircle,
+  Clock,
+  FileText,
+  Languages,
+  Loader2,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  PlusCircle,
+  Send,
+  Shield,
+  Sparkles,
+  TrendingUp,
+  X,
+  XCircle
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -193,6 +207,20 @@ export function ProposalsWorkspace({
   const [acceptSubmitting, setAcceptSubmitting] = useState(false);
   const [acceptMessage, setAcceptMessage] = useState<string>("");
 
+  // AI Features State
+  const [sentimentAnalysis, setSentimentAnalysis] = useState<SentimentAnalysis | null>(null);
+  const [loadingSentiment, setLoadingSentiment] = useState(false);
+  const [dealProbability, setDealProbability] = useState<DealProbability | null>(null);
+  const [loadingProbability, setLoadingProbability] = useState(false);
+  const [messageDraftResult, setMessageDraftResult] = useState<MessageDraft | null>(null);
+  const [loadingDraft, setLoadingDraft] = useState(false);
+  const [draftContext, setDraftContext] = useState("");
+  const [draftTone, setDraftTone] = useState<"professional" | "polite" | "persuasive" | "friendly">("professional");
+  const [translationResult, setTranslationResult] = useState<Translation | null>(null);
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+  const [translationText, setTranslationText] = useState("");
+  const [targetLanguage, setTargetLanguage] = useState("es");
+
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
@@ -215,6 +243,16 @@ export function ProposalsWorkspace({
       negotiations.find((item) => item.id === selectedNegotiationId) || null,
     [negotiations, selectedNegotiationId]
   );
+
+  // Reset AI state when switching negotiations
+  useEffect(() => {
+    setSentimentAnalysis(null);
+    setDealProbability(null);
+    setMessageDraftResult(null);
+    setTranslationResult(null);
+    setDraftContext("");
+    setTranslationText("");
+  }, [selectedNegotiationId]);
 
 
   useEffect(() => {
@@ -448,6 +486,75 @@ export function ProposalsWorkspace({
       setGlobalError(error?.message || "Failed to accept deal");
     } finally {
       setAcceptSubmitting(false);
+    }
+  }
+
+  // AI Feature Handlers
+  async function handleAnalyzeSentiment() {
+    if (!selectedNegotiation) return;
+    setLoadingSentiment(true);
+    setSentimentAnalysis(null);
+    try {
+      const result = await analyzeNegotiationSentiment(selectedNegotiation.id);
+      setSentimentAnalysis(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to analyze sentiment");
+    } finally {
+      setLoadingSentiment(false);
+    }
+  }
+
+  async function handleGetDealProbability() {
+    if (!selectedNegotiation) return;
+    setLoadingProbability(true);
+    setDealProbability(null);
+    try {
+      const result = await getDealProbability(selectedNegotiation.id);
+      setDealProbability(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to predict deal probability");
+    } finally {
+      setLoadingProbability(false);
+    }
+  }
+
+  async function handleDraftMessage() {
+    if (!selectedNegotiation || !draftContext.trim()) {
+      setGlobalError("Please provide context for the message");
+      return;
+    }
+    setLoadingDraft(true);
+    setMessageDraftResult(null);
+    try {
+      const result = await draftNegotiationMessage(selectedNegotiation.id, {
+        context: draftContext,
+        tone: draftTone,
+      });
+      setMessageDraftResult(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to draft message");
+    } finally {
+      setLoadingDraft(false);
+    }
+  }
+
+  async function handleTranslate() {
+    if (!selectedNegotiation || !translationText.trim()) {
+      setGlobalError("Please provide text to translate");
+      return;
+    }
+    setLoadingTranslation(true);
+    setTranslationResult(null);
+    try {
+      const result = await translateNegotiationMessage(selectedNegotiation.id, {
+        text: translationText,
+        target_language: targetLanguage,
+      });
+      setTranslationResult(result);
+    } catch (error: any) {
+      setGlobalError(error?.message || "Failed to translate");
+    } finally {
+      setLoadingTranslation(false);
     }
   }
 
@@ -745,6 +852,217 @@ Respond with succinct, actionable advice.`;
                   <pre className="max-h-64 overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
                     {prettyPrintJson(selectedNegotiation.current_terms)}
                   </pre>
+                </div>
+              </div>
+
+              {/* AI Features Section */}
+              <div className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 font-semibold text-purple-900">
+                  <Sparkles className="h-5 w-5" />
+                  AI Negotiation Assistant
+                </h4>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {/* Sentiment Analysis */}
+                  <div className="rounded-lg border border-purple-200 bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-semibold text-gray-800">Sentiment Analysis</span>
+                      </div>
+                      <button
+                        onClick={handleAnalyzeSentiment}
+                        disabled={loadingSentiment}
+                        className="rounded bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 hover:bg-purple-200 disabled:opacity-50"
+                      >
+                        {loadingSentiment ? <Loader2 className="h-3 w-3 animate-spin" /> : "Analyze"}
+                      </button>
+                    </div>
+                    {sentimentAnalysis && (
+                      <div className="mt-2 space-y-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Sentiment:</span>
+                          <span className={`rounded px-2 py-0.5 ${
+                            sentimentAnalysis.overall_sentiment === "positive" ? "bg-green-100 text-green-800" :
+                            sentimentAnalysis.overall_sentiment === "negative" ? "bg-red-100 text-red-800" :
+                            "bg-gray-100 text-gray-800"
+                          }`}>
+                            {sentimentAnalysis.overall_sentiment}
+                          </span>
+                          <span className="text-gray-600">
+                            ({(sentimentAnalysis.sentiment_score * 100).toFixed(0)}%)
+                          </span>
+                        </div>
+                        {sentimentAnalysis.detected_tone.length > 0 && (
+                          <div>
+                            <span className="font-medium">Tones:</span> {sentimentAnalysis.detected_tone.join(", ")}
+                          </div>
+                        )}
+                        {sentimentAnalysis.alerts.length > 0 && (
+                          <div className="flex items-start gap-1 text-red-600">
+                            <AlertTriangle className="h-3 w-3 mt-0.5" />
+                            <span>{sentimentAnalysis.alerts[0]}</span>
+                          </div>
+                        )}
+                        <p className="text-gray-600">{sentimentAnalysis.guidance}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Deal Probability */}
+                  <div className="rounded-lg border border-blue-200 bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-gray-800">Deal Probability</span>
+                      </div>
+                      <button
+                        onClick={handleGetDealProbability}
+                        disabled={loadingProbability}
+                        className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                      >
+                        {loadingProbability ? <Loader2 className="h-3 w-3 animate-spin" /> : "Predict"}
+                      </button>
+                    </div>
+                    {dealProbability && (
+                      <div className="mt-2 space-y-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Probability:</span>
+                          <div className="flex-1 rounded-full bg-gray-200 h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                dealProbability.probability > 0.7 ? "bg-green-500" :
+                                dealProbability.probability > 0.4 ? "bg-yellow-500" :
+                                "bg-red-500"
+                              }`}
+                              style={{ width: `${dealProbability.probability * 100}%` }}
+                            />
+                          </div>
+                          <span className="font-semibold">{(dealProbability.probability * 100).toFixed(0)}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Confidence:</span> {dealProbability.confidence}
+                        </div>
+                        {dealProbability.factors.length > 0 && (
+                          <div className="text-gray-600">
+                            <span className="font-medium">Key Factors:</span> {dealProbability.factors.slice(0, 2).join(", ")}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Message Drafting */}
+                <div className="mt-3 rounded-lg border border-green-200 bg-white p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-semibold text-gray-800">AI Message Drafting</span>
+                  </div>
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={draftContext}
+                      onChange={(e) => setDraftContext(e.target.value)}
+                      placeholder="What do you want to say? (e.g., 'Ask about payment terms')"
+                      className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:border-green-500 focus:outline-none"
+                    />
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={draftTone}
+                        onChange={(e) => setDraftTone(e.target.value as any)}
+                        className="rounded border border-gray-300 px-2 py-1 text-xs focus:border-green-500 focus:outline-none"
+                      >
+                        <option value="professional">Professional</option>
+                        <option value="polite">Polite</option>
+                        <option value="persuasive">Persuasive</option>
+                        <option value="friendly">Friendly</option>
+                      </select>
+                      <button
+                        onClick={handleDraftMessage}
+                        disabled={loadingDraft || !draftContext.trim()}
+                        className="flex-1 rounded bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
+                      >
+                        {loadingDraft ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Draft Message"}
+                      </button>
+                    </div>
+                    {messageDraftResult && (
+                      <div className="mt-2 rounded border border-green-200 bg-green-50 p-2">
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap">{messageDraftResult.draft}</p>
+                        <button
+                          onClick={() => {
+                            setMessageDraft(messageDraftResult.draft);
+                            setMessageDraftResult(null);
+                            setDraftContext("");
+                          }}
+                          className="mt-2 text-xs text-green-700 hover:underline"
+                        >
+                          Use this draft
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Translation */}
+                <div className="mt-3 rounded-lg border border-orange-200 bg-white p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Languages className="h-4 w-4 text-orange-600" />
+                    <span className="text-sm font-semibold text-gray-800">Language Translation</span>
+                  </div>
+                  <div className="space-y-2">
+                    <textarea
+                      value={translationText}
+                      onChange={(e) => setTranslationText(e.target.value)}
+                      placeholder="Enter text to translate..."
+                      rows={2}
+                      className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:border-orange-500 focus:outline-none"
+                    />
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={targetLanguage}
+                        onChange={(e) => setTargetLanguage(e.target.value)}
+                        className="rounded border border-gray-300 px-2 py-1 text-xs focus:border-orange-500 focus:outline-none"
+                      >
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="it">Italian</option>
+                        <option value="hi">Hindi</option>
+                        <option value="ar">Arabic</option>
+                      </select>
+                      <button
+                        onClick={handleTranslate}
+                        disabled={loadingTranslation || !translationText.trim()}
+                        className="flex-1 rounded bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+                      >
+                        {loadingTranslation ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : "Translate"}
+                      </button>
+                    </div>
+                    {translationResult && (
+                      <div className="mt-2 rounded border border-orange-200 bg-orange-50 p-2">
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap">{translationResult.translated_text}</p>
+                        {translationResult.detected_language && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            Detected: {translationResult.detected_language}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => {
+                            setMessageDraft(translationResult.translated_text);
+                            setTranslationResult(null);
+                            setTranslationText("");
+                          }}
+                          className="mt-2 text-xs text-orange-700 hover:underline"
+                        >
+                          Use translation
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1076,7 +1394,11 @@ Respond with succinct, actionable advice.`;
               Insights to help you evaluate this proposal.
             </p>
             <div
-              className="relative flex min-h-[320px] flex-col items-center justify-center overflow-y-auto rounded-xl bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6"
+              className={`relative flex min-h-[320px] flex-col overflow-y-auto rounded-xl bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6 ${
+                (aiLoading ?? aiReview.loading) || (!aiReview.feedback && !aiReview.error)
+                  ? "items-center justify-center"
+                  : "items-start"
+              }`}
               style={{ maxHeight: "70vh" }}
             >
               {(aiLoading ?? aiReview.loading) ? (
@@ -1154,7 +1476,7 @@ Respond with succinct, actionable advice.`;
                   {aiReview.error}
                 </p>
               ) : aiReview.feedback ? (
-                <div className="prose prose-sm animate-fade-in max-w-none">
+                <div className="prose prose-sm animate-fade-in max-w-none w-full">
                   <ReactMarkdown>{aiReview.feedback}</ReactMarkdown>
                 </div>
               ) : (

@@ -1,13 +1,13 @@
 import { authenticatedFetch } from "@/lib/auth-helpers";
 import {
-    AcceptNegotiationResponse,
-    Contract,
-    ContractChatMessage,
-    ContractVersion,
-    ContractVersionCreate,
-    Deliverable,
-    DeliverableCreate,
-    Proposal,
+  AcceptNegotiationResponse,
+  Contract,
+  ContractChatMessage,
+  ContractVersion,
+  ContractVersionCreate,
+  Deliverable,
+  DeliverableCreate,
+  Proposal,
 } from "@/types/proposals";
 
 const API_BASE_URL =
@@ -34,6 +34,22 @@ function buildQuery(params?: Record<string, string | number | undefined>) {
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
     .join("&");
   return query ? `?${query}` : "";
+}
+
+export async function createProposal(payload: {
+  campaign_id: string;
+  creator_id?: string; // Optional: required for brands, auto-filled for creators
+  subject: string;
+  message: string;
+  proposed_amount?: number;
+  content_ideas?: string[];
+  ideal_pricing?: string;
+}): Promise<Proposal> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/proposals`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return parseJson<Proposal>(response);
 }
 
 export async function fetchSentProposals(params?: {
@@ -382,6 +398,217 @@ export async function fetchContractVersions(
     `${API_BASE_URL}/contracts/${contractId}/versions`
   );
   return parseJson<ContractVersion[]>(response);
+}
+
+// ============================================================================
+// NEGOTIATION AI FEATURES API FUNCTIONS
+// ============================================================================
+
+export interface SentimentAnalysis {
+  overall_sentiment: string;
+  sentiment_score: number;
+  detected_tone: string[];
+  guidance: string;
+  alerts: string[];
+}
+
+export async function analyzeNegotiationSentiment(
+  proposalId: string
+): Promise<SentimentAnalysis> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/proposals/${proposalId}/negotiation/analyze-sentiment`,
+    {
+      method: "POST",
+    }
+  );
+  return parseJson<SentimentAnalysis>(response);
+}
+
+export interface MessageDraftRequest {
+  context: string;
+  tone?: "professional" | "polite" | "persuasive" | "friendly";
+  current_negotiation_state?: string;
+}
+
+export interface MessageDraft {
+  draft: string;
+  suggestions: string[];
+}
+
+export async function draftNegotiationMessage(
+  proposalId: string,
+  payload: MessageDraftRequest
+): Promise<MessageDraft> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/proposals/${proposalId}/negotiation/draft-message`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<MessageDraft>(response);
+}
+
+export interface DealProbability {
+  probability: number;
+  confidence: string;
+  factors: string[];
+  recommendations: string[];
+}
+
+export async function getDealProbability(
+  proposalId: string
+): Promise<DealProbability> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/proposals/${proposalId}/negotiation/deal-probability`
+  );
+  return parseJson<DealProbability>(response);
+}
+
+export interface TranslationRequest {
+  text: string;
+  target_language: string;
+  source_language?: string;
+}
+
+export interface Translation {
+  translated_text: string;
+  detected_language?: string;
+  confidence?: number;
+}
+
+export async function translateNegotiationMessage(
+  proposalId: string,
+  payload: TranslationRequest
+): Promise<Translation> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/proposals/${proposalId}/negotiation/translate`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<Translation>(response);
+}
+
+// ============================================================================
+// CONTRACT AI FEATURES API FUNCTIONS
+// ============================================================================
+
+export interface ContractQuestion {
+  question: string;
+}
+
+export interface ContractQuestionAnswer {
+  answer: string;
+  relevant_clauses: string[];
+}
+
+export async function askContractQuestion(
+  contractId: string,
+  payload: ContractQuestion
+): Promise<ContractQuestionAnswer> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/contracts/${contractId}/ask-question`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<ContractQuestionAnswer>(response);
+}
+
+export interface ContractTemplateRequest {
+  deal_type: string;
+  deliverables?: string[];
+  payment_amount?: number;
+  duration?: string;
+  additional_requirements?: string;
+}
+
+export interface ContractTemplate {
+  template: Record<string, any>;
+  suggestions: string[];
+}
+
+export async function generateContractTemplate(
+  payload: ContractTemplateRequest
+): Promise<ContractTemplate> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/contracts/generate-template`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<ContractTemplate>(response);
+}
+
+export interface ContractTranslationRequest {
+  target_language: string;
+}
+
+export interface ContractTranslation {
+  translated_terms: Record<string, any>;
+  detected_language?: string;
+}
+
+export async function translateContract(
+  contractId: string,
+  payload: ContractTranslationRequest
+): Promise<ContractTranslation> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/contracts/${contractId}/translate`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<ContractTranslation>(response);
+}
+
+export interface ClauseExplanationRequest {
+  clause_text: string;
+  clause_context?: string;
+}
+
+export interface ClauseExplanation {
+  explanation: string;
+  key_points: string[];
+  implications: string[];
+}
+
+export async function explainContractClause(
+  contractId: string,
+  payload: ClauseExplanationRequest
+): Promise<ClauseExplanation> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/contracts/${contractId}/explain-clause`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+  return parseJson<ClauseExplanation>(response);
+}
+
+export interface ContractSummary {
+  summary: string;
+  key_terms: Record<string, any>;
+  obligations: {
+    brand: string[];
+    creator: string[];
+  };
+  important_dates: string[];
+}
+
+export async function summarizeContract(
+  contractId: string
+): Promise<ContractSummary> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/contracts/${contractId}/summarize`
+  );
+  return parseJson<ContractSummary>(response);
 }
 
 export async function fetchCurrentContractVersion(
