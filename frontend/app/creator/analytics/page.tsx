@@ -39,7 +39,7 @@ export default function CreatorAnalyticsPage() {
           {activeView === "ai" ? (
             <AIAnalyticsDashboard role="creator" />
           ) : (
-            <CreatorAnalyticsDashboard />
+          <CreatorAnalyticsDashboard />
           )}
         </main>
       </div>

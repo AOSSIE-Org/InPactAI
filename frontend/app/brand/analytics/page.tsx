@@ -39,7 +39,7 @@ export default function BrandAnalyticsPage() {
           {activeView === "ai" ? (
             <AIAnalyticsDashboard role="brand" />
           ) : (
-            <BrandAnalyticsDashboard />
+          <BrandAnalyticsDashboard />
           )}
         </main>
       </div>
