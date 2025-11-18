@@ -17,7 +17,17 @@ END $$;
 
 -- This file is no longer maintained here.
 -- For the latest schema reference and documentation, see: docs/database/schema-reference.md
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  name text NOT NULL,
+  role text NOT NULL CHECK (role = ANY (ARRAY['Creator'::text, 'Brand'::text])),
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  onboarding_completed boolean DEFAULT false,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 
+-- collaboration tables
+);
 CREATE TABLE public.brands (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL UNIQUE,
@@ -102,119 +112,6 @@ CREATE TABLE public.brands (
   CONSTRAINT brands_pkey PRIMARY KEY (id),
   CONSTRAINT brands_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
-CREATE TABLE public.campaign_applications (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid NOT NULL,
-  creator_id uuid NOT NULL,
-  profile_snapshot jsonb DEFAULT '{}'::jsonb,
-  message text,
-  proposed_amount numeric,
-  attachments jsonb DEFAULT '[]'::jsonb,
-  status USER-DEFINED DEFAULT 'applied'::application_status,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT campaign_applications_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_applications_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
-  CONSTRAINT campaign_applications_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
-);
-CREATE TABLE public.campaign_assets (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid,
-  deal_id uuid,
-  uploaded_by uuid,
-  url text NOT NULL,
-  type text,
-  meta jsonb DEFAULT '{}'::jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT campaign_assets_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_assets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
-  CONSTRAINT campaign_assets_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id),
-  CONSTRAINT campaign_assets_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.campaign_deliverables (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid NOT NULL,
-  platform text,
-  content_type text,
-  quantity integer DEFAULT 1,
-  guidance text,
-  required boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT campaign_deliverables_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_deliverables_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id)
-);
-CREATE TABLE public.campaign_invites (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid NOT NULL,
-  brand_id uuid NOT NULL,
-  creator_id uuid NOT NULL,
-  message text,
-  proposed_amount numeric,
-  status USER-DEFINED DEFAULT 'pending'::invite_status,
-  sent_at timestamp with time zone,
-  responded_at timestamp with time zone,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT campaign_invites_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_invites_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
-  CONSTRAINT campaign_invites_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id),
-  CONSTRAINT campaign_invites_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
-);
-CREATE TABLE public.campaign_payments (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  deal_id uuid NOT NULL,
-  amount numeric NOT NULL,
-  currency text DEFAULT 'INR'::text,
-  method text,
-  status USER-DEFINED DEFAULT 'pending'::payment_status,
-  external_payment_ref text,
-  metadata jsonb DEFAULT '{}'::jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  paid_at timestamp with time zone,
-  CONSTRAINT campaign_payments_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_payments_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
-);
-CREATE TABLE public.campaign_performance (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid NOT NULL,
-  deal_id uuid,
-  report_source text,
-  recorded_at timestamp with time zone NOT NULL DEFAULT now(),
-  impressions bigint,
-  clicks bigint,
-  views bigint,
-  watch_time bigint,
-  engagements bigint,
-  conversions bigint,
-  revenue numeric,
-  raw jsonb DEFAULT '{}'::jsonb,
-  CONSTRAINT campaign_performance_pkey PRIMARY KEY (id),
-  CONSTRAINT campaign_performance_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
-  CONSTRAINT campaign_performance_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
-);
-CREATE TABLE public.campaigns (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  brand_id uuid NOT NULL,
-  title text NOT NULL,
-  slug text UNIQUE,
-  short_description text,
-  description text,
-  status text NOT NULL DEFAULT 'draft'::text,
-  platforms text[] DEFAULT ARRAY[]::text[],
-  deliverables jsonb DEFAULT '[]'::jsonb,
-  target_audience jsonb DEFAULT '{}'::jsonb,
-  budget_min numeric,
-  budget_max numeric,
-  preferred_creator_niches text[] DEFAULT ARRAY[]::text[],
-  preferred_creator_followers_range text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  published_at timestamp with time zone,
-  starts_at timestamp with time zone,
-  ends_at timestamp with time zone,
-  is_featured boolean DEFAULT false,
-  CONSTRAINT campaigns_pkey PRIMARY KEY (id),
-  CONSTRAINT campaigns_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id)
-);
 CREATE TABLE public.creators (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL UNIQUE,
@@ -296,6 +193,57 @@ CREATE TABLE public.creators (
   CONSTRAINT creators_pkey PRIMARY KEY (id),
   CONSTRAINT creators_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
+CREATE TABLE public.campaigns (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  brand_id uuid NOT NULL,
+  title text NOT NULL,
+  slug text UNIQUE,
+  short_description text,
+  description text,
+  status text NOT NULL DEFAULT 'draft'::text,
+  platforms text[] DEFAULT ARRAY[]::text[],
+  deliverables jsonb DEFAULT '[]'::jsonb,
+  target_audience jsonb DEFAULT '{}'::jsonb,
+  budget_min numeric,
+  budget_max numeric,
+  preferred_creator_niches text[] DEFAULT ARRAY[]::text[],
+  preferred_creator_followers_range text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  published_at timestamp with time zone,
+  starts_at timestamp with time zone,
+  ends_at timestamp with time zone,
+  is_featured boolean DEFAULT false,
+  CONSTRAINT campaigns_pkey PRIMARY KEY (id),
+  CONSTRAINT campaigns_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id)
+);
+CREATE TABLE public.campaign_deliverables (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  platform text,
+  content_type text,
+  quantity integer DEFAULT 1,
+  guidance text,
+  required boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_deliverables_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_deliverables_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id)
+);
+CREATE TABLE public.campaign_applications (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  profile_snapshot jsonb DEFAULT '{}'::jsonb,
+  message text,
+  proposed_amount numeric,
+  attachments jsonb DEFAULT '[]'::jsonb,
+  status application_status DEFAULT 'applied'::application_status,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_applications_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_applications_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_applications_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
+);
 CREATE TABLE public.deals (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   campaign_id uuid,
@@ -305,7 +253,7 @@ CREATE TABLE public.deals (
   agreed_amount numeric,
   payment_schedule jsonb DEFAULT '[]'::jsonb,
   terms jsonb DEFAULT '{}'::jsonb,
-  status USER-DEFINED DEFAULT 'draft'::deal_status,
+  status deal_status DEFAULT 'draft'::deal_status,
   starts_at timestamp with time zone,
   ends_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now(),
@@ -316,6 +264,70 @@ CREATE TABLE public.deals (
   CONSTRAINT deals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id),
   CONSTRAINT deals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
 );
+CREATE TABLE public.campaign_assets (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid,
+  deal_id uuid,
+  uploaded_by uuid,
+  url text NOT NULL,
+  type text,
+  meta jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_assets_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_assets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_assets_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id),
+  CONSTRAINT campaign_assets_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES public.profiles(id)
+);
+
+CREATE TABLE public.campaign_invites (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  message text,
+  proposed_amount numeric,
+  status invite_status DEFAULT 'pending'::invite_status,
+  sent_at timestamp with time zone,
+  responded_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_invites_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_invites_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_invites_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id),
+  CONSTRAINT campaign_invites_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
+);
+CREATE TABLE public.campaign_payments (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  deal_id uuid NOT NULL,
+  amount numeric NOT NULL,
+  currency text DEFAULT 'INR'::text,
+  method text,
+  status payment_status DEFAULT 'pending'::payment_status,
+  external_payment_ref text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  paid_at timestamp with time zone,
+  CONSTRAINT campaign_payments_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_payments_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
+);
+CREATE TABLE public.campaign_performance (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  deal_id uuid,
+  report_source text,
+  recorded_at timestamp with time zone NOT NULL DEFAULT now(),
+  impressions bigint,
+  clicks bigint,
+  views bigint,
+  watch_time bigint,
+  engagements bigint,
+  conversions bigint,
+  revenue numeric,
+  raw jsonb DEFAULT '{}'::jsonb,
+  CONSTRAINT campaign_performance_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_performance_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_performance_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
+);
+
 CREATE TABLE public.match_scores (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   creator_id uuid NOT NULL,
@@ -327,17 +339,7 @@ CREATE TABLE public.match_scores (
   CONSTRAINT match_scores_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id),
   CONSTRAINT match_scores_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id)
 );
-CREATE TABLE public.profiles (
-  id uuid NOT NULL,
-  name text NOT NULL,
-  role text NOT NULL CHECK (role = ANY (ARRAY['Creator'::text, 'Brand'::text])),
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
-  onboarding_completed boolean DEFAULT false,
-  CONSTRAINT profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 
--- collaboration tables
-);
 CREATE TABLE IF NOT EXISTS creator_collaborations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
@@ -549,41 +551,6 @@ CREATE INDEX IF NOT EXISTS idx_proposals_creator_id ON public.proposals(creator_
 CREATE INDEX IF NOT EXISTS idx_proposals_status ON public.proposals(status);
 CREATE INDEX IF NOT EXISTS idx_proposals_created_at ON public.proposals(created_at DESC);
 
--- Add updated_at trigger for proposals
-CREATE OR REPLACE FUNCTION update_proposals_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_proposals_updated_at
-  BEFORE UPDATE ON public.proposals
-  FOR EACH ROW
-  EXECUTE FUNCTION update_proposals_updated_at();
-
-
-CREATE TABLE IF NOT EXISTS public.proposals (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  campaign_id uuid NOT NULL,
-  brand_id uuid NOT NULL,
-  creator_id uuid NOT NULL,
-  subject text NOT NULL,
-  message text NOT NULL,
-  proposed_amount numeric,
-  content_ideas text[] DEFAULT ARRAY[]::text[],
-  ideal_pricing text,
-  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT proposals_pkey PRIMARY KEY (id),
-  CONSTRAINT proposals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id) ON DELETE CASCADE,
-  CONSTRAINT proposals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE,
-  CONSTRAINT proposals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id) ON DELETE CASCADE,
-  CONSTRAINT proposals_unique_campaign_creator UNIQUE (campaign_id, creator_id, brand_id)
-);
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_proposals_campaign_id ON public.proposals(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_proposals_brand_id ON public.proposals(brand_id);
@@ -771,3 +738,13 @@ COMMENT ON COLUMN public.campaign_applications.timeline_days IS 'Number of days 
 COMMENT ON COLUMN public.campaign_applications.timeline_weeks IS 'Number of weeks the creator estimates to complete the campaign';
 COMMENT ON COLUMN public.campaign_applications.description IS 'Creator description explaining why they should be chosen for this campaign';
 
+-- Grant permissions to the public schema
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA public
+TO anon, authenticated;
+
+GRANT ALL
+ON ALL TABLES IN SCHEMA public
+TO service_role;
