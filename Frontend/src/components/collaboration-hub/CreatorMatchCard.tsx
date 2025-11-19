@@ -109,7 +109,7 @@ export const CreatorMatchCard: React.FC<CreatorMatchCardProps> = ({
           <Button className="bg-yellow-400 text-white hover:bg-yellow-500 flex-1 font-semibold rounded-full py-2" onClick={() => setShowConnect(true)}>Connect</Button>
         </div>
         {requestSent && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm shadow" aria-live="polite">Request Sent!</div>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm shadow w-max" aria-live="polite">Request Sent!</div>
         )}
       </div>
       <ViewProfileModal
