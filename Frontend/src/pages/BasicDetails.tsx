@@ -35,20 +35,17 @@ import { Link } from "react-router-dom";
 import { ModeToggle } from "../components/mode-toggle";
 
 // Validation utilities
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
 const validatePhone = (phone: string): boolean => {
-  const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
-  return phoneRegex.test(phone);
+  // Basic pattern: optional country code + local number with common separators
+  const phoneRegex =
+    /^\+?[0-9]{1,3}?[-\s.]?\(?[0-9]{3}\)?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4}$/;
+  return phoneRegex.test(phone.trim());
 };
 
 const validateURL = (url: string): boolean => {
   try {
-    new URL(url);
-    return true;
+    const parsed = new URL(url.trim());
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
   } catch {
     return false;
   }
@@ -836,12 +833,8 @@ export default function BasicDetails() {
 
                       <Button
                         className="bg-purple-700 hover:bg-purple-800 border border-purple-800 transition-all duration-200 transform hover:scale-105 text-white"
-                        onClick={nextStep}
-                        disabled={
-                          (user === "influencer" && step === 2) ||
-                          (user === "brand" && step === 1)
-                        }
-                      >
+                       onClick={nextStep}
+                     >
                         {step === totalSteps - 1 ? "Complete" : "Next"}
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
