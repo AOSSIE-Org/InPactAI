@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   Rocket,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -33,13 +34,157 @@ import { UserNav } from "../components/user-nav";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "../components/mode-toggle";
 
+// Validation utilities
+const validatePhone = (phone: string): boolean => {
+  // Basic pattern: optional country code + local number with common separators
+  const phoneRegex =
+    /^\+?[0-9]{1,3}?[-\s.]?\(?[0-9]{3}\)?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4}$/;
+  return phoneRegex.test(phone.trim());
+};
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+};
+
+
+const validateURL = (url: string): boolean => {
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 export default function BasicDetails() {
   const { user } = useParams();
   const [step, setStep] = useState(0);
   const [animationDirection, setAnimationDirection] = useState(0);
+  
+  // Form state and validation
+  const [formData, setFormData] = useState({
+    influencer: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      category: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      tiktok: "",
+      website: "",
+      audienceSize: "",
+      avgEngagement: "",
+      mainPlatform: "",
+      audienceAge: "",
+    },
+    brand: {
+      companyName: "",
+      website: "",
+      industry: "",
+      size: "",
+      budget: "",
+      targetAudience: "",
+      preferredPlatforms: "",
+      campaignGoals: "",
+    },
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const totalSteps = user === "influencer" ? 3 : 2;
+
+  // Validation functions
+  const validateStep = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    const data = user === "influencer" ? formData.influencer : formData.brand;
+
+    if (user === "influencer") {
+      const influData = data as typeof formData.influencer;
+      if (step === 0) {
+        if (!influData.firstName?.trim()) newErrors.firstName = "First name is required";
+        if (!influData.lastName?.trim()) newErrors.lastName = "Last name is required";
+        if (!influData.email?.trim()) {
+          newErrors.email = "Email is required";
+        } else if (!validateEmail(influData.email)) {
+          newErrors.email = "Invalid email format";
+        }
+        if (!influData.phone?.trim()) {
+          newErrors.phone = "Phone number is required";
+        } else if (!validatePhone(influData.phone)) {
+          newErrors.phone = "Invalid phone format (e.g., +1-555-000-0000)";
+        }
+        if (!influData.category) newErrors.category = "Content category is required";
+      } else if (step === 1) {
+        if (influData.instagram && !influData.instagram.startsWith("@")) {
+          newErrors.instagram = "Instagram handle should start with @";
+        }
+        if (influData.youtube && !validateURL(influData.youtube)) {
+          newErrors.youtube = "Invalid YouTube URL";
+        }
+        if (influData.website && !validateURL(influData.website)) {
+          newErrors.website = "Invalid website URL";
+        }
+      } else if (step === 2) {
+        if (!influData.audienceSize) newErrors.audienceSize = "Audience size is required";
+        else if (isNaN(Number(influData.audienceSize)) || Number(influData.audienceSize) <= 0) {
+          newErrors.audienceSize = "Audience size must be a positive number";
+        }
+        if (!influData.avgEngagement) newErrors.avgEngagement = "Engagement rate is required";
+        else if (isNaN(Number(influData.avgEngagement)) || Number(influData.avgEngagement) < 0 || Number(influData.avgEngagement) > 100) {
+          newErrors.avgEngagement = "Engagement rate must be between 0 and 100";
+        }
+        if (!influData.mainPlatform) newErrors.mainPlatform = "Primary platform is required";
+        if (!influData.audienceAge) newErrors.audienceAge = "Audience age range is required";
+      }
+    } else {
+      const brandData = data as typeof formData.brand;
+      if (step === 0) {
+        if (!brandData.companyName?.trim()) newErrors.companyName = "Company name is required";
+        if (!brandData.website) {
+          newErrors.website = "Website is required";
+        } else if (!validateURL(brandData.website)) {
+          newErrors.website = "Invalid website URL";
+        }
+        if (!brandData.industry) newErrors.industry = "Industry is required";
+        if (!brandData.size) newErrors.size = "Company size is required";
+        if (!brandData.budget) newErrors.budget = "Budget range is required";
+      } else if (step === 1) {
+        if (!brandData.targetAudience) newErrors.targetAudience = "Target audience is required";
+        if (!brandData.preferredPlatforms) newErrors.preferredPlatforms = "Preferred platforms is required";
+        if (!brandData.campaignGoals) newErrors.campaignGoals = "Campaign goals is required";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    if (user === "influencer") {
+      setFormData(prev => ({
+        ...prev,
+        influencer: { ...prev.influencer, [field]: value }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        brand: { ...prev.brand, [field]: value }
+      }));
+    }
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
   const nextStep = () => {
+    if (!validateStep()) return; // Don't proceed if validation fails
+    
     if ((user === "influencer" && step < 2) || (user === "brand" && step < 1)) {
       setAnimationDirection(1);
       setTimeout(() => {
@@ -69,44 +214,72 @@ export default function BasicDetails() {
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
           <Input
             id="firstName"
             placeholder="John"
-            className="border border-gray-300"
+            value={formData.influencer.firstName}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
+            className={`border ${errors.firstName ? "border-red-500" : "border-gray-300"}`}
           />
+          {errors.firstName && (
+            <p className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {errors.firstName}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
+          <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
           <Input
             id="lastName"
             placeholder="Doe"
-            className="border border-gray-300"
+            value={formData.influencer.lastName}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
+            className={`border ${errors.lastName ? "border-red-500" : "border-gray-300"}`}
           />
+          {errors.lastName && (
+            <p className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {errors.lastName}
+            </p>
+          )}
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
         <Input
           id="email"
           type="email"
           placeholder="john@example.com"
-          className="border border-gray-300"
+          value={formData.influencer.email}
+          onChange={(e) => handleInputChange("email", e.target.value)}
+          className={`border ${errors.email ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.email && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.email}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
         <Input
           id="phone"
           type="tel"
           placeholder="+1 (555) 000-0000"
-          className="border border-gray-300"
+          value={formData.influencer.phone}
+          onChange={(e) => handleInputChange("phone", e.target.value)}
+          className={`border ${errors.phone ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.phone && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.phone}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="category">Content Category</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="category">Content Category <span className="text-red-500">*</span></Label>
+        <Select value={formData.influencer.category} onValueChange={(value) => handleInputChange("category", value)}>
+          <SelectTrigger className={errors.category ? "border-red-500" : ""}>
             <SelectValue placeholder="Select your main content category" />
           </SelectTrigger>
           <SelectContent className="border border-gray-300">
@@ -120,6 +293,11 @@ export default function BasicDetails() {
             <SelectItem value="education">Education</SelectItem>
           </SelectContent>
         </Select>
+        {errors.category && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.category}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -131,35 +309,75 @@ export default function BasicDetails() {
           <Instagram className="h-5 w-5 text-pink-600" />
           Instagram Handle
         </Label>
-        <Input placeholder="@username" className="border border-gray-300" />
+        <Input 
+          placeholder="@username" 
+          value={formData.influencer.instagram}
+          onChange={(e) => handleInputChange("instagram", e.target.value)}
+          className={`border ${errors.instagram ? "border-red-500" : "border-gray-300"}`}
+        />
+        {errors.instagram && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.instagram}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
           <Youtube className="h-5 w-5 text-red-600" />
           YouTube Channel
         </Label>
-        <Input placeholder="Channel URL" className="border border-gray-300" />
+        <Input 
+          placeholder="Channel URL" 
+          value={formData.influencer.youtube}
+          onChange={(e) => handleInputChange("youtube", e.target.value)}
+          className={`border ${errors.youtube ? "border-red-500" : "border-gray-300"}`}
+        />
+        {errors.youtube && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.youtube}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
           <Twitter className="h-5 w-5 text-blue-400" />
           Twitter Handle
         </Label>
-        <Input placeholder="@username" className="border border-gray-300" />
+        <Input 
+          placeholder="@username" 
+          value={formData.influencer.twitter}
+          onChange={(e) => handleInputChange("twitter", e.target.value)}
+          className="border border-gray-300"
+        />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
           <TikTok className="h-5 w-5" />
           TikTok Username
         </Label>
-        <Input placeholder="@username" className="border border-gray-300" />
+        <Input 
+          placeholder="@username" 
+          value={formData.influencer.tiktok}
+          onChange={(e) => handleInputChange("tiktok", e.target.value)}
+          className="border border-gray-300"
+        />
       </div>
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-blue-500" />
           Personal Website
         </Label>
-        <Input placeholder="https://" className="border border-gray-300" />
+        <Input 
+          placeholder="https://" 
+          value={formData.influencer.website}
+          onChange={(e) => handleInputChange("website", e.target.value)}
+          className={`border ${errors.website ? "border-red-500" : "border-gray-300"}`}
+        />
+        {errors.website && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.website}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -167,28 +385,42 @@ export default function BasicDetails() {
   const InfluencerAudience = () => (
     <div className="space-y-4 p-4 border border-gray-300 rounded-md">
       <div className="space-y-2">
-        <Label htmlFor="audienceSize">Total Audience Size</Label>
+        <Label htmlFor="audienceSize">Total Audience Size <span className="text-red-500">*</span></Label>
         <Input
           id="audienceSize"
           type="number"
           placeholder="e.g., 100000"
-          className="border border-gray-300"
+          value={formData.influencer.audienceSize}
+          onChange={(e) => handleInputChange("audienceSize", e.target.value)}
+          className={`border ${errors.audienceSize ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.audienceSize && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.audienceSize}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="avgEngagement">Average Engagement Rate (%)</Label>
+        <Label htmlFor="avgEngagement">Average Engagement Rate (%) <span className="text-red-500">*</span></Label>
         <Input
           id="avgEngagement"
           type="number"
           step="0.01"
           placeholder="e.g., 3.5"
-          className="border border-gray-300"
+          value={formData.influencer.avgEngagement}
+          onChange={(e) => handleInputChange("avgEngagement", e.target.value)}
+          className={`border ${errors.avgEngagement ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.avgEngagement && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.avgEngagement}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="mainPlatform">Primary Platform</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="mainPlatform">Primary Platform <span className="text-red-500">*</span></Label>
+        <Select value={formData.influencer.mainPlatform} onValueChange={(value) => handleInputChange("mainPlatform", value)}>
+          <SelectTrigger className={errors.mainPlatform ? "border-red-500" : ""}>
             <SelectValue placeholder="Select your main platform" />
           </SelectTrigger>
           <SelectContent>
@@ -198,11 +430,16 @@ export default function BasicDetails() {
             <SelectItem value="twitter">Twitter</SelectItem>
           </SelectContent>
         </Select>
+        {errors.mainPlatform && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.mainPlatform}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="audienceAge">Primary Audience Age Range</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="audienceAge">Primary Audience Age Range <span className="text-red-500">*</span></Label>
+        <Select value={formData.influencer.audienceAge} onValueChange={(value) => handleInputChange("audienceAge", value)}>
+          <SelectTrigger className={errors.audienceAge ? "border-red-500" : ""}>
             <SelectValue placeholder="Select age range" />
           </SelectTrigger>
           <SelectContent>
@@ -213,6 +450,11 @@ export default function BasicDetails() {
             <SelectItem value="45+">45+</SelectItem>
           </SelectContent>
         </Select>
+        {errors.audienceAge && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.audienceAge}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -223,18 +465,41 @@ export default function BasicDetails() {
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
           Brand Information
         </h3>
-        <Label htmlFor="companyName">Company Name</Label>
-        <Input id="companyName" placeholder="Brand Inc." />
+        <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
+        <Input 
+          id="companyName" 
+          placeholder="Brand Inc." 
+          value={formData.brand.companyName}
+          onChange={(e) => handleInputChange("companyName", e.target.value)}
+          className={`border ${errors.companyName ? "border-red-500" : "border-gray-300"}`}
+        />
+        {errors.companyName && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.companyName}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="website">Company Website</Label>
-        <Input id="website" type="url" placeholder="https://www.example.com" />
+        <Label htmlFor="website">Company Website <span className="text-red-500">*</span></Label>
+        <Input 
+          id="website" 
+          type="url" 
+          placeholder="https://www.example.com" 
+          value={formData.brand.website}
+          onChange={(e) => handleInputChange("website", e.target.value)}
+          className={`border ${errors.website ? "border-red-500" : "border-gray-300"}`}
+        />
+        {errors.website && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.website}
+          </p>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
-          <Select>
-            <SelectTrigger>
+          <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
+          <Select value={formData.brand.industry} onValueChange={(value) => handleInputChange("industry", value)}>
+            <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
             <SelectContent>
@@ -246,11 +511,16 @@ export default function BasicDetails() {
               <SelectItem value="entertainment">Entertainment</SelectItem>
             </SelectContent>
           </Select>
+          {errors.industry && (
+            <p className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {errors.industry}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="size">Company Size</Label>
-          <Select>
-            <SelectTrigger>
+          <Label htmlFor="size">Company Size <span className="text-red-500">*</span></Label>
+          <Select value={formData.brand.size} onValueChange={(value) => handleInputChange("size", value)}>
+            <SelectTrigger className={errors.size ? "border-red-500" : ""}>
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
             <SelectContent>
@@ -261,12 +531,17 @@ export default function BasicDetails() {
               <SelectItem value="501+">501+ employees</SelectItem>
             </SelectContent>
           </Select>
+          {errors.size && (
+            <p className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" /> {errors.size}
+            </p>
+          )}
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="budget">Monthly Marketing Budget</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="budget">Monthly Marketing Budget <span className="text-red-500">*</span></Label>
+        <Select value={formData.brand.budget} onValueChange={(value) => handleInputChange("budget", value)}>
+          <SelectTrigger className={errors.budget ? "border-red-500" : ""}>
             <SelectValue placeholder="Select budget range" />
           </SelectTrigger>
           <SelectContent>
@@ -276,6 +551,11 @@ export default function BasicDetails() {
             <SelectItem value="50001+">$50,001+</SelectItem>
           </SelectContent>
         </Select>
+        {errors.budget && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.budget}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -286,9 +566,9 @@ export default function BasicDetails() {
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
           Campaign Settings
         </h3>
-        <Label htmlFor="targetAudience">Target Audience Age Range</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="targetAudience">Target Audience Age Range <span className="text-red-500">*</span></Label>
+        <Select value={formData.brand.targetAudience} onValueChange={(value) => handleInputChange("targetAudience", value)}>
+          <SelectTrigger className={errors.targetAudience ? "border-red-500" : ""}>
             <SelectValue placeholder="Select target age range" />
           </SelectTrigger>
           <SelectContent>
@@ -299,11 +579,16 @@ export default function BasicDetails() {
             <SelectItem value="45+">45+</SelectItem>
           </SelectContent>
         </Select>
+        {errors.targetAudience && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.targetAudience}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="preferredPlatforms">Preferred Platforms</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="preferredPlatforms">Preferred Platforms <span className="text-red-500">*</span></Label>
+        <Select value={formData.brand.preferredPlatforms} onValueChange={(value) => handleInputChange("preferredPlatforms", value)}>
+          <SelectTrigger className={errors.preferredPlatforms ? "border-red-500" : ""}>
             <SelectValue placeholder="Select primary platform" />
           </SelectTrigger>
           <SelectContent>
@@ -313,11 +598,16 @@ export default function BasicDetails() {
             <SelectItem value="twitter">Twitter</SelectItem>
           </SelectContent>
         </Select>
+        {errors.preferredPlatforms && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.preferredPlatforms}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="campaignGoals">Primary Campaign Goals</Label>
-        <Select>
-          <SelectTrigger>
+        <Label htmlFor="campaignGoals">Primary Campaign Goals <span className="text-red-500">*</span></Label>
+        <Select value={formData.brand.campaignGoals} onValueChange={(value) => handleInputChange("campaignGoals", value)}>
+          <SelectTrigger className={errors.campaignGoals ? "border-red-500" : ""}>
             <SelectValue placeholder="Select campaign goal" />
           </SelectTrigger>
           <SelectContent>
@@ -327,6 +617,11 @@ export default function BasicDetails() {
             <SelectItem value="loyalty">Brand Loyalty</SelectItem>
           </SelectContent>
         </Select>
+        {errors.campaignGoals && (
+          <p className="text-red-500 text-sm flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" /> {errors.campaignGoals}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -543,12 +838,8 @@ export default function BasicDetails() {
 
                       <Button
                         className="bg-purple-700 hover:bg-purple-800 border border-purple-800 transition-all duration-200 transform hover:scale-105 text-white"
-                        onClick={nextStep}
-                        disabled={
-                          (user === "influencer" && step === 2) ||
-                          (user === "brand" && step === 1)
-                        }
-                      >
+                       onClick={nextStep}
+                     >
                         {step === totalSteps - 1 ? "Complete" : "Next"}
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
