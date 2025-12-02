@@ -21,8 +21,8 @@ interface CreatorCardProps {
 
 export default function CreatorCard({ creator, onViewProfile }: CreatorCardProps) {
   const totalFollowers = creator.social_profiles?.reduce((sum, profile) => {
-    return sum + (profile.followers || profile.subscriber_count || 0);
-  }, 0) || 0;
+    return sum + (profile.followers ?? profile.subscriber_count ?? 0);
+  }, 0) ?? 0;
 
   /**
    * Returns the appropriate icon component for a social platform.
