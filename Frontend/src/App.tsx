@@ -21,6 +21,7 @@ import Dashboard from "./pages/Brand/Dashboard";
 import BasicDetails from "./pages/BasicDetails";
 import Onboarding from "./components/Onboarding";
 import ScrollToTop from "./components/ui/scroll-to-top";
+import CreatorSearch from "./pages/Brand/CreatorSearch";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +69,11 @@ function App() {
           <Route path="/brand/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/brand/creators" element={
+            <ProtectedRoute>
+              <CreatorSearch />
             </ProtectedRoute>
           } />
           <Route path="/basicDetails/:user" element={<BasicDetails />} />
