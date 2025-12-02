@@ -10,6 +10,10 @@ interface AvailabilityData {
   message: string;
 }
 
+/**
+ * AvailabilityToggle component allows creators to set their availability status
+ * and optional custom message visible to brands.
+ */
 export default function AvailabilityToggle() {
   const { user } = useAuth();
   const [availability, setAvailability] = useState<AvailabilityData>({
@@ -21,6 +25,10 @@ export default function AvailabilityToggle() {
   const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
+    /**
+     * Loads the user's current availability status from the database.
+     * Falls back to default 'available' status if columns don't exist yet.
+     */
     const loadAvailability = async () => {
       try {
         const { data, error } = await supabase
@@ -56,6 +64,11 @@ export default function AvailabilityToggle() {
     }
   }, [user]);
 
+  /**
+   * Updates the user's availability status in the database.
+   * @param newStatus - The new availability status to set
+   * @param newMessage - Optional custom message to display to brands
+   */
   const updateAvailability = async (newStatus: AvailabilityStatus, newMessage?: string) => {
     setSaving(true);
     try {
@@ -87,6 +100,11 @@ export default function AvailabilityToggle() {
     }
   };
 
+  /**
+   * Returns configuration object for display styling based on status.
+   * @param status - The availability status
+   * @returns Configuration with icon, colors, label, and description
+   */
   const getStatusConfig = (status: AvailabilityStatus) => {
     switch (status) {
       case 'available':

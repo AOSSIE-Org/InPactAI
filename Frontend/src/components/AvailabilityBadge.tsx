@@ -9,12 +9,22 @@ interface AvailabilityBadgeProps {
   showMessage?: boolean;
 }
 
+/**
+ * AvailabilityBadge displays a color-coded badge showing creator availability status.
+ * @param status - The availability status (available/busy/not_looking)
+ * @param message - Optional custom message to display below badge
+ * @param size - Badge size variant (sm/md/lg)
+ * @param showMessage - Whether to display the custom message
+ */
 export default function AvailabilityBadge({ 
   status, 
   message, 
   size = 'md',
   showMessage = true 
 }: AvailabilityBadgeProps) {
+  /**
+   * Returns styling configuration based on availability status.
+   */
   const getConfig = () => {
     switch (status) {
       case 'available':
@@ -56,6 +66,9 @@ export default function AvailabilityBadge({
     }
   };
 
+  /**
+   * Returns Tailwind CSS classes for the specified badge size.
+   */
   const getSizeClasses = () => {
     switch (size) {
       case 'sm':

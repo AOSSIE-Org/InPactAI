@@ -24,6 +24,9 @@ export default function CreatorCard({ creator, onViewProfile }: CreatorCardProps
     return sum + (profile.followers || profile.subscriber_count || 0);
   }, 0) || 0;
 
+  /**
+   * Returns the appropriate icon component for a social platform.
+   */
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram':

@@ -18,6 +18,9 @@ interface Creator {
   }>;
 }
 
+/**
+ * BrandCreatorSearch page allows brands to search and filter creators by availability.
+ */
 export default function BrandCreatorSearch() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +28,9 @@ export default function BrandCreatorSearch() {
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'available' | 'busy'>('all');
 
   useEffect(() => {
+    /**
+     * Loads creators from database filtered by availability status.
+     */
     const loadCreators = async () => {
       setLoading(true);
       try {
