@@ -76,7 +76,7 @@ export default function AvailabilityToggle() {
         .from('users')
         .update({
           availability_status: newStatus,
-          availability_message: newMessage || availability.message || null
+          availability_message: newMessage !== undefined ? (newMessage || null) : (availability.message || null)
         })
         .eq('id', user?.id);
 
