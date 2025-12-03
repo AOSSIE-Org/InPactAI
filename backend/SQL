@@ -1,8 +1,773 @@
--- Table for user profiles
-create table if not exists profiles (
-  id uuid references auth.users(id) on delete cascade,
-  name text not null,
-  role text check (role in ('Creator', 'Brand')) not null,
-  created_at timestamp with time zone default timezone('utc', now()),
-  primary key (id)
+-- Define custom ENUM types (required by several tables below)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_status') THEN
+    CREATE TYPE application_status AS ENUM ('applied', 'reviewing', 'accepted', 'rejected');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'invite_status') THEN
+    CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'declined', 'expired');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+    CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'completed', 'failed', 'refunded');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'deal_status') THEN
+    CREATE TYPE deal_status AS ENUM ('draft', 'proposed', 'negotiating', 'active', 'completed', 'cancelled');
+  END IF;
+END $$;
+
+
+-- This file is no longer maintained here.
+-- For the latest schema reference and documentation, see: docs/database/schema-reference.md
+
+CREATE TABLE public.brands (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL UNIQUE,
+  company_name text NOT NULL,
+  company_tagline text,
+  company_description text,
+  company_logo_url text,
+  company_cover_image_url text,
+  industry text NOT NULL,
+  sub_industry text[] DEFAULT ARRAY[]::text[],
+  company_size text,
+  founded_year integer,
+  headquarters_location text,
+  company_type text,
+  website_url text NOT NULL,
+  contact_email text,
+  contact_phone text,
+  social_media_links jsonb,
+  target_audience_age_groups text[] DEFAULT ARRAY[]::text[],
+  target_audience_gender text[] DEFAULT ARRAY[]::text[],
+  target_audience_locations text[] DEFAULT ARRAY[]::text[],
+  target_audience_interests text[] DEFAULT ARRAY[]::text[],
+  target_audience_income_level text[] DEFAULT ARRAY[]::text[],
+  target_audience_description text,
+  brand_values text[] DEFAULT ARRAY[]::text[],
+  brand_personality text[] DEFAULT ARRAY[]::text[],
+  brand_voice text,
+  brand_colors jsonb,
+  marketing_goals text[] DEFAULT ARRAY[]::text[],
+  campaign_types_interested text[] DEFAULT ARRAY[]::text[],
+  preferred_content_types text[] DEFAULT ARRAY[]::text[],
+  preferred_platforms text[] DEFAULT ARRAY[]::text[],
+  campaign_frequency text,
+  monthly_marketing_budget numeric,
+  influencer_budget_percentage double precision,
+  budget_per_campaign_min numeric,
+  budget_per_campaign_max numeric,
+  typical_deal_size numeric,
+  payment_terms text,
+  offers_product_only_deals boolean DEFAULT false,
+  offers_affiliate_programs boolean DEFAULT false,
+  affiliate_commission_rate double precision,
+  preferred_creator_niches text[] DEFAULT ARRAY[]::text[],
+  preferred_creator_size text[] DEFAULT ARRAY[]::text[],
+  preferred_creator_locations text[] DEFAULT ARRAY[]::text[],
+  minimum_followers_required integer,
+  minimum_engagement_rate double precision,
+  content_dos text[] DEFAULT ARRAY[]::text[],
+  content_donts text[] DEFAULT ARRAY[]::text[],
+  brand_safety_requirements text[] DEFAULT ARRAY[]::text[],
+  competitor_brands text[] DEFAULT ARRAY[]::text[],
+  exclusivity_required boolean DEFAULT false,
+  exclusivity_duration_months integer,
+  past_campaigns_count integer DEFAULT 0,
+  successful_partnerships text[] DEFAULT ARRAY[]::text[],
+  case_studies text[] DEFAULT ARRAY[]::text[],
+  average_campaign_roi double precision,
+  products_services text[] DEFAULT ARRAY[]::text[],
+  product_price_range text,
+  product_categories text[] DEFAULT ARRAY[]::text[],
+  seasonal_products boolean DEFAULT false,
+  product_catalog_url text,
+  business_verified boolean DEFAULT false,
+  payment_verified boolean DEFAULT false,
+  tax_id_verified boolean DEFAULT false,
+  profile_completion_percentage integer DEFAULT 0,
+  is_active boolean DEFAULT true,
+  is_featured boolean DEFAULT false,
+  is_verified_brand boolean DEFAULT false,
+  subscription_tier text DEFAULT 'free'::text,
+  featured_until timestamp with time zone,
+  ai_profile_summary text,
+  search_keywords text[] DEFAULT ARRAY[]::text[],
+  matching_score_base double precision DEFAULT 50.0,
+  total_deals_posted integer DEFAULT 0,
+  total_deals_completed integer DEFAULT 0,
+  total_spent numeric DEFAULT 0,
+  average_deal_rating double precision,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  last_active_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT brands_pkey PRIMARY KEY (id),
+  CONSTRAINT brands_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
+CREATE TABLE public.campaign_applications (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  profile_snapshot jsonb DEFAULT '{}'::jsonb,
+  message text,
+  proposed_amount numeric,
+  attachments jsonb DEFAULT '[]'::jsonb,
+  status USER-DEFINED DEFAULT 'applied'::application_status,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_applications_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_applications_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_applications_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
+);
+CREATE TABLE public.campaign_assets (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid,
+  deal_id uuid,
+  uploaded_by uuid,
+  url text NOT NULL,
+  type text,
+  meta jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_assets_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_assets_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_assets_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id),
+  CONSTRAINT campaign_assets_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.campaign_deliverables (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  platform text,
+  content_type text,
+  quantity integer DEFAULT 1,
+  guidance text,
+  required boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_deliverables_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_deliverables_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id)
+);
+CREATE TABLE public.campaign_invites (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  message text,
+  proposed_amount numeric,
+  status USER-DEFINED DEFAULT 'pending'::invite_status,
+  sent_at timestamp with time zone,
+  responded_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT campaign_invites_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_invites_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_invites_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id),
+  CONSTRAINT campaign_invites_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
+);
+CREATE TABLE public.campaign_payments (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  deal_id uuid NOT NULL,
+  amount numeric NOT NULL,
+  currency text DEFAULT 'INR'::text,
+  method text,
+  status USER-DEFINED DEFAULT 'pending'::payment_status,
+  external_payment_ref text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  paid_at timestamp with time zone,
+  CONSTRAINT campaign_payments_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_payments_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
+);
+CREATE TABLE public.campaign_performance (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  deal_id uuid,
+  report_source text,
+  recorded_at timestamp with time zone NOT NULL DEFAULT now(),
+  impressions bigint,
+  clicks bigint,
+  views bigint,
+  watch_time bigint,
+  engagements bigint,
+  conversions bigint,
+  revenue numeric,
+  raw jsonb DEFAULT '{}'::jsonb,
+  CONSTRAINT campaign_performance_pkey PRIMARY KEY (id),
+  CONSTRAINT campaign_performance_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT campaign_performance_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id)
+);
+CREATE TABLE public.campaigns (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  brand_id uuid NOT NULL,
+  title text NOT NULL,
+  slug text UNIQUE,
+  short_description text,
+  description text,
+  status text NOT NULL DEFAULT 'draft'::text,
+  platforms text[] DEFAULT ARRAY[]::text[],
+  deliverables jsonb DEFAULT '[]'::jsonb,
+  target_audience jsonb DEFAULT '{}'::jsonb,
+  budget_min numeric,
+  budget_max numeric,
+  preferred_creator_niches text[] DEFAULT ARRAY[]::text[],
+  preferred_creator_followers_range text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  published_at timestamp with time zone,
+  starts_at timestamp with time zone,
+  ends_at timestamp with time zone,
+  is_featured boolean DEFAULT false,
+  CONSTRAINT campaigns_pkey PRIMARY KEY (id),
+  CONSTRAINT campaigns_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id)
+);
+CREATE TABLE public.creators (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL UNIQUE,
+  display_name text NOT NULL,
+  bio text,
+  tagline text,
+  profile_picture_url text,
+  cover_image_url text,
+  website_url text,
+  youtube_url text,
+  youtube_handle text,
+  youtube_subscribers integer,
+  instagram_url text,
+  instagram_handle text,
+  instagram_followers integer,
+  tiktok_url text,
+  tiktok_handle text,
+  tiktok_followers integer,
+  twitter_url text,
+  twitter_handle text,
+  twitter_followers integer,
+  twitch_url text,
+  twitch_handle text,
+  twitch_followers integer,
+  linkedin_url text,
+  facebook_url text,
+  primary_niche text NOT NULL,
+  secondary_niches text[] DEFAULT ARRAY[]::text[],
+  content_types text[] DEFAULT ARRAY[]::text[],
+  content_language text[] DEFAULT ARRAY[]::text[],
+  total_followers integer DEFAULT 0,
+  total_reach integer,
+  average_views integer,
+  engagement_rate double precision,
+  audience_age_primary text,
+  audience_age_secondary text[] DEFAULT ARRAY[]::text[],
+  audience_gender_split jsonb,
+  audience_locations jsonb,
+  audience_interests text[] DEFAULT ARRAY[]::text[],
+  average_engagement_per_post integer,
+  posting_frequency text,
+  best_performing_content_type text,
+  peak_posting_times jsonb,
+  years_of_experience integer,
+  content_creation_full_time boolean DEFAULT false,
+  team_size integer DEFAULT 1,
+  equipment_quality text,
+  editing_software text[] DEFAULT ARRAY[]::text[],
+  collaboration_types text[] DEFAULT ARRAY[]::text[],
+  preferred_brands_style text[] DEFAULT ARRAY[]::text[],
+  not_interested_in text[] DEFAULT ARRAY[]::text[],
+  rate_per_post numeric,
+  rate_per_video numeric,
+  rate_per_story numeric,
+  rate_per_reel numeric,
+  rate_negotiable boolean DEFAULT true,
+  accepts_product_only_deals boolean DEFAULT false,
+  minimum_deal_value numeric,
+  preferred_payment_terms text,
+  portfolio_links text[] DEFAULT ARRAY[]::text[],
+  past_brand_collaborations text[] DEFAULT ARRAY[]::text[],
+  case_study_links text[] DEFAULT ARRAY[]::text[],
+  media_kit_url text,
+  email_verified boolean DEFAULT false,
+  phone_verified boolean DEFAULT false,
+  identity_verified boolean DEFAULT false,
+  profile_completion_percentage integer DEFAULT 0,
+  is_active boolean DEFAULT true,
+  is_featured boolean DEFAULT false,
+  is_verified_creator boolean DEFAULT false,
+  featured_until timestamp with time zone,
+  ai_profile_summary text,
+  search_keywords text[] DEFAULT ARRAY[]::text[],
+  matching_score_base double precision DEFAULT 50.0,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  last_active_at timestamp with time zone DEFAULT now(),
+  social_platforms jsonb,
+  CONSTRAINT creators_pkey PRIMARY KEY (id),
+  CONSTRAINT creators_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.deals (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid,
+  application_id uuid,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  agreed_amount numeric,
+  payment_schedule jsonb DEFAULT '[]'::jsonb,
+  terms jsonb DEFAULT '{}'::jsonb,
+  status USER-DEFINED DEFAULT 'draft'::deal_status,
+  starts_at timestamp with time zone,
+  ends_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT deals_pkey PRIMARY KEY (id),
+  CONSTRAINT deals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+  CONSTRAINT deals_application_id_fkey FOREIGN KEY (application_id) REFERENCES public.campaign_applications(id),
+  CONSTRAINT deals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id),
+  CONSTRAINT deals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id)
+);
+CREATE TABLE public.match_scores (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  creator_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  score double precision NOT NULL,
+  reasons jsonb DEFAULT '[]'::jsonb,
+  computed_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT match_scores_pkey PRIMARY KEY (id),
+  CONSTRAINT match_scores_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id),
+  CONSTRAINT match_scores_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id)
+);
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  name text NOT NULL,
+  role text NOT NULL CHECK (role = ANY (ARRAY['Creator'::text, 'Brand'::text])),
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  onboarding_completed boolean DEFAULT false,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+
+-- collaboration tables
+);
+CREATE TABLE IF NOT EXISTS creator_collaborations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    -- Creators involved
+    creator1_id UUID NOT NULL REFERENCES creators(id),
+    creator2_id UUID NOT NULL REFERENCES creators(id),
+
+    -- Collaboration Details
+    collaboration_type TEXT NOT NULL,
+    -- 'content_collab', 'cross_promotion', 'giveaway',
+    -- 'brand_package', 'series', 'other'
+
+    title TEXT NOT NULL,
+    description TEXT,
+
+    -- AI Match Data
+    match_score FLOAT,
+    ai_suggestions JSONB,
+    -- {
+    --   "collaboration_ideas": [...],
+    --   "strengths": [...],
+    --   "potential_challenges": [...]
+    -- }
+
+    -- Status & Timeline
+    status TEXT DEFAULT 'proposed',
+    -- 'proposed', 'accepted', 'planning', 'active',
+    -- 'completed', 'declined', 'cancelled'
+
+    start_date DATE,
+    end_date DATE,
+
+    -- Content Details
+    planned_deliverables JSONB,
+    -- {
+    --   "content_type": "video",
+    --   "platform": "youtube",
+    --   "quantity": 2,
+    --   "schedule": [...]
+    -- }
+
+    completed_deliverables JSONB[],
+
+    -- Communication
+    initiator_id UUID REFERENCES creators(id),
+    proposal_message TEXT,
+    response_message TEXT,
+
+    -- Performance Tracking
+    total_views INTEGER DEFAULT 0,
+    total_engagement INTEGER DEFAULT 0,
+    audience_growth JSONB,
+    -- {
+    --   "creator1_new_followers": 450,
+    --   "creator2_new_followers": 520
+    -- }
+
+    -- Ratings (after completion)
+    creator1_rating INTEGER, -- 1-5
+    creator1_feedback TEXT,
+    creator2_rating INTEGER,
+    creator2_feedback TEXT,
+
+    -- Timestamps
+    proposed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    accepted_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+
+    UNIQUE(creator1_id, creator2_id, title),
+    CHECK (creator1_id != creator2_id)
+);
+
+-- Collaboration match suggestions cache
+CREATE TABLE IF NOT EXISTS collaboration_suggestions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    creator_id UUID NOT NULL REFERENCES creators(id),
+    suggested_creator_id UUID NOT NULL REFERENCES creators(id),
+
+    match_score FLOAT NOT NULL,
+    reasons JSONB,
+    collaboration_ideas JSONB,
+
+    calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+
+    UNIQUE(creator_id, suggested_creator_id)
+);
+
+-- Collaboration deliverables table
+CREATE TABLE IF NOT EXISTS collaboration_deliverables (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+
+    title TEXT NOT NULL,
+    description TEXT,
+    content_type TEXT, -- 'video', 'post', 'story', 'reel', etc.
+    platform TEXT, -- 'youtube', 'instagram', 'tiktok', etc.
+    quantity INTEGER DEFAULT 1,
+    due_date DATE,
+
+    status TEXT DEFAULT 'pending', -- 'pending', 'in_progress', 'completed', 'approved'
+    assigned_to UUID REFERENCES creators(id), -- which creator is responsible
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Collaboration messages table (chat)
+CREATE TABLE IF NOT EXISTS collaboration_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES creators(id),
+
+    message TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text', -- 'text', 'system', 'file_shared'
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- For file sharing
+    attachment_url TEXT,
+    attachment_type TEXT -- 'image', 'video', 'document', 'link'
+);
+
+-- Collaboration assets table (shared files/URLs)
+CREATE TABLE IF NOT EXISTS collaboration_assets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collaboration_id UUID NOT NULL REFERENCES creator_collaborations(id) ON DELETE CASCADE,
+    uploaded_by UUID NOT NULL REFERENCES creators(id),
+
+    url TEXT NOT NULL,
+    asset_type TEXT, -- 'image', 'video', 'document', 'link', 'other'
+    title TEXT,
+    description TEXT,
+
+    -- Optional: link to a deliverable
+    deliverable_id UUID REFERENCES collaboration_deliverables(id),
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_collaboration_deliverables_collab_id ON collaboration_deliverables(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_deliverables_status ON collaboration_deliverables(status);
+CREATE INDEX IF NOT EXISTS idx_collaboration_messages_collab_id ON collaboration_messages(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_messages_created_at ON collaboration_messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_collaboration_assets_collab_id ON collaboration_assets(collaboration_id);
+CREATE INDEX IF NOT EXISTS idx_collaboration_assets_uploaded_by ON collaboration_assets(uploaded_by);
+
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  proposed_amount numeric,
+  content_ideas text[] DEFAULT ARRAY[]::text[],
+  ideal_pricing text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  negotiation_status text DEFAULT 'none', -- 'none', 'open', 'finalized', 'declined'
+  negotiation_thread jsonb DEFAULT '[]'::jsonb, -- array of { sender_id, sender_role, message, timestamp }
+  current_terms jsonb DEFAULT '{}'::jsonb, -- latest terms snapshot
+  version integer DEFAULT 1,
+  contract_id uuid NULL,
+  CONSTRAINT proposals_pkey PRIMARY KEY (id),
+  CONSTRAINT proposals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_unique_campaign_creator UNIQUE (campaign_id, creator_id, brand_id)
+);
+-- Contracts table for finalized deals
+CREATE TABLE IF NOT EXISTS public.contracts (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  proposal_id uuid NOT NULL REFERENCES public.proposals(id) ON DELETE CASCADE,
+  brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+  creator_id uuid NOT NULL REFERENCES public.creators(id) ON DELETE CASCADE,
+  terms jsonb NOT NULL, -- snapshot of finalized terms
+  status text NOT NULL DEFAULT 'awaiting_signature', -- 'awaiting_signature', 'signed', 'active', 'completed', 'cancelled'
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now()
+);
+
+-- Indexes for contracts table
+CREATE INDEX IF NOT EXISTS idx_contracts_brand_id ON public.contracts(brand_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_creator_id ON public.contracts(creator_id);
+CREATE INDEX IF NOT EXISTS idx_contracts_status ON public.contracts(status);
+
+-- Add updated_at trigger for contracts
+CREATE OR REPLACE FUNCTION update_contracts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_contracts_updated_at
+  BEFORE UPDATE ON public.contracts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_contracts_updated_at();
+
+-- Create indexes for proposals table
+CREATE INDEX IF NOT EXISTS idx_proposals_campaign_id ON public.proposals(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_brand_id ON public.proposals(brand_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_creator_id ON public.proposals(creator_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON public.proposals(status);
+CREATE INDEX IF NOT EXISTS idx_proposals_created_at ON public.proposals(created_at DESC);
+
+-- Add updated_at trigger for proposals
+CREATE OR REPLACE FUNCTION update_proposals_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_proposals_updated_at
+  BEFORE UPDATE ON public.proposals
+  FOR EACH ROW
+  EXECUTE FUNCTION update_proposals_updated_at();
+
+
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  campaign_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  creator_id uuid NOT NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  proposed_amount numeric,
+  content_ideas text[] DEFAULT ARRAY[]::text[],
+  ideal_pricing text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT proposals_pkey PRIMARY KEY (id),
+  CONSTRAINT proposals_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creators(id) ON DELETE CASCADE,
+  CONSTRAINT proposals_unique_campaign_creator UNIQUE (campaign_id, creator_id, brand_id)
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_proposals_campaign_id ON public.proposals(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_brand_id ON public.proposals(brand_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_creator_id ON public.proposals(creator_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON public.proposals(status);
+CREATE INDEX IF NOT EXISTS idx_proposals_created_at ON public.proposals(created_at DESC);
+
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_proposals_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_proposals_updated_at
+  BEFORE UPDATE ON public.proposals
+  FOR EACH ROW
+  EXECUTE FUNCTION update_proposals_updated_at();
+
+
+-- Campaign Performance Analytics & ROI Tracking Tables
+
+-- 1. Table: campaign_deliverable_metrics
+-- Defines which metrics are tracked for each deliverable (including custom metrics)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metrics (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_id uuid NOT NULL REFERENCES public.campaign_deliverables(id) ON DELETE CASCADE,
+    name text NOT NULL, -- e.g., 'impressions', 'likes', 'comments', 'custom_metric'
+    display_name text,  -- For UI display, e.g., 'Total Likes'
+    target_value numeric, -- Brand's estimate/goal for this metric (nullable)
+    is_custom boolean DEFAULT false,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+-- 2. Table: campaign_deliverable_metric_updates
+-- Stores actual metric values reported by the creator (manual or AI-extracted)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_updates (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    value numeric,
+    demographics jsonb, -- For audience demographics if applicable
+    screenshot_url text, -- For proof upload (optional)
+    ai_extracted_data jsonb, -- Raw AI/OCR output (optional)
+    submitted_by uuid NOT NULL REFERENCES public.profiles(id),
+    submitted_at timestamp with time zone DEFAULT now()
+);
+
+-- 3. Table: campaign_deliverable_metric_feedback
+-- Stores brand feedback on each metric update
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_feedback (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    metric_update_id uuid NOT NULL REFERENCES public.campaign_deliverable_metric_updates(id) ON DELETE CASCADE,
+    brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+    feedback_text text,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+-- 4. Table: campaign_deliverable_metric_update_requests
+-- Tracks when a brand requests an update for a metric (or all metrics)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_update_requests (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    brand_id uuid NOT NULL REFERENCES public.brands(id) ON DELETE CASCADE,
+    creator_id uuid NOT NULL REFERENCES public.creators(id) ON DELETE CASCADE,
+    requested_at timestamp with time zone DEFAULT now(),
+    status text DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'cancelled'))
+);
+
+-- 5. Table: campaign_deliverable_metric_audit
+-- Keeps a history of all changes/updates for transparency (versioning)
+CREATE TABLE IF NOT EXISTS public.campaign_deliverable_metric_audit (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_deliverable_metric_id uuid NOT NULL REFERENCES public.campaign_deliverable_metrics(id) ON DELETE CASCADE,
+    old_value numeric,
+    new_value numeric,
+    changed_by uuid NOT NULL REFERENCES public.profiles(id),
+    changed_at timestamp with time zone DEFAULT now(),
+    change_reason text
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_campaign_deliverable_metrics_deliverable_id ON public.campaign_deliverable_metrics(campaign_deliverable_id);
+CREATE INDEX IF NOT EXISTS idx_metric_updates_metric_id ON public.campaign_deliverable_metric_updates(campaign_deliverable_metric_id);
+CREATE INDEX IF NOT EXISTS idx_metric_updates_submitted_by ON public.campaign_deliverable_metric_updates(submitted_by);
+CREATE INDEX IF NOT EXISTS idx_metric_feedback_update_id ON public.campaign_deliverable_metric_feedback(metric_update_id);
+CREATE INDEX IF NOT EXISTS idx_metric_feedback_brand_id ON public.campaign_deliverable_metric_feedback(brand_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_metric_id ON public.campaign_deliverable_metric_update_requests(campaign_deliverable_metric_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_brand_id ON public.campaign_deliverable_metric_update_requests(brand_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_creator_id ON public.campaign_deliverable_metric_update_requests(creator_id);
+CREATE INDEX IF NOT EXISTS idx_metric_update_requests_status ON public.campaign_deliverable_metric_update_requests(status);
+CREATE INDEX IF NOT EXISTS idx_metric_audit_metric_id ON public.campaign_deliverable_metric_audit(campaign_deliverable_metric_id);
+
+
+
+-- Migration SQL for Campaign Wall Feature
+-- Run this SQL in your Supabase SQL editor
+
+-- 1. Add new columns to campaigns table for campaign wall feature
+ALTER TABLE public.campaigns
+ADD COLUMN IF NOT EXISTS is_open_for_applications boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS is_on_campaign_wall boolean DEFAULT false;
+
+-- 2. Add indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_campaigns_is_open_for_applications ON public.campaigns(is_open_for_applications) WHERE is_open_for_applications = true;
+CREATE INDEX IF NOT EXISTS idx_campaigns_is_on_campaign_wall ON public.campaigns(is_on_campaign_wall) WHERE is_on_campaign_wall = true;
+CREATE INDEX IF NOT EXISTS idx_campaigns_open_and_wall ON public.campaigns(is_open_for_applications, is_on_campaign_wall) WHERE is_open_for_applications = true AND is_on_campaign_wall = true;
+
+-- 3. Add new columns to campaign_applications table
+ALTER TABLE public.campaign_applications
+ADD COLUMN IF NOT EXISTS payment_min numeric,
+ADD COLUMN IF NOT EXISTS payment_max numeric,
+ADD COLUMN IF NOT EXISTS timeline_days integer,
+ADD COLUMN IF NOT EXISTS timeline_weeks integer,
+ADD COLUMN IF NOT EXISTS description text;
+
+-- 4. Add index for campaign_applications status filtering
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_status ON public.campaign_applications(status);
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_campaign_status ON public.campaign_applications(campaign_id, status);
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_creator_status ON public.campaign_applications(creator_id, status);
+
+-- 5. Add comment for documentation
+COMMENT ON COLUMN public.campaigns.is_open_for_applications IS 'Whether this campaign accepts applications from creators';
+COMMENT ON COLUMN public.campaigns.is_on_campaign_wall IS 'Whether this campaign is visible on the public campaign wall';
+COMMENT ON COLUMN public.campaign_applications.payment_min IS 'Minimum payment amount the creator is requesting';
+COMMENT ON COLUMN public.campaign_applications.payment_max IS 'Maximum payment amount the creator is requesting';
+COMMENT ON COLUMN public.campaign_applications.timeline_days IS 'Number of days the creator estimates to complete the campaign';
+COMMENT ON COLUMN public.campaign_applications.timeline_weeks IS 'Number of weeks the creator estimates to complete the campaign';
+COMMENT ON COLUMN public.campaign_applications.description IS 'Creator description explaining why they should be chosen for this campaign';
+
+-- Migration SQL for Campaign Wall Feature
+-- Run this SQL in your Supabase SQL editor
+
+-- 1. Add new columns to campaigns table for campaign wall feature
+ALTER TABLE public.campaigns
+ADD COLUMN IF NOT EXISTS is_open_for_applications boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS is_on_campaign_wall boolean DEFAULT false;
+
+-- 2. Add indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_campaigns_is_open_for_applications ON public.campaigns(is_open_for_applications) WHERE is_open_for_applications = true;
+CREATE INDEX IF NOT EXISTS idx_campaigns_is_on_campaign_wall ON public.campaigns(is_on_campaign_wall) WHERE is_on_campaign_wall = true;
+CREATE INDEX IF NOT EXISTS idx_campaigns_open_and_wall ON public.campaigns(is_open_for_applications, is_on_campaign_wall) WHERE is_open_for_applications = true AND is_on_campaign_wall = true;
+
+-- 3. Add new columns to campaign_applications table
+ALTER TABLE public.campaign_applications
+ADD COLUMN IF NOT EXISTS payment_min numeric,
+ADD COLUMN IF NOT EXISTS payment_max numeric,
+ADD COLUMN IF NOT EXISTS timeline_days integer,
+ADD COLUMN IF NOT EXISTS timeline_weeks integer,
+ADD COLUMN IF NOT EXISTS description text;
+
+-- 4. Add index for campaign_applications status filtering
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_status ON public.campaign_applications(status);
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_campaign_status ON public.campaign_applications(campaign_id, status);
+CREATE INDEX IF NOT EXISTS idx_campaign_applications_creator_status ON public.campaign_applications(creator_id, status);
+
+-- 5. Add 'reviewing' to application_status enum if it doesn't exist
+DO $$
+BEGIN
+    -- Check if 'reviewing' value exists in the enum
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_enum
+        WHERE enumlabel = 'reviewing'
+        AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'application_status')
+    ) THEN
+        -- Add 'reviewing' to the enum
+        -- Note: PostgreSQL doesn't support IF NOT EXISTS for ALTER TYPE ADD VALUE
+        -- So we check first, then add if needed
+        ALTER TYPE application_status ADD VALUE 'reviewing';
+    END IF;
+EXCEPTION
+    WHEN duplicate_object THEN
+        -- Value already exists, ignore
+        NULL;
+END $$;
+
+-- 6. Add comment for documentation
+COMMENT ON COLUMN public.campaigns.is_open_for_applications IS 'Whether this campaign accepts applications from creators';
+COMMENT ON COLUMN public.campaigns.is_on_campaign_wall IS 'Whether this campaign is visible on the public campaign wall';
+COMMENT ON COLUMN public.campaign_applications.payment_min IS 'Minimum payment amount the creator is requesting';
+COMMENT ON COLUMN public.campaign_applications.payment_max IS 'Maximum payment amount the creator is requesting';
+COMMENT ON COLUMN public.campaign_applications.timeline_days IS 'Number of days the creator estimates to complete the campaign';
+COMMENT ON COLUMN public.campaign_applications.timeline_weeks IS 'Number of weeks the creator estimates to complete the campaign';
+COMMENT ON COLUMN public.campaign_applications.description IS 'Creator description explaining why they should be chosen for this campaign';
+

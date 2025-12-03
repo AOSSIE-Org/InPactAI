@@ -19,6 +19,18 @@ DATABASE_URL=postgresql://postgres.your-project-ref:[YOUR-PASSWORD]@aws-0-region
 GROQ_API_KEY=your-groq-api-key
 AI_API_KEY=your-openai-api-key-optional
 
+# Gemini API Key (Optional)
+
+GEMINI_API_KEY=your-gemini-api-key-here
+
 # CORS Origins (comma-separated)
+# For production, include your production frontend URL(s)
+# Example: ALLOWED_ORIGINS=https://your-frontend-domain.com,https://www.your-frontend-domain.com
 
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# JWT Secret Key from Supabase
+# Location: Dashboard → Project Settings → API → JWT Settings → JWT Secret
+# Use the JWT Secret (NOT the anon key!)
+
+SUPABASE_JWT_SECRET=your-jwt-secret-from-supabase-dashboard

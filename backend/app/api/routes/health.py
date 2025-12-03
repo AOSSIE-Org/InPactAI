@@ -17,7 +17,7 @@ def check_supabase():
     This endpoint attempts to query Supabase to verify the connection.
     """
     try:
-        from app.services.supabase_client import supabase
+        from app.core.supabase_clients import supabase_anon as supabase
 
         # Attempt a simple query to verify connection
         response = supabase.table("_supabase_test").select("*").limit(1).execute()

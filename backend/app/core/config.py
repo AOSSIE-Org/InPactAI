@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # AI Configuration
     ai_api_key: Optional[str] = None
     groq_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
 
     # CORS Configuration
     allowed_origins: str = "http://localhost:3000"
@@ -24,6 +25,9 @@ class Settings(BaseSettings):
 
     # Application Settings
     app_name: Optional[str] = None
+
+    # JWT Authentication
+    SUPABASE_JWT_SECRET: str  # JWT Secret from Supabase Dashboard → Settings → API → JWT Settings
 
     model_config = {
         "env_file": ".env"
