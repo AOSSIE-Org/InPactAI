@@ -24,15 +24,6 @@ import { Label } from "../components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 
 export default function SponsorshipsPage() {
-  const [budgetRange, setBudgetRange] = React.useState<[number, number]>([1000, 10000])
-
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    })
-
   return (
     <div className="flex min-h-screen flex-col bg-white text-gray-900">
       <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -132,22 +123,11 @@ export default function SponsorshipsPage() {
               <div className="space-y-2">
                 <Label className="text-gray-900">Budget Range</Label>
                 <div className="pt-2">
-                  <Slider
-                    value={budgetRange}
-                    min={0}
-                    max={20000}
-                    step={100}
-                    onValueChange={(value) => setBudgetRange(value as [number, number])}
-                    aria-label="Budget range"
-                  />
+                  <Slider defaultValue={[1000, 10000]} min={0} max={20000} step={100} />
                 </div>
-                <div className="flex items-center justify-between text-sm text-gray-700">
-                  <span>{formatCurrency(budgetRange[0])}</span>
-                  <span>{formatCurrency(budgetRange[1])}</span>
-                </div>
-                <div className="rounded-md bg-purple-50 px-3 py-2 text-xs text-purple-700">
-                  Potential payout window: {formatCurrency(budgetRange[0])} - {formatCurrency(budgetRange[1])} (
-                  {formatCurrency(Math.max(budgetRange[1] - budgetRange[0], 0))} spread)
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">$1,000</span>
+                  <span className="text-sm text-gray-600">$10,000</span>
                 </div>
               </div>
 

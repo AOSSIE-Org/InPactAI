@@ -17,6 +17,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [step, setStep] = useState(1);
   const [user, setuser] = useState("influencer");
   const { login } = useAuth();
@@ -39,28 +40,20 @@ export default function SignupPage() {
     }
     setIsLoading(true);
     setError("");
+     setSuccessMessage("");
     try {
       const { name, email, password } = formData;
-      
-      // Check if user already exists
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password: "dummy-password-to-check-existence",
-      });
-      
-      if (existingUser.user) {
-        setError("An account with this email already exists. Please sign in instead.");
-        setIsLoading(false);
-        return;
-      }
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name } },
       });
       if (error) {
-        if (error.message.includes("already registered")) {
+        if (
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("user already exists")
+        ) {
           setError("An account with this email already exists. Please sign in instead.");
         } else {
           setError(error.message);
@@ -68,8 +61,21 @@ export default function SignupPage() {
         setIsLoading(false);
         return;
       }
+
+      // Supabase quirk: if the user already exists (especially with email confirmations enabled),
+      // signUp can succeed but return a user with no identities.
+      const identities = (data.user as any)?.identities ?? [];
+      const isExistingUserWithoutNewIdentity = Array.isArray(identities) && identities.length === 0;
+
+      if (isExistingUserWithoutNewIdentity) {
+        setError("An account with this email already exists. Please sign in instead.");
+      } else {
+        // Truly new account – show verification email message
+        setSuccessMessage(
+          "Verification link sent. Please check your email to verify your account before signing in."
+        );
+      }
       setIsLoading(false);
-      // AuthContext will handle navigation based on user onboarding status and role
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -158,6 +164,13 @@ export default function SignupPage() {
               {error && (
                 <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm animate-[pulse_1s_ease-in-out]">
                   {error}
+                </div>
+              )}
+
+              {successMessage && (
+                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm flex items-start space-x-2">
+                  <Check className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>{successMessage}</span>
                 </div>
               )}
 
