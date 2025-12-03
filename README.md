@@ -127,7 +127,7 @@ pip install -r requirements.txt
 
 3. Navigate to the app directory:
 ```sh
-cd app
+cd backend/app
 ```
 
 4. Create a `.env` file using `.env-example` as a reference.
@@ -165,6 +165,49 @@ cd app
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file
 
+7. Get the Gemini API key:
+   - Visit [Google AI Studio](https://aistudio.google.com/)
+   - SignIn/SignUp with Google account
+   - Click "API Keys" left side panel
+   - Click "Create API Key"
+   - Name your key "..." and select "Default Gemini Project"
+   - Click "Create key"
+   - Paste the API KEy into the `.env` file
+
+8. Final `.env` file should look:
+
+   ```sh
+   SUPABASE_URL=[URL]
+   SUPABASE_KEY=[URL]
+
+   user=postgres
+   password=[YOUR-PASSWORD]
+   host=db.wveftanaurduixkyijhf.supabase.co
+   port=5432
+   dbname=postgres
+
+   GROQ_API_KEY=[URL]
+
+   GEMINI_API_KEY=[URL]
+   ```
+
+   [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
+
+   ```sh
+   SUPABASE_URL=[URL]
+   SUPABASE_KEY=[URL]
+
+   user=postgres.<project>
+   password=[YOUR-PASSWORD]
+   host=aws-<location>.pooler.supabase.com
+   port=5432
+   dbname=postgres
+
+   GROQ_API_KEY=[URL]
+
+   GEMINI_API_KEY=[URL]
+   ```
+
 #### 4. Start Development Servers
 
 
@@ -173,7 +216,7 @@ cd app
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+2. Start the backend server (from the backend directory):
 ```sh
 uvicorn main:app --reload
 ```
