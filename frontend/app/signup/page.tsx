@@ -172,7 +172,7 @@ export default function SignupPage() {
                 id="name"
                 type="text"
                 {...register("name")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                 placeholder="John Doe"
                 disabled={isLoading || success}
               />
@@ -195,7 +195,7 @@ export default function SignupPage() {
                 id="email"
                 type="email"
                 {...register("email")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                 placeholder="you@example.com"
                 disabled={isLoading || success}
               />
@@ -217,7 +217,7 @@ export default function SignupPage() {
               <select
                 id="accountType"
                 {...register("accountType")}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-lg border text-gray-500 border-gray-300 bg-white px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                 disabled={isLoading || success}
               >
                 <option value="">Select account type</option>
@@ -244,7 +244,7 @@ export default function SignupPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                   placeholder="••••••••"
                   disabled={isLoading || success}
                 />
@@ -296,7 +296,7 @@ export default function SignupPage() {
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   {...register("confirmPassword")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                   placeholder="••••••••"
                   disabled={isLoading || success}
                 />
