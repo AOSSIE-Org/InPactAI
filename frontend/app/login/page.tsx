@@ -127,7 +127,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 {...register("email")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                 placeholder="you@example.com"
                 disabled={isLoading}
                 autoComplete="email"
@@ -152,7 +152,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border text-gray-700 border-gray-300 px-4 py-2.5 pr-10 transition outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500"
                   placeholder="••••••••"
                   disabled={isLoading}
                   autoComplete="current-password"

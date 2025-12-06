@@ -343,7 +343,7 @@ export default function CreatorOnboardingPage() {
               value={formData.displayName}
               onChange={(e) => updateFormData("displayName", e.target.value)}
               placeholder="Your creator name"
-              className="w-full rounded-lg border-2 border-gray-300 px-6 py-4 text-lg transition-colors focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-lg border-2 text-gray-700 border-gray-300 px-6 py-4 text-lg transition-colors focus:border-purple-500 focus:outline-none"
               autoFocus
             />
             {formData.displayName.length > 0 &&
@@ -375,7 +375,7 @@ export default function CreatorOnboardingPage() {
                   value={formData.tagline}
                   onChange={(e) => updateFormData("tagline", e.target.value)}
                   placeholder="A catchy one-liner about you"
-                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border-2 text-gray-700 border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -388,7 +388,7 @@ export default function CreatorOnboardingPage() {
                   placeholder="Tell us your story, what you create, and what makes you unique..."
                   rows={5}
                   maxLength={500}
-                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border-2 text-gray-700 border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:outline-none"
                 />
                 <p className="mt-1 text-right text-sm text-gray-500">
                   {formData.bio.length}/500 characters
@@ -412,7 +412,7 @@ export default function CreatorOnboardingPage() {
             <select
               value={formData.primaryNiche}
               onChange={(e) => updateFormData("primaryNiche", e.target.value)}
-              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-lg transition-colors focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-lg border-2 text-gray-500 border-gray-300 px-4 py-3 text-lg transition-colors focus:border-purple-500 focus:outline-none"
             >
               <option value="">Select your primary niche</option>
               {NICHE_OPTIONS.map((niche) => (
@@ -494,7 +494,7 @@ export default function CreatorOnboardingPage() {
                         platform: e.target.value,
                       })
                     }
-                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-lg border-2 text-gray-500 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
                   >
                     <option value="">Select platform</option>
                     {SOCIAL_PLATFORMS.map((platform) => (
@@ -510,7 +510,7 @@ export default function CreatorOnboardingPage() {
                       setNewPlatform({ ...newPlatform, handle: e.target.value })
                     }
                     placeholder="Username/handle"
-                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-lg border-2 text-gray-700 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
                   />
                   <select
                     value={newPlatform.followers}
@@ -520,7 +520,7 @@ export default function CreatorOnboardingPage() {
                         followers: e.target.value,
                       })
                     }
-                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
+                    className="w-full rounded-lg border-2 text-gray-500 border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
                   >
                     <option value="">Select follower count</option>
                     {FOLLOWER_RANGES.map((range) => (
@@ -578,7 +578,7 @@ export default function CreatorOnboardingPage() {
                   onChange={(e) =>
                     updateFormData("postingFrequency", e.target.value)
                   }
-                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border-2 text-gray-500 border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none"
                 >
                   <option value="">Select frequency</option>
                   {POSTING_FREQUENCIES.map((freq) => (
