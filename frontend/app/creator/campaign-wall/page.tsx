@@ -284,7 +284,7 @@ export default function CampaignWallPage() {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                      className="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                      className="w-full rounded-lg border text-gray-700 border-gray-300 py-3 pr-4 pl-10 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function CampaignWallPage() {
                     <select
                       value={platformFilter}
                       onChange={(e) => setPlatformFilter(e.target.value)}
-                      className="min-w-[120px] appearance-none rounded-lg border border-gray-300 py-3 pr-10 pl-10 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                      className="min-w-[120px] appearance-none rounded-lg border text-gray-700 border-gray-300 py-3 pr-10 pl-10 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                     >
                       <option value="">All Platforms</option>
                       {PLATFORM_OPTIONS.map((option) => (
@@ -307,7 +307,7 @@ export default function CampaignWallPage() {
                   <select
                     value={nicheFilter}
                     onChange={(e) => setNicheFilter(e.target.value)}
-                    className="min-w-[120px] appearance-none rounded-lg border border-gray-300 py-3 pr-10 pl-4 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                    className="min-w-[120px] appearance-none rounded-lg border text-gray-700 border-gray-300 py-3 pr-10 pl-4 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                   >
                     <option value="">All Niches</option>
                     {NICHE_OPTIONS.map((option) => (
@@ -321,7 +321,7 @@ export default function CampaignWallPage() {
                     placeholder="Min Budget"
                     value={budgetMin}
                     onChange={(e) => setBudgetMin(e.target.value)}
-                    className="w-28 rounded-lg border border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                    className="w-28 rounded-lg border text-gray-700 border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                     min={0}
                   />
                   <input
@@ -329,7 +329,7 @@ export default function CampaignWallPage() {
                     placeholder="Max Budget"
                     value={budgetMax}
                     onChange={(e) => setBudgetMax(e.target.value)}
-                    className="w-28 rounded-lg border border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                    className="w-28 rounded-lg border text-gray-700 border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                     min={0}
                   />
                   <button
