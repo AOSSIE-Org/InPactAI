@@ -12,7 +12,7 @@ if (isProduction) {
   }
 
   // In production, require HTTPS (except for localhost which is allowed for development)
-  if (!requiredEnv.match(/^https:\/\//) && !requiredEnv.match(/^http:\/\/localhost/)) {
+  if (!requiredEnv.match(/^https:\/\//) && !requiredEnv.match(/^http:\/\/localhost|backend/)) {
     throw new Error(
       "NEXT_PUBLIC_API_URL must use HTTPS in production. Please set NEXT_PUBLIC_API_URL to a valid HTTPS endpoint."
     );
