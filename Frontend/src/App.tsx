@@ -152,6 +152,7 @@ function App() {
           />
         </Routes>
         </Suspense>
+      </AuthProvider>
     </Router>
   );
 }
