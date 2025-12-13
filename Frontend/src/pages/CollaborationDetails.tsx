@@ -390,7 +390,7 @@ export default function CollaborationDetails() {
         </div>
       </div>
 
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
