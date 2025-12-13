@@ -1,7 +1,9 @@
 // Skip to Main Content - Enhanced Accessibility Component
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function SkipToContent() {
+  const [announcement, setAnnouncement] = useState("");
+
   useEffect(() => {
     // Handle skip link click
     const handleSkipClick = (e: MouseEvent) => {
@@ -12,6 +14,8 @@ export function SkipToContent() {
         if (mainContent) {
           mainContent.focus();
           mainContent.scrollIntoView({ behavior: "smooth" });
+          setAnnouncement("Navigated to main content");
+          setTimeout(() => setAnnouncement(""), 3000);
         }
       }
     };
@@ -24,6 +28,8 @@ export function SkipToContent() {
         if (mainContent) {
           mainContent.focus();
           mainContent.scrollIntoView({ behavior: "smooth" });
+          setAnnouncement("Jumped to main content using keyboard shortcut");
+          setTimeout(() => setAnnouncement(""), 3000);
         }
       }
     };
@@ -37,47 +43,72 @@ export function SkipToContent() {
     };
   }, []);
 
+  const skipLinkStyle = {
+    position: "absolute" as const,
+    left: "-9999px",
+    top: "1rem",
+    zIndex: 9999,
+    padding: "0.875rem 1.5rem",
+    backgroundColor: "hsl(262.1, 83.3%, 57.8%)",
+    color: "white",
+    textDecoration: "none",
+    borderRadius: "0.5rem",
+    fontWeight: 600,
+    fontSize: "0.875rem",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    border: "2px solid transparent",
+  };
+
+  const focusedStyle = {
+    left: "1rem",
+    outline: "3px solid white",
+    outlineOffset: "2px",
+    border: "2px solid hsl(262.1, 83.3%, 70%)",
+    transform: "scale(1.05)",
+  };
+
   return (
     <>
       <a
         href="#main-content"
         className="skip-to-content"
-        aria-label="Skip to main content"
-        role="navigation"
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          zIndex: 999,
-          padding: "1rem 1.5rem",
-          backgroundColor: "hsl(262.1, 83.3%, 57.8%)",
-          color: "white",
-          textDecoration: "none",
-          borderRadius: "0 0 0.375rem 0.375rem",
-          fontWeight: 600,
-          fontSize: "0.875rem",
-          transition: "left 0.2s ease-in-out",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        }}
+        aria-label="Skip to main content - Press Enter or Ctrl+/"
+        style={skipLinkStyle}
         onFocus={(e) => {
-          e.currentTarget.style.left = "1rem";
-          e.currentTarget.style.top = "1rem";
-          e.currentTarget.style.outline = "3px solid hsl(262.1, 83.3%, 57.8%)";
-          e.currentTarget.style.outlineOffset = "2px";
+          Object.assign(e.currentTarget.style, focusedStyle);
         }}
         onBlur={(e) => {
           e.currentTarget.style.left = "-9999px";
           e.currentTarget.style.outline = "none";
+          e.currentTarget.style.border = "2px solid transparent";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+        onMouseEnter={(e) => {
+          if (document.activeElement === e.currentTarget) {
+            e.currentTarget.style.backgroundColor = "hsl(262.1, 83.3%, 65%)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "hsl(262.1, 83.3%, 57.8%)";
         }}
       >
-        Skip to Main Content (Ctrl+/)
+        ⚡ Skip to Main Content <kbd style={{ 
+          marginLeft: "0.5rem", 
+          padding: "0.125rem 0.375rem", 
+          backgroundColor: "rgba(255,255,255,0.2)", 
+          borderRadius: "0.25rem",
+          fontSize: "0.75rem",
+          fontWeight: 400
+        }}>Ctrl+/</kbd>
       </a>
       <div
         role="status"
-        aria-live="polite"
+        aria-live="assertive"
         aria-atomic="true"
         className="sr-only"
       >
-        Press Tab to navigate, Ctrl+/ to skip to main content
+        {announcement || "Press Tab to navigate, Ctrl+/ to skip to main content"}
       </div>
     </>
   );
