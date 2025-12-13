@@ -1,3 +1,4 @@
+
 ![Inpact arch](https://github.com/user-attachments/assets/2b911c1f-2a14-4663-9a22-f04b22baa5b8)
 
 # Inpact - AI-Powered Creator Collaboration & Sponsorship Matchmaking

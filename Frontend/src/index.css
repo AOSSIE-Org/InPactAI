@@ -97,10 +97,13 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  background: var(--background);
-  color: var(--foreground);
-  transition: background 0.15s ease, color 0.15s ease;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: var(--background);
+    color: var(--foreground);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
 }

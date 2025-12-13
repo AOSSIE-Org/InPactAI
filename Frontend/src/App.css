@@ -23,7 +23,6 @@ button:active {
 .card {
   border: 1px solid var(--border);
   background: var(--card);
-  transition: all 0.15s ease;
 }
 
 .card:hover {
