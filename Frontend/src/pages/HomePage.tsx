@@ -466,7 +466,7 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section - Image Left, Text Right, Text More Centered */}
-        <main className="flex-1">
+        <main id="main-content" tabIndex={-1} className="flex-1">
           <section className="w-full min-h-screen flex items-center relative pt-16 overflow-hidden">
             {/* Background elements */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 via-blue-100/50 to-indigo-100/50"></div>
