@@ -22,6 +22,7 @@ const BasicDetails = lazy(() => import("./pages/BasicDetails"));
 const Onboarding = lazy(() => import("./components/Onboarding"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -88,6 +89,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
