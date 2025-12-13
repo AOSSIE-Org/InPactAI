@@ -18,25 +18,37 @@ from dotenv import load_dotenv
 import uuid
 from datetime import datetime, timezone
 
-# Load environment variables
 load_dotenv()
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+
+url: str = os.getenv("SUPABASE_URL", "")
+key: str = os.getenv("SUPABASE_KEY", "")
+
+if not url or not key or "your-" in url:
+    print("⚠️  Supabase credentials not configured. Some features will be limited.")
+    supabase = None
+else:
+    try:
+        supabase: Client = create_client(url, key)
+    except Exception as e:
+        print(f"❌ Supabase connection failed: {e}")
+        supabase = None
 
 # Define Router
 router = APIRouter()
 
-# Helper Functions
 def generate_uuid():
     return str(uuid.uuid4())
 
 def current_timestamp():
     return datetime.now(timezone.utc).isoformat()
 
-# ========== USER ROUTES ==========
+def check_supabase():
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database service unavailable. Please configure Supabase credentials.")
+
 @router.post("/users/")
 async def create_user(user: UserCreate):
+    check_supabase()
     user_id = generate_uuid()
     t = current_timestamp()
 
