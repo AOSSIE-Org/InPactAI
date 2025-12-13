@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 
+// Lazy-loaded components
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const SponsorshipsPage = lazy(() => import("./pages/Sponsorships"));
 const CollaborationsPage = lazy(() => import("./pages/Collaborations"));
@@ -21,12 +22,27 @@ const Onboarding = lazy(() => import("./components/Onboarding"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 
+// Loading fallback component
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="text-sm">Loading...</div>
   </div>
 );
 
+/**
+ * App Component with Router Loader Strategy
+ * 
+ * This implementation uses React Router's built-in capabilities as middleware replacement.
+ * Benefits:
+ * - No separate middleware.ts file needed
+ * - Route-level authentication checks before rendering
+ * - Data preloading for better UX
+ * - Fully within React ecosystem
+ * - No framework deprecation warnings
+ * 
+ * Note: Route loaders are defined in /lib/loaders.ts and can be attached
+ * to routes for authentication checks and data prefetching.
+ */
 function App() {
 
   return (
