@@ -28,10 +28,13 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    // API proxy configuration (Vite native - no middleware.ts needed)
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:8000',
         changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path,
       },
     },
   },
