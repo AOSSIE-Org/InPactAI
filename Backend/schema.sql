@@ -2,10 +2,29 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create Enum Types
-CREATE TYPE application_status AS ENUM ('pending', 'accepted', 'rejected');
-CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'declined');
-CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed');
-CREATE TYPE deal_status AS ENUM ('open', 'closed', 'in_progress');
+DO $$ BEGIN
+    CREATE TYPE application_status AS ENUM ('pending', 'accepted', 'rejected');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'declined');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE deal_status AS ENUM ('open', 'closed', 'in_progress');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create Users Table
 CREATE TABLE IF NOT EXISTS public.users (
