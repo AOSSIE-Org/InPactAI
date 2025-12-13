@@ -23,6 +23,7 @@ const Onboarding = lazy(() => import("./components/Onboarding"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -55,6 +56,7 @@ function App() {
           <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/login" element={
             <PublicRoute>
               <LoginPage />

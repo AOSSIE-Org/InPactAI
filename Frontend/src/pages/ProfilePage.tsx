@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Badge } from "../components/ui/badge";
-import { Progress } from "../components/ui/progress";
+import { Progress } from "./ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -17,12 +17,14 @@ import {
   DialogTrigger,
 } from "../components/ui/dialog";
 import {
+  AlertCircle,
   BarChart3,
   Briefcase,
   Camera,
   Edit,
   FileText,
   LayoutDashboard,
+  Lightbulb,
   LogOut,
   MessageSquare,
   Rocket,
@@ -36,7 +38,12 @@ import { UserNav } from "../components/user-nav";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../utils/supabase";
 
-export default function ProfilePage() {
+interface ProfilePageProps {
+  viewMode?: "public" | "owner";
+  username?: string;
+}
+
+export default function ProfilePage({ viewMode = "owner", username }: ProfilePageProps) {
   const { logout, user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -49,26 +56,36 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfile();
-  }, [user]);
+  }, [fetchProfile]);
 
   const fetchProfile = async () => {
-    if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      if (viewMode === "owner" && user) {
+        const { data } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-      if (data) {
-        setProfile(data);
-        setEditForm({
-          name: data.name || "",
-          bio: data.bio || "",
-          location: data.location || "",
-          website: data.website || "",
-        });
+        if (data) {
+          setProfile(data);
+          setEditForm({
+            name: data.name || "",
+            bio: data.bio || "",
+            location: data.location || "",
+            website: data.website || "",
+          });
+        }
+      } else if (viewMode === "public" && username) {
+        const { data } = await supabase
+          .from("users")
+          .select("id, name, username, bio, avatar_url, banner_url, location, website, role, followers, engagement_rate, collaborations, social_links")
+          .eq("username", username)
+          .single();
+
+        if (data) {
+          setProfile(data);
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -85,6 +102,64 @@ export default function ProfilePage() {
     if (profile.website) strength += 15;
     if (profile.social_links?.length > 0) strength += 10;
     return strength;
+  };
+
+  const getAIInsights = () => {
+    if (!profile || viewMode !== "owner") return [];
+    
+    const insights = [];
+    const portfolioItems = profile.portfolio?.length || 0;
+    const hasRecentActivity = profile.last_activity_date && 
+      (new Date().getTime() - new Date(profile.last_activity_date).getTime()) < 7 * 24 * 60 * 60 * 1000;
+    
+    // Portfolio insights
+    if (portfolioItems === 0) {
+      insights.push({
+        type: "critical",
+        message: "Brands engage 40% more with profiles that have at least 3 portfolio items. Add one now!",
+        action: "Add Portfolio Item",
+        icon: AlertCircle,
+      });
+    } else if (portfolioItems < 3) {
+      insights.push({
+        type: "warning",
+        message: `You have ${portfolioItems} portfolio item${portfolioItems > 1 ? 's' : ''}. Add ${3 - portfolioItems} more to reach the optimal number!`,
+        action: "Add More Items",
+        icon: Lightbulb,
+      });
+    }
+    
+    // Bio insights
+    if (!profile.bio || profile.bio.length < 50) {
+      insights.push({
+        type: "warning",
+        message: "Profiles with detailed bios (50+ characters) get 25% more collaboration requests.",
+        action: "Enhance Bio",
+        icon: Lightbulb,
+      });
+    }
+    
+    // Engagement insights
+    if (!hasRecentActivity) {
+      insights.push({
+        type: "info",
+        message: "Active profiles get 60% more visibility. Post an update this week!",
+        action: "Post Update",
+        icon: TrendingUp,
+      });
+    }
+    
+    // Social links insights
+    if (!profile.social_links || profile.social_links.length < 2) {
+      insights.push({
+        type: "info",
+        message: "Connect at least 2 social profiles to increase brand trust by 35%.",
+        action: "Connect Socials",
+        icon: Users,
+      });
+    }
+    
+    return insights;
   };
 
   const handleSaveProfile = async () => {
@@ -106,6 +181,7 @@ export default function ProfilePage() {
   };
 
   const profileStrength = calculateProfileStrength();
+  const aiInsights = getAIInsights();
 
   if (!profile) {
     return (
@@ -177,23 +253,27 @@ export default function ProfilePage() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <Button
-                size="icon"
-                variant="secondary"
-                className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
-              >
-                <Camera className="h-4 w-4" />
-              </Button>
+              {viewMode === "owner" && (
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute top-4 right-4"
-          >
-            <Camera className="mr-2 h-4 w-4" />
-            Change Banner
-          </Button>
+          {viewMode === "owner" && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-4 right-4"
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Change Banner
+            </Button>
+          )}
         </div>
 
         <div className="container mt-20 space-y-6 pb-8">
@@ -211,12 +291,14 @@ export default function ProfilePage() {
               )}
             </div>
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
-              </DialogTrigger>
+              {viewMode === "owner" && (
+                <DialogTrigger asChild>
+                  <Button>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Profile
+                  </Button>
+                </DialogTrigger>
+              )}
               <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
                   <DialogTitle>Edit Profile</DialogTitle>
@@ -304,61 +386,113 @@ export default function ProfilePage() {
                 <p className="text-xs text-muted-foreground">3 active</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${profile.total_earnings || "0"}</div>
-                <p className="text-xs text-muted-foreground">This year</p>
-              </CardContent>
-            </Card>
+            {viewMode === "owner" && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${profile.total_earnings || "0"}</div>
+                  <p className="text-xs text-muted-foreground">This year</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Profile Strength */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Strength</CardTitle>
-              <CardDescription>
-                Complete your profile to increase visibility and get better matches
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{profileStrength}% Complete</span>
-                  <span className="text-muted-foreground">
-                    {profileStrength === 100 ? "Excellent!" : "Keep going!"}
-                  </span>
-                </div>
-                <Progress value={profileStrength} className="h-2" />
-              </div>
-              {profileStrength < 100 && (
+          {/* AI Insights Widget - Owner Only */}
+          {viewMode === "owner" && aiInsights.length > 0 && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  AI Profile Optimization
+                </CardTitle>
+                <CardDescription>
+                  Smart insights to boost your profile performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {aiInsights.map((insight, idx) => {
+                  const Icon = insight.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        insight.type === "critical"
+                          ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950"
+                          : insight.type === "warning"
+                          ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
+                          : "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 mt-0.5 ${
+                          insight.type === "critical"
+                            ? "text-red-600 dark:text-red-400"
+                            : insight.type === "warning"
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-blue-600 dark:text-blue-400"
+                        }`}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{insight.message}</p>
+                        <Button variant="link" size="sm" className="h-auto p-0 text-xs">
+                          {insight.action} →
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Profile Strength - Owner Only */}
+          {viewMode === "owner" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Strength</CardTitle>
+                <CardDescription>
+                  Complete your profile to increase visibility and get better matches
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Suggestions to improve:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    {!profile.bio && <li>• Add a bio (+20%)</li>}
-                    {!profile.avatar_url && <li>• Upload a profile picture (+20%)</li>}
-                    {!profile.banner_url && <li>• Add a banner image (+20%)</li>}
-                    {!profile.location && <li>• Add your location (+15%)</li>}
-                    {!profile.website && <li>• Add your website (+15%)</li>}
-                    {(!profile.social_links || profile.social_links.length === 0) && (
-                      <li>• Connect social profiles (+10%)</li>
-                    )}
-                  </ul>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{profileStrength}% Complete</span>
+                    <span className="text-muted-foreground">
+                      {profileStrength === 100 ? "Excellent!" : "Keep going!"}
+                    </span>
+                  </div>
+                  <Progress value={profileStrength} className="h-2" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                {profileStrength < 100 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Suggestions to improve:</p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      {!profile.bio && <li>• Add a bio (+20%)</li>}
+                      {!profile.avatar_url && <li>• Upload a profile picture (+20%)</li>}
+                      {!profile.banner_url && <li>• Add a banner image (+20%)</li>}
+                      {!profile.location && <li>• Add your location (+15%)</li>}
+                      {!profile.website && <li>• Add your website (+15%)</li>}
+                      {(!profile.social_links || profile.social_links.length === 0) && (
+                        <li>• Connect social profiles (+10%)</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              {viewMode === "owner" && <TabsTrigger value="analytics">Analytics</TabsTrigger>}
+              {viewMode === "owner" && <TabsTrigger value="settings">Settings</TabsTrigger>}
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <Card>
