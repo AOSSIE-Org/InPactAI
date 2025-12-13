@@ -38,7 +38,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full" title="Open user menu" aria-label="Open user menu">
           <Avatar className="h-8 w-8">
             <AvatarImage 
               src={avatarError ? "https://via.placeholder.com/32" : (user.user_metadata?.avatar_url || "https://via.placeholder.com/32")} 

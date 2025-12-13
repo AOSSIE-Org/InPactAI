@@ -51,7 +51,7 @@ export default function DashboardPage() {
       className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
       asChild
     >
-      <Link to={to}>
+      <Link to={to} title={label} aria-label={label}>
         <Icon className="h-5 w-5" />
         <span className="sr-only">{label}</span>
       </Link>
@@ -68,8 +68,8 @@ export default function DashboardPage() {
     />
   </div>
   <ModeToggle />
-  <Button onClick={logout} variant="ghost">
-    <LogOut className="h-5 w-5" />  
+  <Button onClick={logout} variant="ghost" title="Logout" aria-label="Logout">
+    <LogOut className="h-5 w-5" />
   </Button>
   <UserNav />
 </div>
