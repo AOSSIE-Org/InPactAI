@@ -1,284 +1,364 @@
 
 ![Inpact arch](https://github.com/user-attachments/assets/2b911c1f-2a14-4663-9a22-f04b22baa5b8)
 
-# Inpact - AI-Powered Creator Collaboration & Sponsorship Matchmaking
+<div align="center">
 
-Inpact is an open-source AI-powered platform designed to connect content creators, brands, and agencies through data-driven insights. By leveraging Generative AI (GenAI), audience analytics, and engagement metrics, Inpact ensures highly relevant sponsorship opportunities for creators while maximizing ROI for brands investing in influencer marketing.
+# InPact AI
 
-## 🚀 Quick Start
+### AI-Powered Creator Collaboration & Sponsorship Matchmaking Platform
 
-**Recommended:** Start with Docker for the smoothest experience - [Docker Setup Guide](DOCKER.md)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![License: AGPL](https://img.shields.io/badge/License-AGPL-blue.svg?style=for-the-badge)](LICENSE)
 
-Or follow the [Manual Installation](#manual-installation) below.
+[Features](#-key-features) • [Quick Start](#-quick-start) • [Tech Stack](#-tech-stack) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-## Features
-
-### AI-Driven Sponsorship Matchmaking
-
-- Automatically connects creators with brands based on audience demographics, engagement rates, and content style.
-
-### AI-Powered Creator Collaboration Hub
-
-- Facilitates partnerships between creators with complementary audiences and content niches.
-
-### AI-Based Pricing & Deal Optimization
-
-- Provides fair sponsorship pricing recommendations based on engagement, market trends, and historical data.
-
-### AI-Powered Negotiation & Contract Assistant
-
-- Assists in structuring deals, generating contracts, and optimizing terms using AI insights.
-
-### Performance Analytics & ROI Tracking
-
-- Enables brands and creators to track sponsorship performance, audience engagement, and campaign success.
-
-## Tech Stack
-
-- **Frontend**: ReactJS
-- **Backend**: FastAPI
-- **Database**: Supabase
-- **AI Integration**: GenAI for audience analysis and sponsorship recommendations
+</div>
 
 ---
 
-## Workflow
+## 📖 About
 
-### 1. User Registration & Profile Setup
+InPact is an open-source AI-powered platform that revolutionizes how content creators, brands, and agencies collaborate. Using advanced Generative AI, audience analytics, and engagement metrics, InPact delivers data-driven sponsorship matches that maximize value for creators while ensuring optimal ROI for brands.
 
+### 🎯 Why InPact?
+
+- **Smart Matching**: AI analyzes audience demographics, engagement patterns, and content style for perfect brand-creator alignment
+- **Fair Pricing**: Data-driven pricing recommendations based on real engagement metrics and market trends
+- **Efficient Collaboration**: Streamlined workflows from discovery to contract signing and performance tracking
+- **Actionable Analytics**: Deep insights into campaign performance with AI-powered optimization suggestions
+
+## 🚀 Quick Start
+
+**🐳 Docker (Recommended)**: Get started in minutes - [Docker Setup Guide](DOCKER.md)
+
+**🔧 Manual Setup**: Prefer more control? See [Manual Installation](#-manual-installation) below.
+
+## ✨ Key Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🤖 AI-Driven Matchmaking
+Automatically connects creators with brands based on:
+- Audience demographics & psychographics
+- Engagement rates & content style
+- Historical campaign performance
+- Market trends & niche alignment
+
+</td>
+<td width="50%">
+
+### 🤝 Collaboration Hub
+Facilitates creator partnerships with:
+- Complementary audience discovery
+- Content niche compatibility analysis
+- Joint campaign opportunities
+- Cross-promotion insights
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 💰 Smart Pricing Engine
+Data-driven deal optimization:
+- Fair pricing recommendations
+- Market trend analysis
+- Historical performance data
+- Engagement-based valuations
+
+</td>
+<td width="50%">
+
+### 📊 Performance Analytics
+Comprehensive tracking & insights:
+- Real-time campaign monitoring
+- ROI & engagement metrics
+- AI-powered optimization suggestions
+- Continuous improvement feedback
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📝 Contract Assistant
+AI-powered negotiation support:
+- Auto-generated contract templates
+- Terms optimization
+- Deal structure recommendations
+- Legal compliance guidance
+
+</td>
+<td width="50%">
+
+### 💬 Real-Time Messaging
+Seamless communication:
+- Direct creator-brand messaging
+- Collaboration discussions
+- File sharing & attachments
+- Notification system
+
+</td>
+</tr>
+</table>
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18 + TypeScript + Vite |
+| **UI Framework** | Tailwind CSS + shadcn/ui |
+| **Backend** | FastAPI (Python 3.10+) |
+| **Database** | Supabase (PostgreSQL) |
+| **Caching** | Redis 7 |
+| **AI/ML** | Groq API + Google Gemini |
+| **Auth** | Supabase Auth |
+| **DevOps** | Docker + Docker Compose |
+
+</div>
+
+</div>
+
+## 📋 Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[React Frontend<br/>Vite + TypeScript]
+    end
+    
+    subgraph "API Layer"
+        B[FastAPI Backend<br/>Python 3.10]
+    end
+    
+    subgraph "Data Layer"
+        C[Supabase<br/>PostgreSQL]
+        D[Redis<br/>Cache & Pub/Sub]
+    end
+    
+    subgraph "AI Services"
+        E[Groq API<br/>LLM Processing]
+        F[Google Gemini<br/>Content Analysis]
+    end
+    
+    A -->|REST API| B
+    B -->|Query/Store| C
+    B -->|Cache| D
+    B -->|AI Requests| E
+    B -->|AI Requests| F
+    A -->|Real-time| D
+    
+    style A fill:#61dafb
+    style B fill:#009688
+    style C fill:#3ecf8e
+    style D fill:#dc382d
+    style E fill:#f55036
+    style F fill:#4285f4
+```
+
+## 🔄 How It Works
+
+### User Journey
+
+**1. Registration & Profile Setup**
 - Creators, brands, and agencies sign up and set up their profiles.
 - AI gathers audience insights and engagement data.
 
-### 2. AI-Powered Sponsorship Matchmaking
-
+**2. AI-Powered Sponsorship Matchmaking**
 - The platform suggests brands and sponsorship deals based on audience metrics.
 - Creators can apply for sponsorships or receive brand invitations.
 
-### 3. Collaboration Hub
-
+**3. Collaboration Hub**
 - Creators can find and connect with others for joint campaigns.
 - AI recommends potential collaborations based on niche and audience overlap.
 
-### 4. AI-Based Pricing & Contract Optimization
-
+**4. AI-Based Pricing & Contract Optimization**
 - AI provides fair pricing recommendations for sponsorships.
 - Auto-generates contract templates with optimized terms.
 
-### 5. Campaign Execution & Tracking
-
+**5. Campaign Execution & Tracking**
 - Creators execute sponsorship campaigns.
 - Brands track campaign performance through engagement and ROI metrics.
 
-### 6. Performance Analysis & Continuous Optimization
-
+**6. Performance Analysis & Continuous Optimization**
 - AI analyzes campaign success and suggests improvements for future deals.
 - Brands and creators receive insights for optimizing future sponsorships.
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Choose one of the following setup methods:
+**Option A: Docker (Recommended) ⚡**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
+- [Supabase](https://supabase.com/) account (free tier available)
 
-**Option A: Docker (Recommended)**
-- Docker and Docker Compose installed
-- Supabase account
+**Option B: Manual Setup 🔧**
+- [Node.js](https://nodejs.org/) 18+ & npm
+- [Python](https://www.python.org/) 3.10+ & pip
+- [Supabase](https://supabase.com/) account
 
-**Option B: Manual Setup**
-- Node.js & npm
-- Python & FastAPI
-- Supabase account
+### 🐳 Quick Start with Docker
 
----
-
-## Quick Start with Docker
-
-### 1. Clone the repository
+**1. Clone the Repository**
 
 ```sh
 git clone https://github.com/AOSSIE-Org/InPact.git
 cd InPact
 ```
 
-### 2. Setup Environment Variables
+**2. Configure Environment Variables**
 
-#### Backend Configuration
+**Backend:**
 ```sh
 cd Backend
 cp .env.example .env
+# Edit Backend/.env with your Supabase and API credentials
 ```
 
-Edit `Backend/.env` with your credentials:
-- Supabase database connection
-- API keys (GROQ, GEMINI, YOUTUBE)
-- Redis is pre-configured for Docker
-
-#### Frontend Configuration
+**Frontend:**
 ```sh
 cd ../Frontend
 cp .env.example .env
+# Edit Frontend/.env with your Supabase credentials
 ```
 
-Edit `Frontend/.env` with your Supabase credentials.
+**3. Launch All Services**
 
-### 3. Start All Services
-
-From the project root directory:
-
+From the project root:
 ```sh
 docker compose up --build
 ```
 
-This single command will:
-- Build and start the FastAPI backend on `http://localhost:8000`
-- Build and start the React frontend on `http://localhost:5173`
-- Start Redis for caching and pub/sub
+**Services Available:**
+- 🌐 Frontend: http://localhost:5173
+- ⚡ Backend API: http://localhost:8000
+- 📚 API Docs: http://localhost:8000/docs
+- 🔴 Redis: localhost:6379
 
-### 4. Stop Services
+**4. Stop Services**
 
 ```sh
 docker compose down
+# Remove volumes: docker compose down -v
 ```
 
-To remove volumes as well:
-```sh
-docker compose down -v
-```
+> 📖 For detailed Docker setup, troubleshooting, and production deployment, see [DOCKER.md](DOCKER.md)
 
 ---
 
-## Manual Installation
+### 🔧 Manual Installation
 
-### 1. Clone the repository
+**1. Clone the Repository**
 
 ```sh
 git clone https://github.com/AOSSIE-Org/InPact.git
 cd InPact
 ```
 
-### 2. Frontend Setup
+**2. Frontend Setup**
 
-Navigate to the frontend directory:
 ```sh
 cd Frontend
-```
-
-Install dependencies:
-```sh
 npm install
-```
-
-Create a `.env` file:
-```sh
 cp .env.example .env
 ```
 
-Get your Supabase credentials:
-- Go to [Supabase](https://supabase.com/)
-- Log in and create a new project (or use existing)
-- Go to Project Settings -> API
-- Copy the "Project URL" and paste it as VITE_SUPABASE_URL
-- Copy the "anon public" key and paste it as VITE_SUPABASE_ANON_KEY
+Configure `Frontend/.env` with your [Supabase credentials](https://supabase.com/):
+- `VITE_SUPABASE_URL`: Your project URL
+- `VITE_SUPABASE_ANON_KEY`: Your anon/public key
 
-### 3. Backend Setup
+**3. Backend Setup**
 
-Navigate to the backend directory:
 ```sh
 cd ../Backend
-```
-
-Install dependencies:
-```sh
 pip install -r requirements.txt
-```
-
-Create a `.env` file:
-```sh
 cp .env.example .env
 ```
 
-Obtain Supabase credentials:
-- Go to [Supabase](https://supabase.com/)
-- Log in and create a new project
-- Click on the project and remember the project password
-- Go to the **Connect** section at the top
-- Select **SQLAlchemy** and copy the connection string:
+Configure `Backend/.env`:
+- **Supabase**: Database connection string (PostgreSQL)
+- **Groq API**: Get key from [Groq Console](https://console.groq.com/)
+- **Gemini API**: Get key from [Google AI Studio](https://makersuite.google.com/)
 
-  ```sh
-  user=postgres
-  password=[YOUR-PASSWORD]
-  host=db.wveftanaurduixkyijhf.supabase.co
-  port=5432
-  dbname=postgres
-  ```
+**4. Start Development Servers**
 
-  --OR--
-
-  [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
-
-  ```sh
-   user=postgres.<project>
-   password=[YOUR-PASSWORD]
-   host=aws-<location>.pooler.supabase.com
-   port=5432
-   dbname=postgres
-  ```
-
-Get the Groq API key:
-- Visit [Groq Console](https://console.groq.com/)
-- Create an API key and paste it into the `.env` file
-
-### 4. Start Development Servers
-
-Start the frontend server:
+Terminal 1 (Frontend):
 ```sh
 cd Frontend
 npm run dev
 ```
 
-Start the backend server:
+Terminal 2 (Backend):
 ```sh
 cd Backend
 uvicorn app.main:app --reload
 ```
 
-## Data Population
-
-To populate the database with initial data, follow these steps:
-
-1. **Open Supabase Dashboard**
-
-   - Go to [Supabase](https://supabase.com/) and log in.
-   - Select your created project.
-
-2. **Access the SQL Editor**
-
-   - In the left sidebar, click on **SQL Editor**.
-
-3. **Run the SQL Script**
-   - Open the `sql.txt` file in your project.
-   - Copy the SQL queries from the file.
-   - Paste the queries into the SQL Editor and click **Run**.
-
-This will populate the database with the required initial data for the platform. 🚀
+**Access the Application:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
 
 ---
 
-## Contributing
+## 📊 Data Population
 
-We welcome contributions from the community! To contribute:
+To populate your database with sample data:
 
-1. Fork the repository.
-2. Create a new branch for your feature (`git checkout -b feature-name`).
-3. Commit your changes (`git commit -m "Added feature"`).
-4. Push to your branch (`git push origin feature-name`).
-5. Open a Pull Request.
+1. Open your [Supabase Dashboard](https://supabase.com/)
+2. Navigate to **SQL Editor** in the left sidebar
+3. Copy the SQL queries from `Backend/sql.txt`
+4. Paste into the SQL Editor and click **Run**
+
+This creates the required tables and seeds initial data for testing. 🚀
 
 ---
 
-## Overall Workflow
+## 📖 Documentation
+
+- [🐳 Docker Setup Guide](DOCKER.md) - Complete containerization guide
+- [🚀 Getting Started](GETTING-STARTED.md) - Detailed setup instructions
+- [🏗️ Architecture](DOCKER-ARCHITECTURE.md) - System architecture overview
+- [📚 API Documentation](http://localhost:8000/docs) - Interactive API docs (when backend is running)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### Quick Start
+1. **Fork** the repository
+2. **Clone** your fork: `git clone https://github.com/YOUR-USERNAME/InPact.git`
+3. **Create a branch**: `git checkout -b feature/amazing-feature`
+4. **Make your changes** and commit: `git commit -m "Add amazing feature"`
+5. **Push** to your fork: `git push origin feature/amazing-feature`
+6. **Open a Pull Request**
+
+### Development Guidelines
+- Follow existing code style and conventions
+- Write clear commit messages
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+### Report Issues
+Found a bug or have a feature request? [Open an issue](https://github.com/AOSSIE-Org/InPact/issues)
+
+---
+
+## 📊 Detailed Workflow Diagrams
+
+### Overall System Workflow
 
 ```mermaid
 graph TD;
@@ -293,11 +373,11 @@ graph TD;
   I -->|Feedback Loop| C;
 ```
 
-**FRONTEND workflow in detail**
+### Frontend Workflow
 
 ```mermaid
 graph TD;
-  A[User Visits Inpact] -->|Supabase Auth| B[Login/Signup];
+  A[User Visits InPact] -->|Supabase Auth| B[Login/Signup];
   B -->|Fetch User Profile| C[Dashboard Loaded];
   C -->|Request AI-Powered Matches| D[Fetch Sponsorship Deals via API];
   D -->|Display Relevant Matches| E[User Applies for Sponsorship];
@@ -309,7 +389,7 @@ graph TD;
   J -->|Show Performance Analytics| K[AI Optimizes Future Matches];
 ```
 
-**BACKEND workflow in detail**
+### Backend Workflow
 
 ```mermaid
 graph TD;
@@ -328,10 +408,29 @@ graph TD;
   M -->|Return Insights| N[AI Refines Future Recommendations];
 ```
 
-## Contact
+---
 
-For queries, issues, or feature requests, please raise an issue or reach out on our Discord server.
+## 📞 Support & Community
 
+- **Issues**: [GitHub Issues](https://github.com/AOSSIE-Org/InPact/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/AOSSIE-Org/InPact/discussions)
+- **Discord**: Join our community server for real-time help
 
-Happy Coding!
+---
+
+## 📄 License
+
+This project is licensed under the AGPL License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by the AOSSIE Community**
+
+⭐ Star us on GitHub — it motivates us a lot!
+
+[Report Bug](https://github.com/AOSSIE-Org/InPact/issues) • [Request Feature](https://github.com/AOSSIE-Org/InPact/issues) • [Contribute](CONTRIBUTING.md)
+
+</div>
 
