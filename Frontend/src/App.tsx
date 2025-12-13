@@ -6,6 +6,7 @@ import SignupPage from "./pages/Signup";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import { SkipToContent } from "./components/skip-to-content";
 
 // Lazy-loaded components
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -47,6 +48,7 @@ function App() {
 
   return (
     <Router>
+      <SkipToContent />
       <AuthProvider>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
