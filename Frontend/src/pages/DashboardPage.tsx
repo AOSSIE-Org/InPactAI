@@ -1,21 +1,11 @@
-import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { ModeToggle } from "../components/mode-toggle"
-import { UserNav } from "../components/user-nav"
 import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
+import DashboardHeader from "../components/dashboard-header"
 import {
   BarChart3,
   Briefcase,
   DollarSign,
-  FileText,
-  Icon,
-  LayoutDashboard,
-  LogOut,
-  MessageSquare,
-  Rocket,
-  Search,
   Users,
 } from "lucide-react"
 import { PerformanceMetrics } from "../components/dashboard/performance-metrics"
@@ -29,52 +19,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)]">
-      <header className="sticky top-0 z-50 w-full border-b border-[hsl(214.3,31.8%,91.4%)] bg-[rgba(255,255,255,0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsla(0,0%,100%,0.6)]">
-        <div className="container flex h-16 items-center">
-          <Link to="/" className="flex items-center space-x-2 mr-6  ml-6">
-            <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
-            <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-  {[
-    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
-    { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
-    { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
-    { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-    { to: "/dashboard/messages", icon: MessageSquare, label: "Messages" },
-  ].map(({ to, icon: Icon, label }) => (
-    <Button
-      key={to}
-      variant="ghost"
-      size="sm"
-      className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
-      asChild
-    >
-      <Link to={to}>
-        <Icon className="h-5 w-5" />
-        <span className="sr-only">{label}</span>
-      </Link>
-    </Button>
-  ))}
-</div>
-<div className="ml-auto flex items-center space-x-3">
-  <div className="relative hidden md:flex">
-    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-    <Input
-      type="search"
-      placeholder="Search..."
-      className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
-    />
-  </div>
-  <ModeToggle />
-  <Button onClick={logout} variant="ghost">
-    <LogOut className="h-5 w-5" />  
-  </Button>
-  <UserNav />
-</div>
-</div>
-      </header>
+      <DashboardHeader showQuickLogout onLogout={logout} />
       <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
