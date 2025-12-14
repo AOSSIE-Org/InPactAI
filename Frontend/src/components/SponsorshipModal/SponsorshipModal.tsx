@@ -21,7 +21,9 @@ export default function SponsorshipModal({
   campaign,
 }: Props) {
   const [tab, setTab] = useState<string>("overview");
+
   const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const tabs: Tab[] = [
     { id: "overview", label: "Overview" },
@@ -30,11 +32,36 @@ export default function SponsorshipModal({
     { id: "analytics", label: "Analytics" },
   ];
 
+  // 🔹 Focus management (open / close)
+  useEffect(() => {
+    if (open) {
+      triggerRef.current = document.activeElement as HTMLElement;
+
+      // Focus first tab button
+      document.getElementById(`tab-${tabs[0].id}`)?.focus();
+    } else if (triggerRef.current) {
+      triggerRef.current.focus();
+      triggerRef.current = null;
+    }
+  }, [open, tabs]);
+
+  // 🔹 Escape key handling
   useEffect(() => {
     if (!open) return;
-    dialogRef.current?.focus();
-  }, [open]);
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
+  // 🔹 Keyboard navigation for tabs
   const handleTabKeyDown = (
     e: React.KeyboardEvent<HTMLButtonElement>,
     index: number
@@ -78,11 +105,13 @@ export default function SponsorshipModal({
       aria-label="Sponsorship details"
       className="fixed inset-0 z-50 flex items-center justify-center"
     >
+      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
 
+      {/* Modal */}
       <div
         ref={dialogRef}
         tabIndex={-1}
@@ -120,12 +149,11 @@ export default function SponsorshipModal({
                   }`}
               >
                 {tt.label}
-              
               </button>
             ))}
           </div>
 
-          {/* Panel */}
+          {/* Tab Panel */}
           <div
             id={`tabpanel-${tab}`}
             role="tabpanel"
