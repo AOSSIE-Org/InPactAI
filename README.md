@@ -84,15 +84,15 @@ Ensure you have the following installed:
 #### 1. Clone the repository
 
 ```sh
-git clone https://github.com/AOSSIE-Org/InPact.git
-cd inpact
+git clone https://github.com/AOSSIE-Org/InPactAI.git
+cd InPactAI
 ```
 
 #### 2. Frontend Setup
 
 1. Navigate to the frontend directory:
 ```sh
-cd frontend
+cd Frontend
 ```
 
 2. Install dependencies:
@@ -116,23 +116,34 @@ npm install
 
 1. Navigate to the backend directory:
 ```sh
-cd ../backend
+cd Backend
 ```
 
-2. Install dependencies:
+2. Create a virtual environment
+```sh
+python -m venv venv
+```
+
+3. Activate the virtual environment
+```sh
+venv\Scripts\activate
+```
+
+4. Install dependencies:
 ```sh
 pip install -r requirements.txt
 ```
 
-
-3. Navigate to the app directory:
+5. Navigate to the app directory:
 ```sh
-cd backend/app
+cd app
 ```
 
-4. Create a `.env` file using `.env-example` as a reference.
+6. Create a `.env` file
 
-5. Obtain Supabase credentials:
+   - Use `.env-example` file as reference
+
+7. Obtain Supabase credentials:
 
    - Go to [Supabase](https://supabase.com/)
    - Log in and create a new project
@@ -161,20 +172,20 @@ cd backend/app
      ```
 
 
-6. Get the Groq API key:
+8. Get the Groq API key:
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file
 
-7. Get the Gemini API key:
+9. Get the Gemini API key:
    - Visit [Google AI Studio](https://aistudio.google.com/)
    - SignIn/SignUp with Google account
    - Click "API Keys" left side panel
    - Click "Create API Key"
    - Name your key "..." and select "Default Gemini Project"
    - Click "Create key"
-   - Paste the API KEy into the `.env` file
+   - Paste the API Key into the `.env` file
 
-8. Final `.env` file should look:
+10. Final `.env` file should look:
 
    ```sh
    SUPABASE_URL=[URL]
@@ -218,7 +229,7 @@ npm run dev
 
 2. Start the backend server (from the backend directory):
 ```sh
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
