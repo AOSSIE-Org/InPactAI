@@ -27,6 +27,11 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
+import StatusDataIcon from '../Icons/StatusDataIcon'
+import DeliverableStatusIcon from '../Icons/DeliverableStatusIcon'
+import PlatformDistributionIcon from '../Icons/PlatformDistributionIcon'
+import WalletIcon from '../Icons/WalletIcon'
+import MonthlyEngagementDataIcon from '../Icons/MonthlyEngagementDataIcon'
 
 const COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4"];
 
@@ -209,7 +214,8 @@ export default function CreatorDashboard() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Campaign Status</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
+            {statusData.length>0 ? (
+              <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
@@ -226,6 +232,13 @@ export default function CreatorDashboard() {
               </Pie>
               <Tooltip />
             </PieChart>
+            ):(
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-3">
+              <StatusDataIcon/>
+              <p className="text-gray-700 font-semibold">No campaigns yet</p>
+              <button className="bg-purple-500 text-white rounded px-5 py-3 font-bold">Create Campaigns</button>
+              </div>
+            )} 
           </ResponsiveContainer>
         </div>
 
@@ -233,7 +246,8 @@ export default function CreatorDashboard() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Deliverable Status</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
+            {deliverableStatusData.length>0 ? (
+              <PieChart>
               <Pie
                 data={deliverableStatusData}
                 cx="50%"
@@ -250,6 +264,13 @@ export default function CreatorDashboard() {
               </Pie>
               <Tooltip />
             </PieChart>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-3">
+              <DeliverableStatusIcon/>
+              <p className="text-gray-700 font-semibold">No deliverables yet</p>
+              <button className="bg-purple-500 text-white rounded px-5 py-3 font-bold">Create Deliverables</button>
+              </div>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
@@ -260,13 +281,21 @@ export default function CreatorDashboard() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Platform Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={platformData}>
+            {platformData.length>0 ? (
+              <BarChart data={platformData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Bar dataKey="value" fill="#8b5cf6" />
             </BarChart>
+            ):(
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-3">
+              <PlatformDistributionIcon/>
+              <p className="text-gray-700 font-semibold">No platforms connected yet</p>
+              <button className="bg-purple-500 text-white rounded px-5 py-3 font-bold">Connect platforms</button>
+              </div>
+            )}        
           </ResponsiveContainer>
         </div>
 
@@ -274,7 +303,8 @@ export default function CreatorDashboard() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Earnings Trend (Last 6 Months)</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyEarningsData}>
+            {monthlyEarningsData.filter(month=>month.earnings!==0).length>0 ? (
+              <LineChart data={monthlyEarningsData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -288,6 +318,14 @@ export default function CreatorDashboard() {
                 name="Earnings ($)"
               />
             </LineChart>
+            ):(
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-3">
+              <WalletIcon/>
+              <p className="text-gray-700 font-semibold">No financial activity yet</p>
+              {/* <button className="bg-purple-500 text-white rounded px-5 py-3 font-bold">Connect platforms</button> */}
+              </div>
+            )}
+            
           </ResponsiveContainer>
         </div>
       </div>
@@ -298,7 +336,8 @@ export default function CreatorDashboard() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold text-gray-900">Engagement Trend (Last 6 Months)</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyEngagementData}>
+            {monthlyEngagementData.filter(month=>month.engagement!==0).length>0 ? (
+              <LineChart data={monthlyEngagementData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -312,6 +351,14 @@ export default function CreatorDashboard() {
                 name="Engagement"
               />
             </LineChart>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-3">
+              <MonthlyEngagementDataIcon/>
+              <p className="text-gray-700 font-semibold">No engagement recorded</p>
+              <button className="bg-purple-500 text-white rounded px-5 py-3 font-bold">View campaign</button>
+              </div>
+            )}
+            
           </ResponsiveContainer>
         </div>
       </div>
