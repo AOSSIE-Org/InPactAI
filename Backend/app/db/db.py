@@ -3,19 +3,30 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import os
 from dotenv import load_dotenv
+from urllib.parse import quote_plus
 
 # Load environment variables from .env
 load_dotenv()
 
 # Fetch database credentials
 USER = os.getenv("user")
-PASSWORD = os.getenv("password")
+PASSWORD = quote_plus(os.getenv("password") or "")
+
 HOST = os.getenv("host")
 PORT = os.getenv("port")
 DBNAME = os.getenv("dbname")
 
+# Resolve IPv4 address for HOST to avoid intermittent DNS issues on Windows
+import socket
+try:
+    addrinfo = socket.getaddrinfo(HOST, int(PORT), socket.AF_INET, socket.SOCK_STREAM)
+    HOST_IP = addrinfo[0][4][0] if addrinfo else HOST
+except Exception:
+    HOST_IP = HOST
+
 # Corrected async SQLAlchemy connection string (removed `sslmode=require`)
-DATABASE_URL = f"postgresql+asyncpg://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
+DATABASE_URL = f"postgresql+asyncpg://{USER}:{PASSWORD}@{HOST_IP}:{PORT}/{DBNAME}"
+print(f"DB URL: postgresql+asyncpg://{USER}:***@{HOST_IP}:{PORT}/{DBNAME}")
 
 # Initialize async SQLAlchemy components
 try:
