@@ -42,10 +42,18 @@ async def websocket_endpoint(
 
     except WebSocketDisconnect:
         listener_task.cancel()
+        try:
+            await listener_task
+        except asyncio.CancelledError:
+            pass
         await chat_service.disconnect(user_id, redis, db)
 
     except Exception as e:
         listener_task.cancel()
+        try:
+            await listener_task
+        except asyncio.CancelledError:
+            pass
         await chat_service.disconnect(user_id, redis, db)
         # Optionally log the error
         print(f"Error in websocket for user {user_id}: {e}")
