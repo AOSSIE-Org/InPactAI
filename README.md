@@ -175,7 +175,7 @@ npm run dev
 
 2. Start the backend server (from the backend/app directory):
 ```sh
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
