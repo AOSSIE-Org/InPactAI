@@ -873,8 +873,8 @@ We welcome contributions from the community! Here's how you can help:
 ## 📞 Contact
 
 - **GitHub Issues**: [Create an issue](https://github.com/AOSSIE-Org/InPact/issues)
-- **Discord**: Join our Discord server (link in repository)
-- **Email**: Contact through GitHub profile
+- **Discord**: [Join our Discord Server](https://discord.gg/hjUhu33uAn)
+- **Email**: [aossie.oss@gmail.com](mailto:aossie.oss@gmail.com)
 
 ---
 
