@@ -1,29 +1,22 @@
 # FastAPI router for AI-powered endpoints, including trending niches
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from datetime import date
-from functools import lru_cache
+import asyncio
 import os
 import requests
 import json
-from supabase import create_client, Client
+from supabase import AsyncClient
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 router = APIRouter()
 
 
-def _get_supabase_config() -> tuple[str, str]:
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
-    if not url or not key:
+def get_supabase_client(request: Request) -> AsyncClient:
+    supabase = getattr(request.app.state, "supabase", None)
+    if supabase is None:
         raise HTTPException(status_code=500, detail="Supabase configuration missing on server.")
-    return url, key
-
-
-@lru_cache(maxsize=1)
-def get_supabase_client() -> Client:
-    url, key = _get_supabase_config()
-    return create_client(url, key)
+    return supabase
 
 
 def get_gemini_api_key() -> str:
@@ -64,7 +57,7 @@ def fetch_from_gemini():
     return json.loads(text)
 
 @router.get("/api/trending-niches")
-def trending_niches():
+async def trending_niches(request: Request):
     """
     API endpoint to get trending niches for the current day.
     - If today's data exists in Supabase, return it.
@@ -72,25 +65,25 @@ def trending_niches():
     - If Gemini fails, fallback to the most recent data available.
     """
     today = str(date.today())
-    supabase = get_supabase_client()
+    supabase = get_supabase_client(request)
     # Check if today's data exists in Supabase
-    result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
+    result = await supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
     if not result.data:
         # Fetch from Gemini and store
         try:
-            niches = fetch_from_gemini()
+            niches = await asyncio.to_thread(fetch_from_gemini)
             for niche in niches:
-                supabase.table("trending_niches").insert({
+                await supabase.table("trending_niches").insert({
                     "name": niche["name"],
                     "insight": niche["insight"],
                     "global_activity": int(niche["global_activity"]),
                     "fetched_at": today
                 }).execute()
-            result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
+            result = await supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
         except Exception as e:
             print("Gemini fetch failed:", e)
             # fallback: serve most recent data
-            result = supabase.table("trending_niches").select("*").order("fetched_at", desc=True).limit(6).execute()
+            result = await supabase.table("trending_niches").select("*").order("fetched_at", desc=True).limit(6).execute()
     return result.data
 
 youtube_router = APIRouter(prefix="/youtube", tags=["YouTube"])

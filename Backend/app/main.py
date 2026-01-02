@@ -12,6 +12,7 @@ import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from app.routes import ai
+from supabase import create_client, AsyncClient
 
 # Load environment variables
 load_dotenv()
@@ -32,9 +33,24 @@ async def create_tables():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("App is starting...")
+    # Initialize Supabase async client (non-fatal if missing envs)
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_KEY")
+    if supabase_url and supabase_key:
+        app.state.supabase = create_client(supabase_url, supabase_key, supabase_cls=AsyncClient)
+    else:
+        app.state.supabase = None
+        logging.warning("Supabase configuration missing; related endpoints will return 500 until configured.")
+
     await create_tables()
     await seed_db()
     yield
+    # Close Supabase async client if initialized
+    supabase_client = getattr(app.state, "supabase", None)
+    if supabase_client:
+        close = getattr(supabase_client, "aclose", None)
+        if close:
+            await close()
     print("App is shutting down...")
 
 
