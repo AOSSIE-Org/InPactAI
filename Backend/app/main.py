@@ -37,7 +37,11 @@ async def lifespan(app: FastAPI):
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_KEY")
     if supabase_url and supabase_key:
-        app.state.supabase = create_client(supabase_url, supabase_key, supabase_cls=AsyncClient)
+        try:
+            app.state.supabase = create_client(supabase_url, supabase_key, supabase_cls=AsyncClient)
+        except Exception as exc:  # broad to avoid startup crash; logs include stack
+            app.state.supabase = None
+            logging.exception("Failed to initialize Supabase AsyncClient: %s", exc)
     else:
         app.state.supabase = None
         logging.warning("Supabase configuration missing; related endpoints will return 500 until configured.")
