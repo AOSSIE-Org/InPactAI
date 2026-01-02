@@ -1,6 +1,7 @@
 # FastAPI router for AI-powered endpoints, including trending niches
 from fastapi import APIRouter, HTTPException, Query
 from datetime import date
+from functools import lru_cache
 import os
 import requests
 import json
@@ -8,25 +9,35 @@ from supabase import create_client, Client
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Initialize router
 router = APIRouter()
 
-# Load environment variables for Supabase and Gemini
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Validate required environment variables
-if not all([SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY]):
-    raise ValueError("Missing required environment variables: SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY")
+def _get_supabase_config() -> tuple[str, str]:
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
+    if not url or not key:
+        raise HTTPException(status_code=500, detail="Supabase configuration missing on server.")
+    return url, key
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+@lru_cache(maxsize=1)
+def get_supabase_client() -> Client:
+    url, key = _get_supabase_config()
+    return create_client(url, key)
+
+
+def get_gemini_api_key() -> str:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Gemini API key not configured on server.")
+    return api_key
 
 def fetch_from_gemini():
     prompt = (
         "List the top 6 trending content niches for creators and brands this week. For each, provide: name (the niche), insight (a short qualitative reason why it's trending), and global_activity (a number from 1 to 5, where 5 means very high global activity in this category, and 1 means low).Return as a JSON array of objects with keys: name, insight, global_activity."
     )
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={GEMINI_API_KEY}"
+    gemini_api_key = get_gemini_api_key()
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={gemini_api_key}"
     # Set up retry strategy
     retry_strategy = Retry(
         total=3,
@@ -61,6 +72,7 @@ def trending_niches():
     - If Gemini fails, fallback to the most recent data available.
     """
     today = str(date.today())
+    supabase = get_supabase_client()
     # Check if today's data exists in Supabase
     result = supabase.table("trending_niches").select("*").eq("fetched_at", today).execute()
     if not result.data:

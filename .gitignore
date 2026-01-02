@@ -26,6 +26,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Env files
+.env
+Backend/.env
+Frontend/.env
+
 # Python
 __pycache__/
 *.py[cod]
