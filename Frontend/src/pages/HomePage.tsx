@@ -383,14 +383,14 @@ export default function HomePage() {
   const successStoriesRef = useRef(null);
   const trendingRef = useRef(null);
   const resourcesRef = useRef(null);
-  const footerRef = useRef(null);
+
 
   // State to track visibility (for one-time animation)
   const [isFeaturesVisible, setIsFeaturesVisible] = useState(false);
   const [isSuccessStoriesVisible, setIsSuccessStoriesVisible] = useState(false);
   const [isTrendingVisible, setIsTrendingVisible] = useState(false);
   const [isResourcesVisible, setIsResourcesVisible] = useState(false);
-  const [isFooterVisible, setIsFooterVisible] = useState(false);
+
 
   // One-time animation state
   const [hasAnimatedTrending, setHasAnimatedTrending] = useState(false);
@@ -427,19 +427,7 @@ export default function HomePage() {
   }, [hasAnimatedTrending, hasAnimatedBrands]);
 
   // ... keep other observers for footer, etc. if needed ...
-  useEffect(() => {
-    const footerObserver = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        setIsFooterVisible(entry.isIntersecting);
-      },
-      { root: null, rootMargin: "0px", threshold: 0.1 }
-    );
-    if (footerRef.current) footerObserver.observe(footerRef.current);
-    return () => {
-      if (footerRef.current) footerObserver.unobserve(footerRef.current);
-    };
-  }, []);
+  
 
   // Logged-in user homepage
   if (isAuthenticated && user) {
@@ -651,43 +639,6 @@ export default function HomePage() {
               </div>
             </div>
           </section>
-
-          {/* Footer */}
-          <footer ref={footerRef} className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative">
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-            <div
-              className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
-                isFooterVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-20"
-              }`}
-            >
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="relative">
-                  <Rocket className="h-6 w-6 text-purple-400" />
-                  <div className="absolute -inset-1 bg-purple-400/20 rounded-full blur-sm"></div>
-                </div>
-                <span className="font-bold text-xl">Inpact</span>
-              </div>
-              <p className="text-gray-400">
-                Empowering creators to build meaningful partnerships and grow their businesses.
-              </p>
-              <div className="mt-6 flex justify-center space-x-6 text-sm text-gray-400">
-                <Link to="/dashboard" className="hover:text-white transition-colors">
-                  Dashboard
-                </Link>
-                <Link to="/dashboard/sponsorships" className="hover:text-white transition-colors">
-                  Opportunities
-                </Link>
-                <Link to="/dashboard/analytics" className="hover:text-white transition-colors">
-                  Analytics
-                </Link>
-                <Link to="/dashboard/messages" className="hover:text-white transition-colors">
-                  Messages
-                </Link>
-              </div>
-            </div>
-          </footer>
         </main>
       </div>
     );
@@ -894,43 +845,6 @@ export default function HomePage() {
             <TrendingNichesSection />
           </div>
         </section>
-
-        {/* Footer */}
-        <footer ref={footerRef} className="w-full py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white relative">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-          <div
-            className={`container relative z-10 px-6 md:px-12 text-center transition-all duration-1000 transform ${
-              isFooterVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-20"
-            }`}
-          >
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="relative">
-                <Rocket className="h-6 w-6 text-purple-400" />
-                <div className="absolute -inset-1 bg-purple-400/20 rounded-full blur-sm"></div>
-              </div>
-              <span className="font-bold text-xl">Inpact</span>
-            </div>
-            <p className="text-gray-400">
-              Empowering creators to build meaningful partnerships and grow their businesses.
-            </p>
-            <div className="mt-6 flex justify-center space-x-6 text-sm text-gray-400">
-              <Link to="/dashboard" className="hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/dashboard/sponsorships" className="hover:text-white transition-colors">
-                Opportunities
-              </Link>
-              <Link to="/dashboard/analytics" className="hover:text-white transition-colors">
-                Analytics
-              </Link>
-              <Link to="/dashboard/messages" className="hover:text-white transition-colors">
-                Messages
-              </Link>
-            </div>
-          </div>
-        </footer>
       </main>
     </div>
   );
