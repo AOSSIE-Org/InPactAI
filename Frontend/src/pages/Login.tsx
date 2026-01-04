@@ -48,12 +48,11 @@ export default function LoginPage() {
       console.log("Google login error", error);
       return;
     }
-
-    // AuthContext will handle navigation based on user onboarding status and role
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Header - Now simplified with only the Logo */}
       <div className="flex justify-between items-center p-6">
         <Link
           to="/"
@@ -64,17 +63,6 @@ export default function LoginPage() {
             Inpact
           </span>
         </Link>
-        <div className="flex space-x-4">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            Don't have an account?
-          </span>
-          <Link
-            to="/signup"
-            className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
-          >
-            Sign up
-          </Link>
-        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
@@ -229,6 +217,19 @@ export default function LoginPage() {
                     </svg>
                     Facebook
                   </button>
+                </div>
+
+                {/* --- MOVED AUTH SWITCH LINK --- */}
+                <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Don't have an account?{" "}
+                    <Link
+                      to="/signup"
+                      className="font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
+                    >
+                      Sign up
+                    </Link>
+                  </p>
                 </div>
               </div>
             </div>
