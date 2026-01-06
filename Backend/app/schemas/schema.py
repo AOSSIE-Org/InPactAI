@@ -1,10 +1,22 @@
-from pydantic import BaseModel
-from typing import Optional, Dict
+from pydantic import BaseModel, EmailStr
+from typing import Optional, Dict, Any, List
 from datetime import datetime
+
+
+class LoginResponse(BaseModel):
+    message: str
+    user_id: str
+    email: str
+    name: Optional[str] = None
+    role: Optional[str] = None
+    onboarding_completed: bool = False
+    # The session object from Supabase contains access_token, refresh_token, etc.
+    session: Optional[Dict[str, Any]] = None 
+# --- FIX FOR ISSUE #258 END ---
 
 class UserCreate(BaseModel):
     username: str
-    email: str
+    email: EmailStr  # Uses EmailStr for better validation
     role: str
     profile_image: Optional[str] = None
     bio: Optional[str] = None
