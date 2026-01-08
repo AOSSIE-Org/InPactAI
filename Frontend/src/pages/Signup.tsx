@@ -129,23 +129,23 @@ export default function SignupPage() {
             Inpact
           </span>
         </Link>
-        <div className="flex space-x-4">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            Already have an account?
-          </span>
-          <Link
-            to="/login"
-            className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
-          >
-            Sign in
-          </Link>
-        </div>
+       
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
             <div className="p-8">
+              <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
+  Already have an account?{" "}
+  <Link
+    to="/login"
+    className="font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
+  >
+    Sign in
+  </Link>
+</div>
+
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {step === 1 ? "Create your account" : "Complete your profile"}
               </h2>
