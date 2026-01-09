@@ -117,16 +117,7 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* FIX FOR ISSUE #272: Ensuring input text is visible */
-  input, textarea, select {
-    @apply bg-background text-foreground border-input px-3 py-2 ring-offset-background;
-    color: var(--foreground); /* Forces text color to use project foreground */
-  }
-  
-  input::placeholder {
-    @apply text-muted-foreground;
-  }
-}
+ 
 
 /* Custom Animations */
 @keyframes gradient {
