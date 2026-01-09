@@ -25,6 +25,7 @@ import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
 import CollaborationsPage from "./Collaborations"
+
 import { useNavigate } from "react-router-dom"
 
 // New UX Component Imports
@@ -34,6 +35,7 @@ import EmptyState from "../components/ui/EmptyState"
 export default function DashboardPage() {
   const { logout, user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
+  const [metrics, setMetrics] = useState<any>(null)
   const navigate = useNavigate()
 
   
@@ -45,6 +47,7 @@ export default function DashboardPage() {
       
       const response = await fetch('/api/dashboard/metrics')
       const data = await response.json()
+      setMetrics(data)
       
       setIsLoading(false)
     } catch (error) {
@@ -53,7 +56,7 @@ export default function DashboardPage() {
     }
   }
   fetchDashboardData()
-  } , [])
+  }, [])
   
 
 
@@ -246,7 +249,6 @@ export default function DashboardPage() {
               title="No active sponsorships found"
               description="Our AI is looking for brands that align with your content. Check back in a few hours or update your profile to speed up the process."
               actionText="Update Profile"
-              onAction={() => console.log("Navigate to profile")}
               onAction={() => navigate("/profile")}
             />
           </TabsContent>
