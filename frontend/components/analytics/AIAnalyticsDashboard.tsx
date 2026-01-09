@@ -279,7 +279,7 @@ export default function AIAnalyticsDashboard({
             onChange={(e) => setNlQuery(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleNLQuery()}
             placeholder="Ask a question about your analytics data... (e.g., 'What's my average engagement rate?')"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           <button
             onClick={handleNLQuery}
