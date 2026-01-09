@@ -15,8 +15,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_KEY")
 
 # Test user credentials (update with your test account)
-TEST_EMAIL = "test@example.com"
-TEST_PASSWORD = "Test123!@#"
+TEST_EMAIL = "anu906162@gmail.com"
+TEST_PASSWORD = "@rani00@"
 
 
 def get_jwt_token():

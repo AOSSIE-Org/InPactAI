@@ -169,4 +169,3 @@ def get_password_hash(password: str) -> str:
         return pwd_context.hash(password)
     except ImportError:
         raise ImportError("passlib is required for password hashing. Install with: pip install passlib[bcrypt]")
-
