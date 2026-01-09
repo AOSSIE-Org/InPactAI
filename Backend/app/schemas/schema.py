@@ -6,7 +6,7 @@ from datetime import datetime
 class LoginResponse(BaseModel):
     message: str
     user_id: str
-    email: str
+    email: EmailStr
     name: Optional[str] = None
     role: Optional[str] = None
     onboarding_completed: bool = False

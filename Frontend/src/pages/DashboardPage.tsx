@@ -25,6 +25,7 @@ import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
 import CollaborationsPage from "./Collaborations"
+import { useNavigate } from "react-router-dom"
 
 // New UX Component Imports
 import Skeleton from "../components/ui/Skeleton"
@@ -33,12 +34,28 @@ import EmptyState from "../components/ui/EmptyState"
 export default function DashboardPage() {
   const { logout, user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
 
-  // Simulate data fetching on mount
+  
+  
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500)
-    return () => clearTimeout(timer)
-  }, [])
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      
+      const response = await fetch('/api/dashboard/metrics')
+      const data = await response.json()
+      
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+      setIsLoading(false)
+    }
+  }
+  fetchDashboardData()
+  } , [])
+  
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[hsl(0,0%,100%)] text-[hsl(222.2,84%,4.9%)] dark:bg-slate-950 dark:text-slate-50">
@@ -230,6 +247,7 @@ export default function DashboardPage() {
               description="Our AI is looking for brands that align with your content. Check back in a few hours or update your profile to speed up the process."
               actionText="Update Profile"
               onAction={() => console.log("Navigate to profile")}
+              onAction={() => navigate("/profile")}
             />
           </TabsContent>
 
@@ -237,14 +255,14 @@ export default function DashboardPage() {
             <CollaborationsPage showHeader={false} />
           </TabsContent>
 
-          {/* --- ANALYTICS TAB WITH EMPTY STATE --- */}
+          
           <TabsContent value="analytics" className="space-y-4">
             <EmptyState
               icon={TrendingUp}
               title="Analytics Data Pending"
               description="We need at least 24 hours of data to generate your first growth report. Keep creating content!"
               actionText="Connect YouTube/Instagram"
-              onAction={() => console.log("Navigate to connections")}
+              onAction={() => navigate("/settings/connections")}
             />
           </TabsContent>
         </Tabs>
