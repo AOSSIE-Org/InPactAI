@@ -1,6 +1,6 @@
-# Configuration settings for FastAPI app
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Dict, Any
+import json
 
 class Settings(BaseSettings):
     # Supabase Configuration
@@ -26,11 +26,15 @@ class Settings(BaseSettings):
     # Application Settings
     app_name: Optional[str] = None
 
-    # JWT Authentication
-    SUPABASE_JWT_SECRET: str  # JWT Secret from Supabase Dashboard → Settings → API → JWT Settings
+    # JWT Authentication (RAW JSON STRING)
+    SUPABASE_JWT_PUBLIC_KEY: str
 
     model_config = {
         "env_file": ".env"
     }
+
+    @property
+    def supabase_jwt_jwk(self) -> Dict[str, Any]:
+        return json.loads(self.SUPABASE_JWT_PUBLIC_KEY)
 
 settings = Settings()
