@@ -84,15 +84,15 @@ Ensure you have the following installed:
 #### 1. Clone the repository
 
 ```sh
-git clone https://github.com/AOSSIE-Org/InPact.git
-cd inpact
+git clone https://github.com/AOSSIE-Org/InPactAI.git
+cd InPactAI
 ```
 
 #### 2. Frontend Setup
 
 1. Navigate to the frontend directory:
 ```sh
-cd frontend
+cd Frontend
 ```
 
 2. Install dependencies:
@@ -116,23 +116,34 @@ npm install
 
 1. Navigate to the backend directory:
 ```sh
-cd ../backend
+cd Backend
 ```
 
-2. Install dependencies:
+2. Create a virtual environment
+```sh
+python -m venv venv
+```
+
+3. Activate the virtual environment
+```sh
+venv\Scripts\activate
+```
+
+4. Install dependencies:
 ```sh
 pip install -r requirements.txt
 ```
 
-
-3. Navigate to the app directory:
+5. Navigate to the app directory:
 ```sh
 cd app
 ```
 
-4. Create a `.env` file using `.env-example` as a reference.
+6. Create a `.env` file
 
-5. Obtain Supabase credentials:
+   - Use `.env-example` file as reference
+
+7. Obtain Supabase credentials:
 
    - Go to [Supabase](https://supabase.com/)
    - Log in and create a new project
@@ -161,9 +172,63 @@ cd app
      ```
 
 
-6. Get the Groq API key:
+8. Get the Groq API key:
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file
+
+9. Get the YouTube API key:
+   - Visit [Groq Console](https://console.cloud.google.com/)
+   - Sign in with your Google Account
+   - Select "Default Project" or Create "New Project", Look at the top
+   - In sidebar go to "APIs & Services" then click "Library"
+   - Serach "YouTube Data API v3"
+   - Click Enable
+   - Now again go to "APIs & Services" then click "Credentials"
+   - Click "Create Credentials" then "API key"
+   - Click "Show Key" and copy the API key and paste it into the `.env` file
+
+10. Get the Gemini API key:
+   - Visit [Google AI Studio](https://aistudio.google.com/)
+   - SignIn/SignUp with Google account
+   - Click "API Keys" left side panel
+   - Click "Create API Key"
+   - Name your key "..." and select "Default Gemini Project"
+   - Click "Create key"
+   - Paste the API Key into the `.env` file
+
+11. Final `.env` file should look:
+
+   ```sh
+   SUPABASE_URL=[URL]
+   SUPABASE_KEY=[URL]
+
+   user=postgres
+   password=[YOUR-PASSWORD]
+   host=db.wveftanaurduixkyijhf.supabase.co
+   port=5432
+   dbname=postgres
+
+   GROQ_API_KEY=[URL]
+
+   GEMINI_API_KEY=[URL]
+   ```
+
+   [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
+
+   ```sh
+   SUPABASE_URL=[URL]
+   SUPABASE_KEY=[URL]
+
+   user=postgres.<project>
+   password=[YOUR-PASSWORD]
+   host=aws-<location>.pooler.supabase.com
+   port=5432
+   dbname=postgres
+
+   GROQ_API_KEY=[URL]
+
+   GEMINI_API_KEY=[URL]
+   ```
 
 #### 4. Start Development Servers
 
@@ -173,9 +238,9 @@ cd app
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+2. Start the backend server (from the backend directory):
 ```sh
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
