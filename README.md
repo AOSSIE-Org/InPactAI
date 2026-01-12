@@ -176,7 +176,18 @@ cd app
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file
 
-9. Get the Gemini API key:
+9. Get the YouTube API key:
+   - Visit [Groq Console](https://console.cloud.google.com/)
+   - Sign in with your Google Account
+   - Select "Default Project" or Create "New Project", Look at the top
+   - In sidebar go to "APIs & Services" then click "Library"
+   - Serach "YouTube Data API v3"
+   - Click Enable
+   - Now again go to "APIs & Services" then click "Credentials"
+   - Click "Create Credentials" then "API key"
+   - Click "Show Key" and copy the API key and paste it into the `.env` file
+
+10. Get the Gemini API key:
    - Visit [Google AI Studio](https://aistudio.google.com/)
    - SignIn/SignUp with Google account
    - Click "API Keys" left side panel
@@ -185,7 +196,7 @@ cd app
    - Click "Create key"
    - Paste the API Key into the `.env` file
 
-10. Final `.env` file should look:
+11. Final `.env` file should look:
 
    ```sh
    SUPABASE_URL=[URL]
