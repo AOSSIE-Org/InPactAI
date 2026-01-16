@@ -167,7 +167,9 @@ export default function ResetPasswordPage() {
                   <div className="relative">
                     <input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -283,7 +285,9 @@ export default function ResetPasswordPage() {
                   <div className="relative">
                     <input
                       id="confirmPassword"
+                      name="confirmPassword"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required

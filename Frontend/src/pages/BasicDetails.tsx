@@ -72,6 +72,8 @@ export default function BasicDetails() {
           <Label htmlFor="firstName">First Name</Label>
           <Input
             id="firstName"
+            name="firstName"
+            autoComplete="given-name"
             placeholder="John"
             className="border border-gray-300"
           />
@@ -80,6 +82,8 @@ export default function BasicDetails() {
           <Label htmlFor="lastName">Last Name</Label>
           <Input
             id="lastName"
+            name="lastName"
+            autoComplete="family-name"
             placeholder="Doe"
             className="border border-gray-300"
           />
@@ -89,7 +93,9 @@ export default function BasicDetails() {
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
+          name="email"
           type="email"
+          autoComplete="email"
           placeholder="john@example.com"
           className="border border-gray-300"
         />
@@ -98,7 +104,9 @@ export default function BasicDetails() {
         <Label htmlFor="phone">Phone Number</Label>
         <Input
           id="phone"
+          name="phone"
           type="tel"
+          autoComplete="tel"
           placeholder="+1 (555) 000-0000"
           className="border border-gray-300"
         />
@@ -224,11 +232,11 @@ export default function BasicDetails() {
           Brand Information
         </h3>
         <Label htmlFor="companyName">Company Name</Label>
-        <Input id="companyName" placeholder="Brand Inc." />
+        <Input id="companyName" name="companyName" autoComplete="organization" placeholder="Brand Inc." />
       </div>
       <div className="space-y-2">
         <Label htmlFor="website">Company Website</Label>
-        <Input id="website" type="url" placeholder="https://www.example.com" />
+        <Input id="website" name="website" type="url" autoComplete="url" placeholder="https://www.example.com" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
