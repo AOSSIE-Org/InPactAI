@@ -6,6 +6,24 @@ import { supabase } from "../utils/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { demoInsert } from '../utils/demoInsert';
 
+/**
+ * SignupPage Component
+ * 
+ * Handles new user registration with comprehensive form validation.
+ * Implements accessibility features including autocomplete attributes
+ * for improved UX and WCAG 2.1 compliance.
+ * 
+ * Features:
+ * - Multi-step registration process
+ * - Account type selection (influencer/brand)
+ * - Email/password validation
+ * - Password confirmation matching
+ * - Demo data insertion for new users
+ * - Autocomplete attributes for browser autofill (autoComplete="new-password")
+ * 
+ * @component
+ * @returns {JSX.Element} The signup page with registration form
+ */
 export default function SignupPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -21,16 +39,37 @@ export default function SignupPage() {
   const [user, setuser] = useState("influencer");
   const { login } = useAuth();
 
+  /**
+   * Handles input field changes and updates form state
+   * 
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   * @returns {void}
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Updates the selected account type (influencer or brand)
+   * 
+   * @param {string} type - Account type to set
+   * @returns {void}
+   */
   const handleAccountTypeChange = (type: string) => {
     setuser(type);
     setFormData((prev) => ({ ...prev, accountType: type }));
   };
 
+  /**
+   * Handles form submission for user registration
+   * 
+   * Validates password confirmation, creates new user account via Supabase,
+   * inserts demo data, and navigates to appropriate onboarding flow.
+   * 
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {

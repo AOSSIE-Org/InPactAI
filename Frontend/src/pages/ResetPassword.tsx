@@ -4,6 +4,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Check, Eye, EyeOff, Rocket } from "lucide-react";
 import { supabase } from "../utils/supabase";
 
+/**
+ * ResetPasswordPage Component
+ * 
+ * Allows users to reset their password after receiving a reset link.
+ * Implements security best practices and accessibility features.
+ * 
+ * Features:
+ * - Password strength validation
+ * - Password confirmation matching
+ * - Visual password strength indicator
+ * - Auto-redirect after successful reset
+ * - Autocomplete attributes (autoComplete="new-password") for password managers
+ * - WCAG 2.1 compliant form inputs
+ * 
+ * @component
+ * @returns {JSX.Element} The password reset page with validation
+ */
 export default function ResetPasswordPage() {
   const router = useNavigate();
   const searchParams = useParams();
@@ -41,6 +58,16 @@ export default function ResetPasswordPage() {
     };
   }, [isSuccess, router]);
 
+  /**
+   * Handles password reset form submission
+   * 
+   * Validates password match and strength, then updates user password
+   * via Supabase authentication. Shows success message and redirects
+   * to dashboard on successful reset.
+   * 
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 

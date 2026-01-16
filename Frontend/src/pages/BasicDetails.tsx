@@ -33,12 +33,40 @@ import { UserNav } from "../components/user-nav";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "../components/mode-toggle";
 
+/**
+ * BasicDetails Component
+ * 
+ * Multi-step onboarding form for collecting user profile information.
+ * Supports both influencer and brand account types with different workflows.
+ * 
+ * Features:
+ * - Multi-step form with animated transitions
+ * - Role-specific fields (influencer vs brand)
+ * - Social media profile collection
+ * - Contact information capture
+ * - Autocomplete attributes for all input fields:
+ *   - given-name/family-name for names
+ *   - email for email addresses
+ *   - tel for phone numbers
+ *   - organization for company names
+ *   - url for website fields
+ * - WCAG 2.1 compliant form inputs for accessibility
+ * 
+ * @component
+ * @returns {JSX.Element} The onboarding details form
+ */
 export default function BasicDetails() {
   const { user } = useParams();
   const [step, setStep] = useState(0);
   const [animationDirection, setAnimationDirection] = useState(0);
 
   const totalSteps = user === "influencer" ? 3 : 2;
+  
+  /**
+   * Advances to the next step in the onboarding flow
+   * 
+   * @returns {void}
+   */
   const nextStep = () => {
     if ((user === "influencer" && step < 2) || (user === "brand" && step < 1)) {
       setAnimationDirection(1);
@@ -48,6 +76,11 @@ export default function BasicDetails() {
     }
   };
 
+  /**
+   * Returns to the previous step in the onboarding flow
+   * 
+   * @returns {void}
+   */
   const prevStep = () => {
     if (step > 0) {
       setAnimationDirection(-1);

@@ -3,6 +3,23 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Check, Rocket } from "lucide-react";
 import { supabase } from "../utils/supabase";
 
+/**
+ * ForgotPasswordPage Component
+ * 
+ * Handles password reset request initiation by sending reset links
+ * to registered user emails. Includes validation and user feedback.
+ * 
+ * Features:
+ * - Email validation against user database
+ * - Secure password reset link generation via Supabase
+ * - Case-sensitive email handling
+ * - New user detection with signup prompt
+ * - Autocomplete attribute (autoComplete="email") for browser autofill
+ * - WCAG 2.1 accessible form inputs
+ * 
+ * @component
+ * @returns {JSX.Element} The forgot password page with email form
+ */
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -10,6 +27,16 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
 
+  /**
+   * Handles forgot password form submission
+   * 
+   * Validates that the email exists in the database, then sends a
+   * password reset link via Supabase Auth. Provides appropriate
+   * feedback for both existing and non-existing emails.
+   * 
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
