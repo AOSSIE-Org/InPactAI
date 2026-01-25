@@ -329,7 +329,7 @@ export default function CampaignWallPage() {
                     placeholder="Max Budget"
                     value={budgetMax}
                     onChange={(e) => setBudgetMax(e.target.value)}
-                    className="w-34 rounded-lg border  text-black border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                    className="w-34 rounded-lg border text-black border-gray-300 px-3 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
                     min={0}
                   />
                   <button
