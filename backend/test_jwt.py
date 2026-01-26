@@ -6,6 +6,7 @@ Run: python test_jwt.py
 import requests
 import os
 from dotenv import load_dotenv
+from jose import jwt, JWTError
 
 load_dotenv()
 
@@ -15,8 +16,10 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_KEY")
 
 # Test user credentials (update with your test account)
-TEST_EMAIL = "test@example.com"
-TEST_PASSWORD = "Test123!@#"
+TEST_EMAIL = "anu906162@gmail.com"
+TEST_PASSWORD = "@rani00@"
+# @rani00@
+
 
 
 def get_jwt_token():
@@ -107,3 +110,4 @@ if __name__ == "__main__":
 
     print("=== Tests Complete ===")
 
+ 

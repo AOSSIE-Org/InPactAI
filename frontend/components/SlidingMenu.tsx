@@ -253,7 +253,7 @@ export default function SlidingMenu({ role }: Props) {
           </ul>
         </nav>
 
-        <div className="mt-auto p-4 text-sm text-slate-500">
+        <div className="mb-0 p-4 text-sm text-slate-500">
           <p>
             Logged in as{" "}
             <strong className="text-slate-700 dark:text-slate-200">

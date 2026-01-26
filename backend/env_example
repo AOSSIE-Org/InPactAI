@@ -33,4 +33,4 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 # Location: Dashboard → Project Settings → API → JWT Settings → JWT Secret
 # Use the JWT Secret (NOT the anon key!)
 
-SUPABASE_JWT_SECRET=your-jwt-secret-from-supabase-dashboard
+SUPABASE_JWT_SECRET=your_jwt_key
