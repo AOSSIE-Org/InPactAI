@@ -47,9 +47,10 @@ const ShootingStars = () => {
             speed: Math.random() * 0.05,
         }));
 
-        // Shooting Stars
         let shootingStars: ShootingStar[] = [];
         let shootingStarId = 0;
+        let animationId: number;
+        let isActive = true;
 
         const createShootingStar = (): ShootingStar => {
             const startX = Math.random() * canvas.width;
@@ -67,6 +68,7 @@ const ShootingStars = () => {
         };
 
         const animate = () => {
+            if (!isActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw Static Stars
@@ -128,12 +130,13 @@ const ShootingStars = () => {
                 }
             });
 
-            requestAnimationFrame(animate);
+            animationId = requestAnimationFrame(animate);
         };
 
-        const animationId = requestAnimationFrame(animate);
+        animationId = requestAnimationFrame(animate);
 
         return () => {
+            isActive = false;
             window.removeEventListener('resize', handleResize);
             cancelAnimationFrame(animationId);
         };

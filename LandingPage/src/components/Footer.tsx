@@ -34,8 +34,8 @@ const Footer = () => {
     {
       title: 'Legal',
       links: [
-        { label: 'Privacy', href: '#' },
-        { label: 'Terms', href: '#' },
+        { label: 'Privacy', href: '/privacy' },
+        { label: 'Terms', href: '/legal' },
         { label: 'Security', href: '#' },
       ]
     }
@@ -63,9 +63,9 @@ const Footer = () => {
               Empowering brands and creators to build meaningful partnerships through data-driven intelligence and AI automation.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-gray-500 hover:text-white transition-colors"><Twitter className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-500 hover:text-white transition-colors"><Github className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-500 hover:text-white transition-colors"><Linkedin className="w-5 h-5" /></a>
+              <a href="#" className="text-gray-500 hover:text-white transition-colors" aria-label="Follow on Twitter"><Twitter className="w-5 h-5" /></a>
+              <a href="#" className="text-gray-500 hover:text-white transition-colors" aria-label="View GitHub profile"><Github className="w-5 h-5" /></a>
+              <a href="#" className="text-gray-500 hover:text-white transition-colors" aria-label="Connect on LinkedIn"><Linkedin className="w-5 h-5" /></a>
             </div>
           </div>
 

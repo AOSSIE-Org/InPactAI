@@ -78,6 +78,8 @@ const Navbar = () => {
             setIsScrolled(window.scrollY > 20);
         };
         window.addEventListener('scroll', handleScroll);
+        // Sync state on mount
+        handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 

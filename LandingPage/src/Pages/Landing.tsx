@@ -58,10 +58,14 @@ const Typewriter = ({ text, delay = 0, className }: { text: string; delay?: numb
           clearInterval(interval);
         }
       }, 50); // Typing speed
+
+      // Cleanup for interval inside timeout
       return () => clearInterval(interval);
     }, delay * 1000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [text, delay]);
 
   return (
@@ -317,7 +321,7 @@ function Landing() {
                   whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="group relative p-8 md:p-10 flex flex-col items-center text-center transaction-colors duration-300"
+                  className="group relative p-8 md:p-10 flex flex-col items-center text-center transition-colors duration-300"
                 >
                   {/* Horizontal Divider for mobile (except first) */}
                   {index > 0 && <div className="absolute top-0 left-8 right-8 h-[1.5px] bg-white/[0.15] md:hidden shadow-[0_0_8px_rgba(255,255,255,0.2)]" />}
