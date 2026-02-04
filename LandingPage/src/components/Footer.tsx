@@ -57,7 +57,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
                 <span className="text-white font-bold text-xs tracking-tight">IP</span>
               </div>
-              <span className="text-lg font-bold text-white tracking-tight">InpactAI</span>
+              <span className="text-lg font-bold text-white tracking-tight">InPactAI</span>
             </div>
             <p className="text-sm text-gray-400 mb-6 leading-relaxed max-w-xs">
               Empowering brands and creators to build meaningful partnerships through data-driven intelligence and AI automation.
@@ -90,7 +90,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-600">
-            &copy; {currentYear} InpactAI Inc. All rights reserved.
+            &copy; {currentYear} InPactAI Inc. All rights reserved.
           </p>
 
           <div className="flex items-center gap-6">

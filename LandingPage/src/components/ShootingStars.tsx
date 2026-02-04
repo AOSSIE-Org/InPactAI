@@ -89,7 +89,7 @@ const ShootingStars = () => {
                 shootingStars.push(createShootingStar());
             }
 
-            shootingStars.forEach((star, index) => {
+            shootingStars = shootingStars.filter((star) => {
                 star.x += Math.cos(star.angle) * star.speed;
                 star.y += Math.sin(star.angle) * star.speed;
                 star.opacity -= 0.01;
@@ -120,14 +120,12 @@ const ShootingStars = () => {
                 ctx.arc(star.x, star.y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Remove if off screen or faded
-                if (
-                    star.x > canvas.width + 100 ||
-                    star.y > canvas.height + 100 ||
-                    star.opacity <= 0
-                ) {
-                    shootingStars.splice(index, 1);
-                }
+                // Return true to keep if not off screen or faded
+                return (
+                    star.x <= canvas.width + 100 &&
+                    star.y <= canvas.height + 100 &&
+                    star.opacity > 0
+                );
             });
 
             animationId = requestAnimationFrame(animate);

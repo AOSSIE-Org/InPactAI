@@ -302,7 +302,7 @@ function Landing() {
               Features
             </span>
             <h2 className="mt-6 text-4xl font-bold tracking-[-0.02em] text-white">
-              What's inside InpactAI?
+              What's inside InPactAI?
             </h2>
             <p className="mt-4 text-gray-400 max-w-lg mx-auto">
               500+ flexible components with developer-friendly codebase.
@@ -413,7 +413,7 @@ function Landing() {
               Join the revolution
             </h2>
             <p className="mt-6 text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed font-light">
-              Be the first to experience how InpactAI is transforming creator-brand collaboration.
+              Be the first to experience how InPactAI is transforming creator-brand collaboration.
             </p>
 
             <div className="mt-16 flex justify-center">
