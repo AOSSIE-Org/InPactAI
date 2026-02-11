@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, Eye, EyeOff, Rocket } from "lucide-react";
@@ -42,7 +41,6 @@ export default function SignupPage() {
     try {
       const { name, email, password } = formData;
       
-      // Check if user already exists
       const { data: existingUser } = await supabase.auth.signInWithPassword({
         email,
         password: "dummy-password-to-check-existence",
@@ -69,7 +67,6 @@ export default function SignupPage() {
         return;
       }
       setIsLoading(false);
-      // AuthContext will handle navigation based on user onboarding status and role
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -86,8 +83,6 @@ export default function SignupPage() {
       console.log("Google login error", error);
       return;
     }
-
-    // AuthContext will handle navigation based on user onboarding status and role
   };
 
   const passwordStrength = () => {
@@ -119,6 +114,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Header - Simplified */}
       <div className="flex justify-between items-center p-6">
         <Link
           to="/"
@@ -129,17 +125,6 @@ export default function SignupPage() {
             Inpact
           </span>
         </Link>
-        <div className="flex space-x-4">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            Already have an account?
-          </span>
-          <Link
-            to="/login"
-            className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
-          >
-            Sign in
-          </Link>
-        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
@@ -221,6 +206,19 @@ export default function SignupPage() {
                   </div>
                 </div>
               )}
+
+              {/* --- MOVED AUTH SWITCH LINK --- */}
+              <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors duration-200"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
             </div>
           </div>
         </div>
