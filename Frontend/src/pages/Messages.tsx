@@ -234,7 +234,7 @@ export default function MessagesPage() {
         </div>
       </header>
       {/* Old Code */}
-      <main className="flex-1 hidden">
+      <main id="main-content" tabIndex={-1} className="flex-1 hidden">
         {/* Sidebar */}
         <div className="w-full md:w-175 border-r flex flex-col bg-white dark:bg-gray-900">
           {/* Search Input */}
