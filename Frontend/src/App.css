@@ -1,0 +1,58 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--background);
+  color: var(--foreground);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+button, a, input, select, textarea {
+  transition: all 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.card {
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.card:hover {
+  border-color: var(--foreground);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--foreground);
+  box-shadow: 0 0 0 2px rgba(23, 23, 23, 0.05);
+}
+
+.dark input:focus, .dark textarea:focus, .dark select:focus {
+  box-shadow: 0 0 0 2px rgba(237, 237, 237, 0.05);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
