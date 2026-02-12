@@ -6,6 +6,24 @@ import { supabase } from "../utils/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { demoInsert } from '../utils/demoInsert';
 
+/**
+ * SignupPage Component
+ * 
+ * Handles new user registration with comprehensive form validation.
+ * Implements accessibility features including autocomplete attributes
+ * for improved UX and WCAG 2.1 compliance.
+ * 
+ * Features:
+ * - Multi-step registration process
+ * - Account type selection (influencer/brand)
+ * - Email/password validation
+ * - Password confirmation matching
+ * - Demo data insertion for new users
+ * - Autocomplete attributes for browser autofill (autoComplete="new-password")
+ * 
+ * @component
+ * @returns {JSX.Element} The signup page with registration form
+ */
 export default function SignupPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -21,16 +39,37 @@ export default function SignupPage() {
   const [user, setuser] = useState("influencer");
   const { login } = useAuth();
 
+  /**
+   * Handles input field changes and updates form state
+   * 
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   * @returns {void}
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Updates the selected account type (influencer or brand)
+   * 
+   * @param {string} type - Account type to set
+   * @returns {void}
+   */
   const handleAccountTypeChange = (type: string) => {
     setuser(type);
     setFormData((prev) => ({ ...prev, accountType: type }));
   };
 
+  /**
+   * Handles form submission for user registration
+   * 
+   * Validates password confirmation, creates new user account via Supabase,
+   * inserts demo data, and navigates to appropriate onboarding flow.
+   * 
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -164,15 +203,15 @@ export default function SignupPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                  <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="you@example.com" />
+                  <input id="email" name="email" type="email" autoComplete="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="you@example.com" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-                  <input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Password" />
+                  <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Password" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
-                  <input id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Confirm Password" />
+                  <input id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} autoComplete="new-password" value={formData.confirmPassword} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" placeholder="Confirm Password" />
                 </div>
                 <button type="submit" className="w-full py-3 px-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200" disabled={isLoading}>{isLoading ? "Signing up..." : "Sign Up"}</button>
               </form>
