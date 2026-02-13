@@ -11,6 +11,11 @@ const platforms = [
   { name: "TikTok", icon: "/tiktok.png" },
 ];
 
+type Readonlyfield = {
+  value: string;
+  label: string;
+}
+
 const steps = [
   "Role Selection",
   "Personal Details",
@@ -987,69 +992,120 @@ export default function Onboarding() {
       setBrandSubmitting(false);
     }
   };
-  const renderBrandReviewStep = () => (
+
+  // custom inputs for the displayed details
+  const ReadOnlyField: React.FC<Readonlyfield> = ({ label, value }) => (
+  <div className="flex flex-col">
+    <label className="text-sm font-medium text-gray-600 mb-1">{label}</label>
+    <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-800 text-sm hover:border-purple-600">
+      {value && value.length > 0 ? value : <span className="text-gray-400">—</span>}
+    </div>
+  </div>
+);
+
+const renderBrandReviewStep = () => (
+  <div className="bg-white rounded-2xl shadow-sm p-6 space-y-8">
+    <h2 className="text-3xl font-bold text-gray-800 border-b pb-3">Review & Submit</h2>
+
+    {/* Logo */}
     <div>
-      <h2 className="text-2xl font-bold mb-4">Review & Submit</h2>
-      <div className="mb-4">
-        <label className="block font-medium mb-2">Logo</label>
-        {(brandLogoPreview || brandData.logo) ? (
-          <img src={brandLogoPreview || (brandData.logo ? URL.createObjectURL(brandData.logo) : undefined)} alt="Logo Preview" className="h-16 w-16 rounded-full object-cover border mb-2" />
-        ) : (
-          <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">No Logo</div>
-        )}
+      <label className="block text-sm font-semibold text-gray-600 mb-2">Logo</label>
+      {(brandLogoPreview || brandData.logo) ? (
+        <img
+          src={brandLogoPreview || (brandData.logo ? URL.createObjectURL(brandData.logo) : undefined)}
+          alt="Logo Preview"
+          className="h-20 w-20 rounded-full object-cover border"
+        />
+      ) : (
+        <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-purple-600">
+          No Logo
+        </div>
+      )}
+    </div>
+
+    {/* Brand Details */}
+    <section>
+      <h3 className="text-lg font-semibold text-purple-500 mb-3">Brand Details</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ReadOnlyField label="Name" value={brandData.brand_name} />
+        <ReadOnlyField label="Website" value={brandData.website_url} />
+        <ReadOnlyField label="Industry" value={brandData.industry} />
+        <ReadOnlyField label="Company Size" value={brandData.company_size} />
+        <ReadOnlyField label="Location" value={brandData.location} />
+        <ReadOnlyField label="Description" value={brandData.description} />
       </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Brand Details</h3>
-        <ul className="text-sm">
-          <li><b>Name:</b> {brandData.brand_name}</li>
-          <li><b>Website:</b> {brandData.website_url}</li>
-          <li><b>Industry:</b> {brandData.industry}</li>
-          <li><b>Company Size:</b> {brandData.company_size}</li>
-          <li><b>Location:</b> {brandData.location}</li>
-          <li><b>Description:</b> {brandData.description}</li>
-        </ul>
+    </section>
+
+    {/* Contact Info */}
+    <section>
+      <h3 className="text-lg font-semibold text-purple-500 mb-3">Contact Information</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ReadOnlyField label="Contact Person" value={brandData.contact_person} />
+        <ReadOnlyField label="Email" value={brandData.contact_email} />
+        <ReadOnlyField label="Phone" value={brandData.contact_phone} />
+        <ReadOnlyField label="Role" value={brandData.role} />
       </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Contact Information</h3>
-        <ul className="text-sm">
-          <li><b>Contact Person:</b> {brandData.contact_person}</li>
-          <li><b>Email:</b> {brandData.contact_email}</li>
-          <li><b>Phone:</b> {brandData.contact_phone}</li>
-          <li><b>Role:</b> {brandData.role}</li>
-        </ul>
+    </section>
+
+    {/* Platforms */}
+    <section>
+      <h3 className="text-lg font-semibold text-purple-500 mb-3">Platforms & Social Links</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {brandData.platforms.map(platform => {
+          const key = allBrandPlatforms.find(p => p.name === platform)?.key;
+          return (
+            <ReadOnlyField
+              key={platform}
+              label={platform}
+              value={key ? brandData.social_links[key] : ""}
+            />
+          );
+        })}
       </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Platforms & Social Links</h3>
-        <ul className="text-sm">
-          {brandData.platforms.map(platform => {
-            const key = allBrandPlatforms.find(p => p.name === platform)?.key;
-            return (
-              <li key={platform}><b>{platform}:</b> {key ? brandData.social_links[key] : ""}</li>
-            );
-          })}
-        </ul>
+    </section>
+
+    {/* Collaboration Preferences */}
+    <section>
+      <h3 className="text-lg font-semibold text-purple-500 mb-3">Collaboration Preferences</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ReadOnlyField
+          label="Collaboration Types"
+          value={brandData.collaboration_types.join(", ")}
+        />
+        <ReadOnlyField
+          label="Preferred Creator Categories"
+          value={brandData.preferred_creator_categories.join(", ")}
+        />
+        <ReadOnlyField label="Brand Values" value={brandData.brand_values.join(", ")} />
+        <ReadOnlyField label="Preferred Tone" value={brandData.preferred_tone.join(", ")} />
       </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Collaboration Preferences</h3>
-        <ul className="text-sm">
-          <li><b>Collaboration Types:</b> {brandData.collaboration_types.join(", ")}</li>
-          <li><b>Preferred Creator Categories:</b> {brandData.preferred_creator_categories.join(", ")}</li>
-          <li><b>Brand Values:</b> {brandData.brand_values.join(", ")}</li>
-          <li><b>Preferred Tone:</b> {brandData.preferred_tone.join(", ")}</li>
-        </ul>
+    </section>
+
+    {/* Status + Button */}
+    {brandSubmitError && (
+      <div className="text-red-500 text-sm bg-red-50 border border-red-100 p-3 rounded-lg">
+        {brandSubmitError}
       </div>
-      {brandSubmitError && <div className="text-red-500 text-sm mb-2">{brandSubmitError}</div>}
-      {brandSubmitSuccess && <div className="text-green-600 text-sm mb-2">{brandSubmitSuccess}</div>}
+    )}
+    {brandSubmitSuccess && (
+      <div className="text-green-600 text-sm bg-green-50 border border-green-100 p-3 rounded-lg">
+        {brandSubmitSuccess}
+      </div>
+    )}
+
+    <div className="pt-4 border-t">
       <button
         type="button"
         onClick={handleBrandSubmit}
         disabled={brandSubmitting}
-        className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50"
+        className="w-full sm:w-auto px-8 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold shadow transition disabled:opacity-50"
       >
-        {brandSubmitting ? 'Submitting...' : 'Submit'}
+        {brandSubmitting ? "Submitting..." : "Submit"}
       </button>
     </div>
-  );
+  </div>
+);
+
 
   // Persist and restore brand onboarding state
   useEffect(() => {
