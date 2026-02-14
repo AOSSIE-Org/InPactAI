@@ -1,35 +1,27 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-// import Lenis from '@studio-freight/lenis';
-import Landing from '../src/Pages/Landing';
-import PrivacyPolicy from './Pages/Privacy';
-import TermsOfService from './Pages/Legal';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Landing from './Pages/Landing';
+import Privacy from './Pages/Privacy';
+import Legal from './Pages/Legal';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import LayoutFrame from './components/LayoutFrame';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
-  // useEffect(() => {
-  //   const lenis = new Lenis({
-  //     duration: 1.2,
-  //     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-  //     smoothWheel: true,
-  //   });
-
-  //   function raf(time: number) {
-  //     lenis.raf(time);
-  //     requestAnimationFrame(raf);
-  //   }
-
-  //   requestAnimationFrame(raf);
-  // }, []);
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        {/* <Route path="*" element={<Landing />} /> */}
-      </Routes>
-      {/* <Toaster position="top-right" /> */}
-    </BrowserRouter>
+    <Router>
+      <ScrollToTop />
+      <div className='bg-[#0a0a0b] min-h-screen relative text-white antialiased selection:bg-purple-500/30 font-sans'>
+        <LayoutFrame />
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/legal" element={<Legal />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 

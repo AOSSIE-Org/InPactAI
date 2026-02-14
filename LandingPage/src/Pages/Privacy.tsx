@@ -1,130 +1,150 @@
 import React, { useEffect } from 'react';
-import Navbar from '../components/Header';
-import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
+
+const RulerMarks = ({ side }: { side: 'left' | 'right' }) => {
+    const marks = [100, 200, 300, 400, 500, 600, 700, 800];
+    return (
+        <div className={`absolute ${side === 'left' ? 'left-0' : 'right-0'} top-0 bottom-0 w-8 pointer-events-none`}>
+            <div className={`absolute ${side === 'left' ? 'right-0' : 'left-0'} top-0 bottom-0 w-px bg-white/[0.08]`} />
+            {marks.map((num) => (
+                <div
+                    key={num}
+                    className={`absolute ${side === 'left' ? 'right-2' : 'left-2'} flex items-center gap-1`}
+                    style={{ top: `${num}px` }}
+                >
+                    {side === 'left' && (
+                        <>
+                            <span className="text-[10px] text-white/30 font-mono">{num}</span>
+                            <div className="w-1.5 h-px bg-white/[0.1]" />
+                        </>
+                    )}
+                    {side === 'right' && (
+                        <>
+                            <div className="w-1.5 h-px bg-white/[0.1]" />
+                            <span className="text-[10px] text-white/30 font-mono">{num}</span>
+                        </>
+                    )}
+                </div>
+            ))}
+            <div className={`absolute ${side === 'left' ? 'right-0' : 'left-0'} top-0 w-1.5 h-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20`} />
+        </div>
+    );
+};
+
+const GlowingBeam = () => {
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <motion.div
+                className="absolute top-0 left-[-100%] h-px w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent"
+                animate={{ left: ['100%', '-100%'] }}
+                transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+                style={{ opacity: 0.5 }}
+            />
+            <motion.div
+                className="absolute top-[-100%] left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"
+                animate={{ top: ['100%', '-100%'] }}
+                transition={{ duration: 8, ease: "linear", repeat: Infinity, delay: 4 }}
+                style={{ opacity: 0.5 }}
+            />
+        </div>
+    );
+}
 
 const PrivacyPolicy: React.FC = () => {
     useEffect(() => {
-        window.scrollTo(0, 0);
-        document.title = "Privacy Policy | inpactAI";
+        document.title = "Privacy Policy | InPactAI";
     }, []);
 
     return (
-        <div className="min-h-screen bg-black">
-            <Navbar />
-            <main className="pt-24 pb-16">
-                <div className="container mx-auto px-6">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="max-w-3xl mx-auto"
-                    >
-                        <h1 className="text-3xl md:text-4xl font-bold mb-8 text-purple-400">Privacy Policy</h1>
+        <div className="min-h-screen pt-20">
+            {/* Main Container with Grid Lines */}
+            <div className="relative max-w-[1200px] mx-auto px-8 lg:px-12">
+                {/* Left Ruler */}
+                <RulerMarks side="left" />
+                {/* Right Ruler */}
+                <RulerMarks side="right" />
 
-                        <div className="prose prose-invert max-w-none">
-                            <p className="text-gray-300 mb-4">Last updated: April 14, 2025</p>
+                <div className="relative border-x border-white/[0.04] min-h-screen">
+                    <GlowingBeam />
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Introduction</h2>
-                                <p className="text-gray-300">
-                                    At inpactAI, we respect your privacy and are committed to protecting your personal data. This Privacy
-                                    Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
-                                </p>
-                            </section>
+                    <main className="py-16 relative z-10 px-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="max-w-3xl mx-auto"
+                        >
+                            <h1 className="text-4xl md:text-5xl font-bold mb-8 text-white tracking-tight">
+                                Privacy <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Policy</span>
+                            </h1>
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Information We Collect</h2>
-                                <p className="text-gray-300">When you use inpactAI, we may collect the following types of information:</p>
-                                <ul className="list-disc pl-5 text-gray-300 space-y-2 mt-3">
-                                    <li>
-                                        <strong>Personal Information:</strong> Name, email address, and organization details provided
-                                        during signup or when joining our waitlist.
-                                    </li>
-                                    <li>
-                                        <strong>Platform Data:</strong> If you connect inpactAI with platforms like Instagram, TikTok, or LinkedIn,
-                                        we may collect information necessary to offer creator-brand matching services, such as follower data,
-                                        audience engagement, and content performance metrics.
-                                    </li>
-                                    <li>
-                                        <strong>Usage Information:</strong> Data about how you interact with our platform, including features used,
-                                        actions taken, and time spent on the platform.
-                                    </li>
-                                </ul>
-                            </section>
+                            <div className="prose prose-invert max-w-none">
+                                <p className="text-gray-400 mb-8 font-medium">Last updated: February 5, 2026</p>
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">How We Use Your Information</h2>
-                                <p className="text-gray-300">We use the collected information for various purposes, including:</p>
-                                <ul className="list-disc pl-5 text-gray-300 space-y-2 mt-3">
-                                    <li>Providing and maintaining our AI-powered platform</li>
-                                    <li>Improving creator-brand matching accuracy</li>
-                                    <li>Personalizing your dashboard and analytics</li>
-                                    <li>Communicating with you about updates, matches, and insights</li>
-                                    <li>Ensuring data integrity and platform security</li>
-                                </ul>
-                            </section>
+                                <section className="mb-12">
+                                    <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                        Introduction
+                                    </h2>
+                                    <p className="text-gray-400 leading-relaxed font-medium">
+                                        At <span className="text-white">InPactAI</span>, we respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
+                                    </p>
+                                </section>
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Data Sharing and Disclosure</h2>
-                                <p className="text-gray-300">
-                                    We do not sell your personal information. We may share data in the following circumstances:
-                                </p>
-                                <ul className="list-disc pl-5 text-gray-300 space-y-2 mt-3">
-                                    <li>With service providers helping us run the platform (e.g., analytics, hosting)</li>
-                                    <li>To comply with legal obligations or respond to lawful requests</li>
-                                    <li>With your consent or to fulfill specific actions at your direction</li>
-                                    <li>In connection with business restructuring, mergers, or acquisitions</li>
-                                </ul>
-                            </section>
+                                <section className="mb-12">
+                                    <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                        Information We Collect
+                                    </h2>
+                                    <p className="text-gray-400 mb-4 leading-relaxed font-medium">When you use InPactAI, we may collect the following types of information:</p>
+                                    <ul className="grid grid-cols-1 gap-4 mt-6">
+                                        {[
+                                            { title: 'Personal Information', desc: 'Name, email address, and organization details provided during signup.' },
+                                            { title: 'Platform Data', desc: 'Connected platform data (Instagram, TikTok, LinkedIn) for creator-brand matching.' },
+                                            { title: 'Usage Information', desc: 'Analytics on how you interact with our platform and features.' }
+                                        ].map((item, i) => (
+                                            <li key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-sm group hover:bg-white/[0.05] transition-colors">
+                                                <strong className="text-white block mb-1">{item.title}</strong>
+                                                <span className="text-gray-400">{item.desc}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Data Security</h2>
-                                <p className="text-gray-300">
-                                    We apply industry-standard security practices to protect your data, including encryption, access controls,
-                                    and regular security reviews. However, no digital system is completely secure, and we encourage
-                                    you to practice responsible data handling on your end as well.
-                                </p>
-                            </section>
+                                <section className="mb-12">
+                                    <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                        How We Use Your Information
+                                    </h2>
+                                    <p className="text-gray-400 leading-relaxed font-medium">We use the collected information for various purposes, including:</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
+                                        {[
+                                            'Platform maintenance',
+                                            'Matching accuracy',
+                                            'Dashboard analytics',
+                                            'Updates & insights',
+                                            'Data integrity',
+                                            'Platform security'
+                                        ].map((item, i) => (
+                                            <div key={i} className="px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/10 text-xs text-purple-300 text-center">
+                                                {item}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
 
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Your Rights</h2>
-                                <p className="text-gray-300">
-                                    Depending on your location, you may have certain rights related to your personal information:
-                                </p>
-                                <ul className="list-disc pl-5 text-gray-300 space-y-2 mt-3">
-                                    <li>Access or request a copy of your personal data</li>
-                                    <li>Request correction of any inaccurate or incomplete data</li>
-                                    <li>Request deletion of your personal data</li>
-                                    <li>Restrict processing or object to data usage</li>
-                                    <li>Request data portability</li>
-                                </ul>
-                                <p className="text-gray-300 mt-3">
-                                    To exercise your rights, contact us at privacy@inpact.ai.
-                                </p>
-                            </section>
-
-                            <section className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Changes to This Policy</h2>
-                                <p className="text-gray-300">
-                                    We may update this Privacy Policy occasionally to reflect changes in law or our practices.
-                                    If significant changes are made, we will notify you on the platform or via email.
-                                    Please review this policy periodically to stay informed.
-                                </p>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold mb-4 text-purple-400">Contact Us</h2>
-                                <p className="text-gray-300">
-                                    If you have any questions about this Privacy Policy, feel free to reach out:
-                                    <br />
-                                    <strong>Email:</strong> <a href="mailto:aossie.oss@gmail.com" className="text-primary hover:underline text-purple-400">aossie.oss@gmail.com</a>
-                                </p>
-                            </section>
-                        </div>
-                    </motion.div>
+                                <section className="mb-12 border-t border-white/[0.08] pt-12">
+                                    <h2 className="text-xl font-semibold mb-4 text-white">Contact Us</h2>
+                                    <p className="text-gray-400 leading-relaxed font-medium">
+                                        If you have any questions about this Privacy Policy, feel free to reach out:
+                                        <br />
+                                        <a href="mailto:aossie.oss@gmail.com" className="inline-block mt-4 px-6 py-3 rounded-full bg-white/[0.05] border border-white/10 text-white hover:bg-white/10 transition-colors">aossie.oss@gmail.com</a>
+                                    </p>
+                                </section>
+                            </div>
+                        </motion.div>
+                    </main>
                 </div>
-            </main>
-            <Footer />
+            </div>
         </div>
     );
 };
