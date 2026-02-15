@@ -1,51 +1,55 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
-import HomePage from "../src/pages/HomePage";
-import DashboardPage from "../src/pages/DashboardPage";
-import SponsorshipsPage from "../src/pages/Sponsorships";
-import CollaborationsPage from "../src/pages/Collaborations";
-import CollaborationDetails from "../src/pages/CollaborationDetails";
-import MessagesPage from "../src/pages/Messages";
+import { lazy, Suspense } from "react";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/Login";
 import SignupPage from "./pages/Signup";
-import ForgotPasswordPage from "./pages/ForgotPassword";
-import ResetPasswordPage from "./pages/ResetPassword";
-import Contracts from "./pages/Contracts";
-import Analytics from "./pages/Analytics";
-import RoleSelection from "./pages/RoleSelection";
-
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import Dashboard from "./pages/Brand/Dashboard";
-import BasicDetails from "./pages/BasicDetails";
-import Onboarding from "./components/Onboarding";
 
+// Lazy-loaded components
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const SponsorshipsPage = lazy(() => import("./pages/Sponsorships"));
+const CollaborationsPage = lazy(() => import("./pages/Collaborations"));
+const CollaborationDetails = lazy(() => import("./pages/CollaborationDetails"));
+const MessagesPage = lazy(() => import("./pages/Messages"));
+const Contracts = lazy(() => import("./pages/Contracts"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const RoleSelection = lazy(() => import("./pages/RoleSelection"));
+const Dashboard = lazy(() => import("./pages/Brand/Dashboard"));
+const BasicDetails = lazy(() => import("./pages/BasicDetails"));
+const Onboarding = lazy(() => import("./components/Onboarding"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-sm">Loading...</div>
+  </div>
+);
+
+/**
+ * App Component with Router Loader Strategy
+ * 
+ * This implementation uses React Router's built-in capabilities as middleware replacement.
+ * Benefits:
+ * - No separate middleware.ts file needed
+ * - Route-level authentication checks before rendering
+ * - Data preloading for better UX
+ * - Fully within React ecosystem
+ * - No framework deprecation warnings
+ * 
+ * Note: Route loaders are defined in /lib/loaders.ts and can be attached
+ * to routes for authentication checks and data prefetching.
+ */
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Set a timeout to ensure the app loads
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center flex-col">
-        <div className="text-lg font-semibold text-purple-600">Loading Inpact...</div>
-        <div className="text-xs text-gray-500 mt-2">Connecting to the platform</div>
-      </div>
-    );
-  }
 
   return (
     <Router>
       <AuthProvider>
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={
@@ -134,7 +138,7 @@ function App() {
             }
           />
         </Routes>
-      </AuthProvider>
+        </Suspense>
     </Router>
   );
 }

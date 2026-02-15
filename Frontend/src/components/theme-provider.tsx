@@ -13,7 +13,7 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   ...props
 }: any) {
-  const [theme, setTheme] = useState(
+  const [theme, setThemeState] = useState(
     () => localStorage.getItem(storageKey) || defaultTheme
   );
 
@@ -39,7 +39,7 @@ export function ThemeProvider({
     theme,
     setTheme: (theme: string) => {
       localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+      setThemeState(theme);
     },
   };
 
