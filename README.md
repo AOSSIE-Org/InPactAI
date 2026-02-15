@@ -4,6 +4,12 @@
 
 Inpact is an open-source AI-powered platform designed to connect content creators, brands, and agencies through data-driven insights. By leveraging Generative AI (GenAI), audience analytics, and engagement metrics, Inpact ensures highly relevant sponsorship opportunities for creators while maximizing ROI for brands investing in influencer marketing.
 
+## 🚀 Quick Start
+
+**Recommended:** Start with Docker for the smoothest experience - [Docker Setup Guide](DOCKER.md)
+
+Or follow the [Manual Installation](#manual-installation) below.
+
 ## Features
 
 ### AI-Driven Sponsorship Matchmaking
@@ -73,109 +79,168 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 
 ### Prerequisites
 
-Ensure you have the following installed:
+Choose one of the following setup methods:
 
+**Option A: Docker (Recommended)**
+- Docker and Docker Compose installed
+- Supabase account
+
+**Option B: Manual Setup**
 - Node.js & npm
 - Python & FastAPI
 - Supabase account
 
-### Installation
+---
 
-#### 1. Clone the repository
+## Quick Start with Docker
+
+### 1. Clone the repository
 
 ```sh
 git clone https://github.com/AOSSIE-Org/InPact.git
-cd inpact
+cd InPact
 ```
 
-#### 2. Frontend Setup
+### 2. Setup Environment Variables
 
-1. Navigate to the frontend directory:
+#### Backend Configuration
 ```sh
-cd frontend
+cd Backend
+cp .env.example .env
 ```
 
-2. Install dependencies:
+Edit `Backend/.env` with your credentials:
+- Supabase database connection
+- API keys (GROQ, GEMINI, YOUTUBE)
+- Redis is pre-configured for Docker
+
+#### Frontend Configuration
+```sh
+cd ../Frontend
+cp .env.example .env
+```
+
+Edit `Frontend/.env` with your Supabase credentials.
+
+### 3. Start All Services
+
+From the project root directory:
+
+```sh
+docker compose up --build
+```
+
+This single command will:
+- Build and start the FastAPI backend on `http://localhost:8000`
+- Build and start the React frontend on `http://localhost:5173`
+- Start Redis for caching and pub/sub
+
+### 4. Stop Services
+
+```sh
+docker compose down
+```
+
+To remove volumes as well:
+```sh
+docker compose down -v
+```
+
+---
+
+## Manual Installation
+
+### 1. Clone the repository
+
+```sh
+git clone https://github.com/AOSSIE-Org/InPact.git
+cd InPact
+```
+
+### 2. Frontend Setup
+
+Navigate to the frontend directory:
+```sh
+cd Frontend
+```
+
+Install dependencies:
 ```sh
 npm install
 ```
 
-
-3. Create a `.env` file using `.env-example` file:
-
-
-
-4. Get your Supabase credentials:
-   - Go to [Supabase](https://supabase.com/)
-   - Log in and create a new project (or use existing)
-   - Go to Project Settings -> API
-   - Copy the "Project URL" and paste it as VITE_SUPABASE_URL
-   - Copy the "anon public" key and paste it as VITE_SUPABASE_ANON_KEY
-
-#### 3. Backend Setup
-
-1. Navigate to the backend directory:
+Create a `.env` file:
 ```sh
-cd ../backend
+cp .env.example .env
 ```
 
-2. Install dependencies:
+Get your Supabase credentials:
+- Go to [Supabase](https://supabase.com/)
+- Log in and create a new project (or use existing)
+- Go to Project Settings -> API
+- Copy the "Project URL" and paste it as VITE_SUPABASE_URL
+- Copy the "anon public" key and paste it as VITE_SUPABASE_ANON_KEY
+
+### 3. Backend Setup
+
+Navigate to the backend directory:
+```sh
+cd ../Backend
+```
+
+Install dependencies:
 ```sh
 pip install -r requirements.txt
 ```
 
-
-3. Navigate to the app directory:
+Create a `.env` file:
 ```sh
-cd app
+cp .env.example .env
 ```
 
-4. Create a `.env` file using `.env-example` as a reference.
+Obtain Supabase credentials:
+- Go to [Supabase](https://supabase.com/)
+- Log in and create a new project
+- Click on the project and remember the project password
+- Go to the **Connect** section at the top
+- Select **SQLAlchemy** and copy the connection string:
 
-5. Obtain Supabase credentials:
+  ```sh
+  user=postgres
+  password=[YOUR-PASSWORD]
+  host=db.wveftanaurduixkyijhf.supabase.co
+  port=5432
+  dbname=postgres
+  ```
 
-   - Go to [Supabase](https://supabase.com/)
-   - Log in and create a new project
-   - Click on the project and remember the project password
-   - Go to the **Connect** section at the top
-   - Select **SQLAlchemy** and copy the connection string:
+  --OR--
 
-     ```sh
-     user=postgres
-     password=[YOUR-PASSWORD]
-     host=db.wveftanaurduixkyijhf.supabase.co
-     port=5432
-     dbname=postgres
-     ```
+  [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
 
-     --OR--
+  ```sh
+   user=postgres.<project>
+   password=[YOUR-PASSWORD]
+   host=aws-<location>.pooler.supabase.com
+   port=5432
+   dbname=postgres
+  ```
 
-     [The above works in ipv6 networks, if you are in ipv4 network or it cause errors, use the below connection string which could be found in Session Pooler connection]
+Get the Groq API key:
+- Visit [Groq Console](https://console.groq.com/)
+- Create an API key and paste it into the `.env` file
 
-     ```sh
-      user=postgres.<project>
-      password=[YOUR-PASSWORD]
-      host=aws-<location>.pooler.supabase.com
-      port=5432
-      dbname=postgres
-     ```
+### 4. Start Development Servers
 
-
-6. Get the Groq API key:
-   - Visit [Groq Console](https://console.groq.com/)
-   - Create an API key and paste it into the `.env` file
-
-#### 4. Start Development Servers
-
-
-1. Start the frontend server (from the frontend directory):
+Start the frontend server:
 ```sh
+cd Frontend
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+Start the backend server:
 ```sh
-uvicorn main:app --reload
+cd Backend
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
