@@ -3,11 +3,12 @@ import CreatorMatchCard, { CreatorMatchCardProps } from "./CreatorMatchCard";
 
 interface CreatorMatchGridProps {
   creators: CreatorMatchCardProps[];
+  maxgridsize?: Number;
 }
 
 const PAGE_SIZE = 4;
 
-const CreatorMatchGrid: React.FC<CreatorMatchGridProps> = ({ creators }) => {
+const CreatorMatchGrid: React.FC<CreatorMatchGridProps> = ({ creators , maxgridsize = 4 }) => {
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(creators.length / PAGE_SIZE);
 
@@ -17,7 +18,7 @@ const CreatorMatchGrid: React.FC<CreatorMatchGridProps> = ({ creators }) => {
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${maxgridsize} gap-6 justify-items-center`}>
         {currentCreators.map((creator) => (
           <CreatorMatchCard key={creator.id} {...creator} />
         ))}
