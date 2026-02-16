@@ -51,7 +51,7 @@ export default function DashboardPage() {
       className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
       asChild
     >
-      <Link to={to}>
+      <Link to={to} title={label}>
         <Icon className="h-5 w-5" />
         <span className="sr-only">{label}</span>
       </Link>
@@ -68,14 +68,14 @@ export default function DashboardPage() {
     />
   </div>
   <ModeToggle />
-  <Button onClick={logout} variant="ghost">
+  <Button onClick={logout} variant="ghost" title="Logout">
     <LogOut className="h-5 w-5" />  
   </Button>
   <UserNav />
 </div>
 </div>
       </header>
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex items-center space-x-2">

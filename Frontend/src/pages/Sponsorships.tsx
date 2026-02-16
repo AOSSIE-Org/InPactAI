@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Slider } from "../components/ui/slider"
 import { Label } from "../components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import { CreateProposalDialog } from "./Brand/CreateProposalDialog"
 
 export default function SponsorshipsPage() {
   return (
@@ -84,14 +85,16 @@ export default function SponsorshipsPage() {
           </div>
         </div>
       </header>
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">AI-Driven Sponsorship Matchmaking</h1>
           <div className="flex items-center space-x-2">
-            <Button className="bg-purple-600 text-white hover:bg-purple-700">
-              <DollarSign className="mr-2 h-4 w-4" />
-              Create Proposal
-            </Button>
+            <CreateProposalDialog>
+              <Button className="bg-purple-600 text-white hover:bg-purple-700">
+                <DollarSign className="mr-2 h-4 w-4" />
+                Create Proposal
+              </Button>
+            </CreateProposalDialog>
           </div>
         </div>
 
