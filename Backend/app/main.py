@@ -7,8 +7,6 @@ from .routes.post import router as post_router
 from .routes.chat import router as chat_router
 from .routes.match import router as match_router
 from sqlalchemy.exc import SQLAlchemyError
-import logging
-import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from app.routes import ai
