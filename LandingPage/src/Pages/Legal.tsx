@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import Navbar from '../components/Header';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
+import ParticleEffect from '../components/ParticleCanva';
 
 const TermsOfService: React.FC = () => {
     useEffect(() => {
@@ -11,6 +12,7 @@ const TermsOfService: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-black text-white">
+            <ParticleEffect />
             <Navbar />
             <main className="pt-24 pb-16">
                 <div className="container mx-auto px-6">
