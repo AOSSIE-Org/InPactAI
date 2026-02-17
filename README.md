@@ -173,10 +173,13 @@ cd app
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+2. Start the backend server (from the Backend directory):
 ```sh
-uvicorn main:app --reload
+cd Backend
+uvicorn app.main:app --reload
 ```
+
+**Important**: Do not run the server from inside the `app/` directory as this will cause relative import errors. The application must be executed from the project root so that `app` is treated as a proper Python package.
 
 ## Data Population
 
