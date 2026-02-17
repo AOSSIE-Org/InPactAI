@@ -81,29 +81,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     setLastRequest(now);
     
-    // Check if user has completed onboarding by looking for social profiles or brand data
-    const { data: socialProfiles } = await supabase
-      .from("social_profiles")
-      .select("id")
-      .eq("user_id", userToUse.id)
-      .limit(1);
-    
-    const { data: brandData } = await supabase
-      .from("brands")
-      .select("id")
-      .eq("user_id", userToUse.id)
-      .limit(1);
-    
-    const hasOnboarding = (socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0);
-    
-    // Get user role
-    const { data: userData } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userToUse.id)
-      .single();
-    
-    return { hasOnboarding, role: userData?.role || null };
+    try {
+      // Check if user has completed onboarding by looking for social profiles or brand data
+      const { data: socialProfiles } = await supabase
+        .from("social_profiles")
+        .select("id")
+        .eq("user_id", userToUse.id)
+        .limit(1);
+      
+      const { data: brandData } = await supabase
+        .from("brands")
+        .select("id")
+        .eq("user_id", userToUse.id)
+        .limit(1);
+      
+      const hasOnboarding = Boolean((socialProfiles && socialProfiles.length > 0) || (brandData && brandData.length > 0));
+      
+      // Get user role
+      const { data: userData } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", userToUse.id)
+        .single();
+      
+      return { hasOnboarding, role: userData?.role || null };
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      return { hasOnboarding: false, role: null };
+    }
   };
 
   useEffect(() => {
@@ -135,6 +140,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.log("AuthContext: Ensuring user in table");
         try {
           await ensureUserInTable(data.session.user);
+          
+          // Check onboarding status and redirect appropriately for initial load
+          // Only redirect if not on reset-password page and not already on a dashboard/onboarding page
+          const currentPath = window.location.pathname;
+          if (!currentPath.includes('/reset-password') && 
+              !currentPath.includes('/dashboard') && 
+              !currentPath.includes('/onboarding')) {
+            console.log("AuthContext: Checking onboarding status for initial redirection");
+            const { hasOnboarding, role } = await checkUserOnboarding(data.session.user);
+            console.log("AuthContext: Initial onboarding check result", { hasOnboarding, role });
+            
+            if (hasOnboarding) {
+              if (role === "brand") {
+                console.log("AuthContext: Initial redirect to brand dashboard");
+                navigate("/brand/dashboard");
+              } else {
+                console.log("AuthContext: Initial redirect to dashboard");
+                navigate("/dashboard");
+              }
+            } else {
+              console.log("AuthContext: Initial redirect to onboarding");
+              navigate("/onboarding");
+            }
+          }
         } catch (error) {
           console.error("AuthContext: Error ensuring user in table", error);
         }
@@ -161,6 +190,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log("AuthContext: User authenticated");
           try {
             await ensureUserInTable(session.user);
+            
+            // Check onboarding status and redirect appropriately
+            // Only redirect on SIGNED_IN event to avoid conflicts during password reset
+            if (event === 'SIGNED_IN' && !window.location.pathname.includes('/reset-password')) {
+              console.log("AuthContext: Checking onboarding status for redirection");
+              const { hasOnboarding, role } = await checkUserOnboarding(session.user);
+              console.log("AuthContext: Onboarding check result", { hasOnboarding, role });
+              
+              if (hasOnboarding) {
+                if (role === "brand") {
+                  console.log("AuthContext: Redirecting to brand dashboard");
+                  navigate("/brand/dashboard");
+                } else {
+                  console.log("AuthContext: Redirecting to dashboard");
+                  navigate("/dashboard");
+                }
+              } else {
+                console.log("AuthContext: Redirecting to onboarding");
+                navigate("/onboarding");
+              }
+            }
           } catch (error) {
             console.error("AuthContext: Error ensuring user in table", error);
           }
@@ -182,7 +232,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = () => {
     setIsAuthenticated(true);
-    navigate("/dashboard");
+    // Navigation is now handled by the onAuthStateChange listener
   };
 
   const logout = async () => {
