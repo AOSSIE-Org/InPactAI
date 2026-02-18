@@ -6,10 +6,13 @@ import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { MessageSquare, CheckCircle, XCircle, Lightbulb, TrendingUp, Users, Star, Mail } from "lucide-react";
 
-// Mock data for incoming requests
+// 1. Move BASE_URL to module scope to avoid evaluation on every render
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+// Mock data for incoming requests with string IDs for UUID compatibility
 const mockRequests = [
   {
-    id: "1", // Updated to string for UUID compatibility
+    id: "1",
     sender: {
       name: "TechSavvy",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -51,7 +54,7 @@ const mockRequests = [
     }
   },
   {
-    id: "2", // Updated to string for UUID compatibility
+    id: "2",
     sender: {
       name: "EcoChic",
       avatar: "https://randomuser.me/api/portraits/women/44.jpg",
@@ -96,11 +99,12 @@ const mockRequests = [
 
 const CollabRequests: React.FC = () => {
   const [requests, setRequests] = useState(mockRequests);
-
-  // Use environment variable for the API base URL
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+  // 2. Add loadingId state to track and disable in-flight requests
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleAccept = async (id: string) => {
+    if (loadingId) return; // Prevent concurrent requests
+    setLoadingId(id);
     try {
       const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=accepted`, {
         method: 'PUT',
@@ -108,16 +112,19 @@ const CollabRequests: React.FC = () => {
       if (response.ok) {
         setRequests(prev => prev.filter(req => req.id !== id));
       } else {
-        // Feedback for non-OK responses
         const err = await response.json().catch(() => ({}));
         alert(`Failed to accept: ${err.detail || "Server error"}`);
       }
     } catch (error) {
       console.error("Failed to accept request:", error);
+    } finally {
+      setLoadingId(null);
     }
   };
 
   const handleDeny = async (id: string) => {
+    if (loadingId) return; // Prevent concurrent requests
+    setLoadingId(id);
     try {
       const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=denied`, {
         method: 'PUT',
@@ -125,15 +132,19 @@ const CollabRequests: React.FC = () => {
       if (response.ok) {
         setRequests(prev => prev.filter(req => req.id !== id));
       } else {
-        // Feedback for non-OK responses
-        alert("Failed to deny request. Please try again.");
+        // 3. Extract real server error instead of hardcoded string
+        const err = await response.json().catch(() => ({}));
+        alert(`Failed to deny: ${err.detail || "Server error"}`);
       }
     } catch (error) {
       console.error("Failed to deny request:", error);
+    } finally {
+      setLoadingId(null);
     }
   };
 
-  const handleMessage = (id: string) => {
+  // 4. Mark unused parameter with underscore to silence linter
+  const handleMessage = (_id: string) => {
     // TODO: Open message modal or redirect to chat
     alert("Open chat with sender (not implemented)");
   };
@@ -166,7 +177,6 @@ const CollabRequests: React.FC = () => {
               <div className="mb-3">
                 <span className="font-medium text-gray-800">Request:</span> {req.summary}
               </div>
-              {/* Initial Collaboration Proposal Section */}
               <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 mb-4">
                 <div className="flex items-center gap-2 mb-1 text-purple-700 font-semibold text-sm">
                   <span role="img" aria-label="proposal">📝</span> Initial Collaboration Proposal
@@ -180,21 +190,18 @@ const CollabRequests: React.FC = () => {
                 </ul>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {/* AI Advantages */}
                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1 text-blue-700 font-semibold text-sm"><Lightbulb className="h-4 w-4" /> Advantages</div>
                   <ul className="list-disc ml-5 text-xs text-blue-900">
                     {req.ai.advantages.map((adv, i) => <li key={i}>{adv}</li>)}
                   </ul>
                 </div>
-                {/* AI Ideas */}
                 <div className="bg-green-50 border border-green-100 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1 text-green-700 font-semibold text-sm"><Lightbulb className="h-4 w-4" /> Collaboration Ideas</div>
                   <ul className="list-disc ml-5 text-xs text-green-900">
                     {req.ai.ideas.map((idea, i) => <li key={i}>{idea}</li>)}
                   </ul>
                 </div>
-                {/* AI Recommendations */}
                 <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1 text-yellow-700 font-semibold text-sm"><Lightbulb className="h-4 w-4" /> Recommendations</div>
                   <ul className="list-disc ml-5 text-xs text-yellow-900">
@@ -209,10 +216,23 @@ const CollabRequests: React.FC = () => {
                 <span>Avg Views: <b>{req.stats.avgViews}</b></span>
               </div>
               <div className="flex gap-3 mt-4">
-                <Button size="sm" className="flex items-center gap-1 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" onClick={() => handleAccept(req.id)} aria-label="Accept collaboration request">
+                {/* 5. Disable buttons when a request is in progress */}
+                <Button 
+                  size="sm" 
+                  className="flex items-center gap-1 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" 
+                  onClick={() => handleAccept(req.id)} 
+                  disabled={loadingId === req.id}
+                  aria-label="Accept collaboration request"
+                >
                   <CheckCircle className="h-4 w-4" /> Accept
                 </Button>
-                <Button size="sm" className="flex items-center gap-1 bg-red-100 text-red-800 hover:bg-red-200 border border-red-200" onClick={() => handleDeny(req.id)} aria-label="Deny collaboration request">
+                <Button 
+                  size="sm" 
+                  className="flex items-center gap-1 bg-red-100 text-red-800 hover:bg-red-200 border border-red-200" 
+                  onClick={() => handleDeny(req.id)} 
+                  disabled={loadingId === req.id}
+                  aria-label="Deny collaboration request"
+                >
                   <XCircle className="h-4 w-4" /> Deny
                 </Button>
                 <Button size="sm" variant="outline" className="flex items-center gap-1" onClick={() => handleMessage(req.id)} aria-label="Message sender">
