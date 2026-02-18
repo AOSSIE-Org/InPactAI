@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from ..db.db import get_db
-from ..models.users import User
+from ..models.models import User
 from ..config import settings
 
 # This tells FastAPI where to look for the token (the /auth/login route)
