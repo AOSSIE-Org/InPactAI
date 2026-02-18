@@ -6,10 +6,8 @@ import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { MessageSquare, CheckCircle, XCircle, Lightbulb, TrendingUp, Users, Star, Mail } from "lucide-react";
 
-// 1. Move BASE_URL to module scope to avoid evaluation on every render
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
-// Mock data for incoming requests with string IDs for UUID compatibility
 const mockRequests = [
   {
     id: "1",
@@ -99,54 +97,46 @@ const mockRequests = [
 
 const CollabRequests: React.FC = () => {
   const [requests, setRequests] = useState(mockRequests);
-  // 2. Add loadingId state to track and disable in-flight requests
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  // Switch to Set to track multiple in-flight requests
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
-  const handleAccept = async (id: string) => {
-    if (loadingId) return; // Prevent concurrent requests
-    setLoadingId(id);
+  // Shared helper to keep code DRY
+  const handleStatusUpdate = async (id: string, status: 'accepted' | 'denied', verb: string) => {
+    if (loadingIds.has(id)) return;
+    
+    setLoadingIds(prev => new Set(prev).add(id));
     try {
-      const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=accepted`, {
+      const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=${status}`, {
         method: 'PUT',
       });
       if (response.ok) {
         setRequests(prev => prev.filter(req => req.id !== id));
       } else {
         const err = await response.json().catch(() => ({}));
-        alert(`Failed to accept: ${err.detail || "Server error"}`);
+        alert(`Failed to ${verb}: ${err.detail || "Server error"}`);
       }
     } catch (error) {
-      console.error("Failed to accept request:", error);
+      console.error(`Failed to ${verb} request:`, error);
+      alert(`Network error: Could not ${verb} request. Please check your connection.`);
     } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleDeny = async (id: string) => {
-    if (loadingId) return; // Prevent concurrent requests
-    setLoadingId(id);
-    try {
-      const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=denied`, {
-        method: 'PUT',
+      setLoadingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
       });
-      if (response.ok) {
-        setRequests(prev => prev.filter(req => req.id !== id));
-      } else {
-        // 3. Extract real server error instead of hardcoded string
-        const err = await response.json().catch(() => ({}));
-        alert(`Failed to deny: ${err.detail || "Server error"}`);
-      }
-    } catch (error) {
-      console.error("Failed to deny request:", error);
-    } finally {
-      setLoadingId(null);
     }
   };
 
-  // 4. Mark unused parameter with underscore to silence linter
+  const handleAccept = (id: string) => handleStatusUpdate(id, 'accepted', 'accept');
+  const handleDeny = (id: string) => handleStatusUpdate(id, 'denied', 'deny');
+
   const handleMessage = (_id: string) => {
-    // TODO: Open message modal or redirect to chat
     alert("Open chat with sender (not implemented)");
+  };
+
+  // Wired up the Email button
+  const handleEmail = (_id: string) => {
+    alert("Email functionality is coming soon!");
   };
 
   return (
@@ -216,12 +206,11 @@ const CollabRequests: React.FC = () => {
                 <span>Avg Views: <b>{req.stats.avgViews}</b></span>
               </div>
               <div className="flex gap-3 mt-4">
-                {/* 5. Disable buttons when a request is in progress */}
                 <Button 
                   size="sm" 
                   className="flex items-center gap-1 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" 
                   onClick={() => handleAccept(req.id)} 
-                  disabled={loadingId === req.id}
+                  disabled={loadingIds.has(req.id)}
                   aria-label="Accept collaboration request"
                 >
                   <CheckCircle className="h-4 w-4" /> Accept
@@ -230,7 +219,7 @@ const CollabRequests: React.FC = () => {
                   size="sm" 
                   className="flex items-center gap-1 bg-red-100 text-red-800 hover:bg-red-200 border border-red-200" 
                   onClick={() => handleDeny(req.id)} 
-                  disabled={loadingId === req.id}
+                  disabled={loadingIds.has(req.id)}
                   aria-label="Deny collaboration request"
                 >
                   <XCircle className="h-4 w-4" /> Deny
@@ -238,7 +227,7 @@ const CollabRequests: React.FC = () => {
                 <Button size="sm" variant="outline" className="flex items-center gap-1" onClick={() => handleMessage(req.id)} aria-label="Message sender">
                   <MessageSquare className="h-4 w-4" /> Message
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center gap-1" aria-label="Email sender">
+                <Button size="sm" variant="outline" className="flex items-center gap-1" onClick={() => handleEmail(req.id)} aria-label="Email sender">
                   <Mail className="h-4 w-4" /> Email
                 </Button>
               </div>
