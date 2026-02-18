@@ -9,7 +9,7 @@ import { MessageSquare, CheckCircle, XCircle, Lightbulb, TrendingUp, Users, Star
 // Mock data for incoming requests
 const mockRequests = [
   {
-    id: 1,
+    id: "1", // Updated to string for UUID compatibility
     sender: {
       name: "TechSavvy",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -51,7 +51,7 @@ const mockRequests = [
     }
   },
   {
-    id: 2,
+    id: "2", // Updated to string for UUID compatibility
     sender: {
       name: "EcoChic",
       avatar: "https://randomuser.me/api/portraits/women/44.jpg",
@@ -97,32 +97,43 @@ const mockRequests = [
 const CollabRequests: React.FC = () => {
   const [requests, setRequests] = useState(mockRequests);
 
-const handleAccept = async (id: number) => {
+  // Use environment variable for the API base URL
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+  const handleAccept = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/collaboration/update-status/${id}?status=accepted`, {
+      const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=accepted`, {
         method: 'PUT',
       });
       if (response.ok) {
         setRequests(prev => prev.filter(req => req.id !== id));
+      } else {
+        // Feedback for non-OK responses
+        const err = await response.json().catch(() => ({}));
+        alert(`Failed to accept: ${err.detail || "Server error"}`);
       }
     } catch (error) {
       console.error("Failed to accept request:", error);
     }
   };
 
-  const handleDeny = async (id: number) => {
+  const handleDeny = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/collaboration/update-status/${id}?status=denied`, {
+      const response = await fetch(`${BASE_URL}/collaboration/update-status/${id}?status=denied`, {
         method: 'PUT',
       });
       if (response.ok) {
         setRequests(prev => prev.filter(req => req.id !== id));
+      } else {
+        // Feedback for non-OK responses
+        alert("Failed to deny request. Please try again.");
       }
     } catch (error) {
       console.error("Failed to deny request:", error);
     }
   };
-  const handleMessage = (id: number) => {
+
+  const handleMessage = (id: string) => {
     // TODO: Open message modal or redirect to chat
     alert("Open chat with sender (not implemented)");
   };
@@ -219,4 +230,4 @@ const handleAccept = async (id: number) => {
   );
 };
 
-export default CollabRequests; 
+export default CollabRequests;
