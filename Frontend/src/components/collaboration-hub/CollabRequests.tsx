@@ -97,16 +97,31 @@ const mockRequests = [
 const CollabRequests: React.FC = () => {
   const [requests, setRequests] = useState(mockRequests);
 
-  const handleAccept = (id: number) => {
-    setRequests(prev => prev.filter(req => req.id !== id));
-    // TODO: Integrate with backend to accept request
+const handleAccept = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:8000/collaboration/update-status/${id}?status=accepted`, {
+        method: 'PUT',
+      });
+      if (response.ok) {
+        setRequests(prev => prev.filter(req => req.id !== id));
+      }
+    } catch (error) {
+      console.error("Failed to accept request:", error);
+    }
   };
 
-  const handleDeny = (id: number) => {
-    setRequests(prev => prev.filter(req => req.id !== id));
-    // TODO: Integrate with backend to deny request
+  const handleDeny = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:8000/collaboration/update-status/${id}?status=denied`, {
+        method: 'PUT',
+      });
+      if (response.ok) {
+        setRequests(prev => prev.filter(req => req.id !== id));
+      }
+    } catch (error) {
+      console.error("Failed to deny request:", error);
+    }
   };
-
   const handleMessage = (id: number) => {
     // TODO: Open message modal or redirect to chat
     alert("Open chat with sender (not implemented)");
