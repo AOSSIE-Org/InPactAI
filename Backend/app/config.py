@@ -1,11 +1,13 @@
 import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
-load_dotenv()
-
-class Settings:
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-change-me")
+class Settings(BaseSettings):
+    """Handles application configuration using environment variables."""
+    # This will now throw an error if SECRET_KEY is missing from .env
+    SECRET_KEY: str 
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+
+    model_config = {"env_file": ".env"}
 
 settings = Settings()

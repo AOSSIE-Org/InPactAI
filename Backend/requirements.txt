@@ -31,7 +31,6 @@ postgrest==1.0.1
 propcache==0.3.1
 pydantic==2.11.1
 pydantic_core==2.33.0
-PyJWT==2.10.1
 pytest==8.3.5
 pytest-mock==3.14.0
 python-dateutil==2.9.0.post0
@@ -54,5 +53,6 @@ uvicorn==0.34.0
 websockets==14.2
 yarl==1.18.3
 passlib[bcrypt]==1.7.4
-python-jose[cryptography]==3.3.0
-email-validator==2.1.0.post1
+bcrypt==4.0.1
+python-jose[cryptography]==3.4.0
+email-validator==2.1.0.post1pydantic-settings==2.7.1
