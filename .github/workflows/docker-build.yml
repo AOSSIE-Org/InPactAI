@@ -1,0 +1,51 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Backend
+      run: |
+        cd Backend
+        docker build -t inpactai-backend:test .
+        
+    - name: Build Frontend
+      run: |
+        cd Frontend
+        docker build -t inpactai-frontend:test .
+        
+    - name: Start services
+      run: |
+        docker compose up -d
+        sleep 30
+        
+    - name: Check backend health
+      run: |
+        curl -f http://localhost:8000/ || exit 1
+        
+    - name: Check frontend health
+      run: |
+        curl -f http://localhost:5173/ || exit 1
+        
+    - name: Show logs on failure
+      if: failure()
+      run: |
+        docker compose logs
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose down -v

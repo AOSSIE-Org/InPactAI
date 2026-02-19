@@ -90,7 +90,7 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
           </div>
         </header>
       )}
-      <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
           {/* Filter Sidebar */}
           <Card className="md:col-span-1">
