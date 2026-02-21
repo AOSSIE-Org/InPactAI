@@ -8,8 +8,8 @@ export default function Integrations() {
             name: 'Instagram',
             description: 'Fetch creator insights like engagement rate, reach trends, and content breakdown.',
         },
-        {
-            icon: <SocialIcon url="https://www.youtube.com/" />,
+{
+            icon: <SocialIcon url="https://www.youtube.com/@AOSSIE-Org" />,
             name: 'YouTube',
             description: 'Access analytics on video performance, channel growth, and viewer demographics.',
         },
