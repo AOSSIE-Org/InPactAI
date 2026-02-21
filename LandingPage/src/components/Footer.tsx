@@ -43,13 +43,16 @@ const Footer = () => {
           </Stack>
         </Grid>
 
-        <Grid>
+<Grid>
           <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
             Legal & Code
           </Typography>
           <Stack spacing={1}>
             <Link href="https://github.com/AOSSIE-Org/InPactAI" sx={linkStyle} target="_blank" rel="noopener">
               GitHub
+            </Link>
+            <Link href="https://www.youtube.com/@AOSSIE-Org" sx={linkStyle} target="_blank" rel="noopener">
+              YouTube
             </Link>
             <Link href="/terms-of-service" sx={linkStyle}>Terms of Use</Link>
             <Link href="/privacy-policy" sx={linkStyle}>Privacy Policy</Link>
