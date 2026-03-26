@@ -26,12 +26,42 @@ Inpact is an open-source AI-powered platform designed to connect content creator
 
 - Enables brands and creators to track sponsorship performance, audience engagement, and campaign success.
 
+---
+
 ## Tech Stack
 
 - **Frontend**: ReactJS
 - **Backend**: FastAPI
 - **Database**: Supabase
 - **AI Integration**: GenAI for audience analysis and sponsorship recommendations
+
+---
+
+## Landing Page Overview
+
+The Landing Page is the public entry-point for Inpact — it introduces the product, highlights core features, and encourages users to join the waitlist or sign up.
+
+**Purpose:**  
+Provide an appealing first impression for creators, brands, and agencies. It summarizes the product value, showcases key features, and collects interest via a waitlist form.
+
+**Key elements:**
+
+- **Header:** Features the AOSSIE badge and navigation links (Login / Sign up).
+- **Hero section:** Prominent headline ("Creator Collaboration Hub"), concise subcopy, and a primary Call-to-Action (Join waitlist).
+- **Features grid:** Highlights core features such as AI-driven sponsorship matchmaking, creator collaboration hub, pricing & contracts, analytics, and a real-time campaign feedback loop.
+- **How It Works:** Visual steps and product flow to help users understand the platform.
+- **Integrations:** Displays supported integrations and partner logos.
+- **Waitlist Form:** Embedded form to collect interest from creators and brands.
+- **Footer and social links:** Provides additional navigation and ways to connect.
+
+The landing page is implemented in [LandingPage/src/Pages/Landing.tsx](LandingPage/src/Pages/Landing.tsx) and uses modular components from [LandingPage/src/components](LandingPage/src/components).  
+To preview or develop locally, run:
+
+```sh
+cd LandingPage
+npm install
+npm run dev
+```
 
 ---
 
@@ -178,6 +208,8 @@ npm run dev
 uvicorn main:app --reload
 ```
 
+---
+
 ## Data Population
 
 To populate the database with initial data, follow these steps:
@@ -261,6 +293,8 @@ graph TD;
   L -->|Track Campaign Performance| M[Analyze Engagement & ROI];
   M -->|Return Insights| N[AI Refines Future Recommendations];
 ```
+
+---
 
 ## Contact
 
