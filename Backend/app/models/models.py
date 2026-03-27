@@ -26,17 +26,22 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    username = Column(String, unique=True, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    # password_hash = Column(Text, nullable=False)  # Removed as Supabase handles auth
-    role = Column(String, nullable=False)  # 'creator' or 'brand'
+    # Added index=True to username and email for faster login lookups
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    
+    # Restored hashed_password for custom JWT authentication
+    hashed_password = Column(String, nullable=False) 
+    
+    role = Column(String, nullable=False, default="creator")  # 'creator' or 'brand'
     profile_image = Column(Text, nullable=True)
     bio = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
-    is_online = Column(Boolean, default=False)  # ✅ Track if user is online
+    is_online = Column(Boolean, default=False)
     last_seen = Column(TIMESTAMP, default=datetime.utcnow)
 
+    # Existing Relationships
     audience = relationship("AudienceInsights", back_populates="user", uselist=False)
     sponsorships = relationship("Sponsorship", back_populates="brand")
     posts = relationship("UserPost", back_populates="user")
@@ -66,7 +71,7 @@ class AudienceInsights(Base):
     time_of_attention = Column(Integer)  # in seconds
     price_expectation = Column(DECIMAL(10, 2))
     created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
     user = relationship("User", back_populates="audience")
@@ -80,12 +85,12 @@ class Sponsorship(Base):
     brand_id = Column(String, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    required_audience = Column(JSON)  # {"age": ["18-24"], "location": ["USA", "UK"]}
+    required_audience = Column(JSON)
     budget = Column(DECIMAL(10, 2))
     engagement_minimum = Column(Float)
     status = Column(String, default="open")
     created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
     brand = relationship("User", back_populates="sponsorships")
@@ -102,9 +107,9 @@ class UserPost(Base):
     content = Column(Text, nullable=False)
     post_url = Column(Text, nullable=True)
     category = Column(String, nullable=True)
-    engagement_metrics = Column(JSON)  # {"likes": 500, "comments": 100, "shares": 50}
+    engagement_metrics = Column(JSON)
     created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
     user = relationship("User", back_populates="posts")
@@ -121,7 +126,7 @@ class SponsorshipApplication(Base):
     proposal = Column(Text, nullable=False)
     status = Column(String, default="pending")
     applied_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
     creator = relationship("User", back_populates="applications")
@@ -138,7 +143,7 @@ class Collaboration(Base):
     collaboration_details = Column(Text, nullable=False)
     status = Column(String, default="pending")
     created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
 
@@ -153,7 +158,7 @@ class SponsorshipPayment(Base):
     amount = Column(DECIMAL(10, 2), nullable=False)
     status = Column(String, default="pending")
     transaction_date = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=datetime.utcnow
     )
 
     creator = relationship("User", foreign_keys=[creator_id], back_populates="payments")
