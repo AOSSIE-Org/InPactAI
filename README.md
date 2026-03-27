@@ -160,6 +160,20 @@ cd app
       dbname=postgres
      ```
 
+6. Get the Youtube API key:
+   - Go to [https://developers.google.com/youtube/registering_an_application].
+   - Under the **API keys** section on that page, click on the link to go to **Create credentials**.
+   - In the left sidebar, click on **Library**.
+   - In the search bar that appears, search for **"YouTube Data API v3"**.
+   - Click **Enable**.
+   - Once enabled, click the **Create Credentials** button that appears on the page.
+   - Under "Which API are you using?", select **Public data**.
+   - (Optional) You may restrict the key if desired.
+   - Click **Create** to generate the API key.
+   - Copy the key and paste it into your `.env` file:
+      ```env
+      VITE_YOUTUBE_API_KEY=your_key_here
+      ```
 
 6. Get the Groq API key:
    - Visit [Groq Console](https://console.groq.com/)
