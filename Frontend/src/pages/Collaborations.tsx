@@ -67,6 +67,7 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
                   size="sm"
                   className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
                   asChild
+                  title={label}
                 >
                   <Link to={to}>
                     <Icon className="h-5 w-5" />
