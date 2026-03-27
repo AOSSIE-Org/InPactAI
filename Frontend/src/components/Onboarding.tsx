@@ -438,6 +438,7 @@ export default function Onboarding() {
     setSubmitError("");
     setSubmitSuccess("");
     setProgress(0);
+    
     let profile_image_url = null;
     try {
       // 1. Upload profile picture if provided
@@ -937,6 +938,29 @@ export default function Onboarding() {
   const [brandSubmitError, setBrandSubmitError] = useState("");
   const [brandSubmitSuccess, setBrandSubmitSuccess] = useState("");
   const handleBrandSubmit = async () => {
+    //User added to Users database before creating brand
+     const { data: existingUser, error: userCheckError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', user?.id)
+      .single();
+    
+    if (userCheckError && userCheckError.code === 'PGRST116') {
+      // User doesn't exist, create them first
+      const { error: userInsertError } = await supabase
+        .from('users')
+        .insert({
+          id: user?.id,
+          username: user?.user_metadata?.username || user?.email?.split('@')[0],
+          email: user?.email,
+          role: 'brand'
+        });
+      
+      if (userInsertError) throw userInsertError;
+    } else if (userCheckError) {
+      throw userCheckError;
+    }
+
     setBrandSubmitting(true);
     setBrandSubmitError("");
     setBrandSubmitSuccess("");

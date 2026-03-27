@@ -142,6 +142,44 @@ class Collaboration(Base):
     )
 
 
+class Brand(Base):
+    __tablename__ = "brands"
+
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True, nullable=False)
+    brand_name = Column(String, nullable=False)
+    logo_url = Column(Text, nullable=True)
+    website_url = Column(Text, nullable=True)
+    industry = Column(String, nullable=True)
+    company_size = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    
+    # Contact Information
+    contact_person = Column(String, nullable=True)
+    contact_email = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
+    role = Column(String, nullable=True)  # Contact person's role
+    
+    # Social Media Links
+    instagram_url = Column(Text, nullable=True)
+    facebook_url = Column(Text, nullable=True)
+    twitter_url = Column(Text, nullable=True)
+    linkedin_url = Column(Text, nullable=True)
+    youtube_url = Column(Text, nullable=True)
+    
+    # Brand Preferences (stored as JSON arrays)
+    collaboration_types = Column(JSON, nullable=True)  # ["sponsored_posts", "product_reviews", etc.]
+    preferred_creator_categories = Column(JSON, nullable=True)  # ["lifestyle", "tech", etc.]
+    brand_values = Column(JSON, nullable=True)  # ["sustainability", "innovation", etc.]
+    preferred_tone = Column(JSON, nullable=True)  # ["professional", "casual", etc.]
+    platforms = Column(JSON, nullable=True)  # ["instagram", "youtube", etc.]
+    
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", backref="brand_profile")
+
 # Sponsorship Payments Table
 class SponsorshipPayment(Base):
     __tablename__ = "sponsorship_payments"
