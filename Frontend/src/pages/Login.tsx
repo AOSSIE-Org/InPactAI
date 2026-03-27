@@ -4,6 +4,23 @@ import { Eye, EyeOff, Rocket } from "lucide-react";
 import { supabase } from "../utils/supabase";
 import { useAuth } from "../context/AuthContext";
 
+/**
+ * LoginPage Component
+ * 
+ * Provides user authentication functionality with email and password.
+ * Includes accessibility features such as autocomplete attributes for
+ * enhanced user experience and WCAG 2.1 compliance.
+ * 
+ * Features:
+ * - Email/password authentication via Supabase
+ * - Google OAuth integration
+ * - Password visibility toggle
+ * - Form validation and error handling
+ * - Autocomplete attributes for browser autofill and password managers
+ * 
+ * @component
+ * @returns {JSX.Element} The login page with authentication form
+ */
 export default function LoginPage() {
   const Navigate = useNavigate();
   const { login } = useAuth();
@@ -13,6 +30,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /**
+   * Handles form submission for user login
+   * 
+   * Authenticates user credentials via Supabase and manages navigation
+   * based on user onboarding status and role. Includes comprehensive
+   * error handling and loading state management.
+   * 
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -39,6 +66,14 @@ export default function LoginPage() {
     }
   };
 
+  /**
+   * Initiates Google OAuth authentication flow
+   * 
+   * Redirects user to Google sign-in page and handles the OAuth
+   * authentication process via Supabase.
+   * 
+   * @returns {Promise<void>}
+   */
   const handleGoogleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -104,7 +139,9 @@ export default function LoginPage() {
                   </label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -131,7 +168,9 @@ export default function LoginPage() {
                   <div className="relative">
                     <input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
