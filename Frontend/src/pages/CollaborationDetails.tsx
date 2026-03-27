@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Separator } from "../components/ui/separator";
-import { ModeToggle } from "../components/mode-toggle";
-import { UserNav } from "../components/user-nav";
+import DashboardHeader from "../components/dashboard-header";
 import { 
   ArrowLeft, 
   MessageSquare, 
@@ -17,7 +16,6 @@ import {
   CheckCircle, 
   Clock, 
   FileText, 
-  Users, 
   BarChart3,
   Send,
   Edit,
@@ -31,10 +29,6 @@ import {
   Star,
   TrendingUp,
   Activity,
-  LayoutDashboard,
-  Briefcase,
-  Search,
-  Rocket,
   X
 } from "lucide-react";
 import { activeCollabsMock } from "../components/collaboration-hub/activeCollabsMockData";
@@ -315,49 +309,7 @@ export default function CollaborationDetails() {
   return (
     <div className="flex min-h-screen flex-col bg-white text-gray-900">
       {/* Main Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-16 items-center">
-          <Link to="/" className="flex items-center space-x-2 mr-6 ml-6">
-            <Rocket className="h-6 w-6 text-[hsl(262.1,83.3%,57.8%)]" />
-            <span className="font-bold text-xl hidden md:inline-block">Inpact</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-            {[
-              { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-              { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
-              { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
-              { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
-              { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-              { to: "/dashboard/messages", icon: MessageSquare, label: "Messages" },
-            ].map(({ to, icon: Icon, label }) => (
-              <Button
-                key={to}
-                variant="ghost"
-                size="sm"
-                className="w-9 px-0 hover:bg-[hsl(210,40%,96.1%)] hover:text-[hsl(222.2,47.4%,11.2%)]"
-                asChild
-              >
-                <Link to={to}>
-                  <Icon className="h-5 w-5" />
-                  <span className="sr-only">{label}</span>
-                </Link>
-              </Button>
-            ))}
-          </div>
-          <div className="ml-auto flex items-center space-x-4">
-            <div className="relative hidden md:flex">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[hsl(215.4,16.3%,46.9%)]" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="w-[200px] pl-8 md:w-[300px] rounded-full bg-[hsl(210,40%,96.1%)] border-[hsl(214.3,31.8%,91.4%)]"
-              />
-            </div>
-            <ModeToggle />
-            <UserNav />
-          </div>
-        </div>
-      </header>
+      <DashboardHeader />
 
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
