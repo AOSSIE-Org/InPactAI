@@ -124,15 +124,9 @@ cd ../backend
 pip install -r requirements.txt
 ```
 
+3. Create a `.env` file in the backend directory using `.env-example` as a reference.
 
-3. Navigate to the app directory:
-```sh
-cd app
-```
-
-4. Create a `.env` file using `.env-example` as a reference.
-
-5. Obtain Supabase credentials:
+4. Obtain Supabase credentials:
 
    - Go to [Supabase](https://supabase.com/)
    - Log in and create a new project
@@ -161,7 +155,7 @@ cd app
      ```
 
 
-6. Get the Groq API key:
+5. Get the Groq API key:
    - Visit [Groq Console](https://console.groq.com/)
    - Create an API key and paste it into the `.env` file
 
@@ -173,9 +167,9 @@ cd app
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+2. Start the backend server (from the backend directory):
 ```sh
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
