@@ -1,0 +1,170 @@
+# Docker Compose for Development Environment
+# Start with: docker compose -f docker-compose.dev.yml up --build
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database (optional - if not using Supabase)
+  postgres:
+    image: postgres:15-alpine
+    container_name: inpact-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-inpactai}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./Backend/sql.txt:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inpact-network
+
+  # Redis (for caching and pub/sub)
+  redis:
+    image: redis:7-alpine
+    container_name: inpact-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inpact-network
+
+  # FastAPI Backend (Development with hot-reload)
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile.dev
+    container_name: inpact-backend-dev
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Mount source code for hot-reload
+      - ./Backend:/app
+      # Named volume for Python cache
+      - backend_cache_dev:/app/__pycache__
+    environment:
+      # Database
+      - user=${DB_USER:-postgres}
+      - password=${DB_PASSWORD:-postgres}
+      - host=${DB_HOST:-postgres}
+      - port=${DB_PORT:-5432}
+      - dbname=${DB_NAME:-inpactai}
+      
+      # Supabase
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      
+      # AI Services
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      
+      # Application
+      - DEBUG=true
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+      
+      # Database Config
+      - DB_PREFER_IPV4=true
+      - DB_USE_REST_FALLBACK=true
+      - DB_MAX_RETRIES=3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - inpact-network
+
+  # Frontend (Vite Development Server with hot-reload)
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
+    container_name: inpact-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      # Mount source code for hot-reload
+      - ./Frontend:/app
+      # Named volume for node_modules
+      - frontend_node_modules_dev:/app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_KEY}
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - inpact-network
+
+  # Landing Page (Development)
+  landing:
+    build:
+      context: ./LandingPage
+      dockerfile: Dockerfile.dev
+    container_name: inpact-landing-dev
+    restart: unless-stopped
+    ports:
+      - "${LANDING_PORT:-5174}:5173"
+    volumes:
+      - ./LandingPage:/app
+      - landing_node_modules_dev:/app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - inpact-network
+
+networks:
+  inpact-network:
+    driver: bridge
+    name: inpact-dev-network
+
+volumes:
+  postgres_data_dev:
+    name: inpact-postgres-data-dev
+  redis_data_dev:
+    name: inpact-redis-data-dev
+  backend_cache_dev:
+    name: inpact-backend-cache-dev
+  frontend_node_modules_dev:
+    name: inpact-frontend-node-modules-dev
+  landing_node_modules_dev:
+    name: inpact-landing-node-modules-dev

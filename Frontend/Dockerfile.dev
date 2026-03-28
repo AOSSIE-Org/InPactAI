@@ -1,0 +1,26 @@
+# Development Dockerfile for Frontend with hot-reload
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for development
+RUN apk add --no-cache git
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev)
+RUN npm install
+
+# Copy source code (will be mounted as volume in development)
+COPY . .
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Health check for dev server
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1
+
+# Start development server with hot-reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
