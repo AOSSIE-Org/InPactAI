@@ -184,7 +184,7 @@ To populate the database with initial data, follow these steps:
 
 
 1. **Open Supabase Dashboard**
-   - Go to Supabase Dashboard (https://supabase.com/) and log in.
+   - Go to https://supabase.com/ and log in.
    - Select your created project.
 
 2. **Access the SQL Editor**
@@ -192,32 +192,28 @@ To populate the database with initial data, follow these steps:
    - In the left sidebar, click on **SQL Editor**.
 
 3. **Create Required Tables**
-   - Run the following SQL in the Supabase SQL Editor:
-```sql
-   -- Enable pgcrypto extension for gen_random_uuid() support
-   CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+   - Paste and run the following SQL in the Supabase SQL Editor:
 
-   -- Create Tables (Schema)
-   CREATE TABLE IF NOT EXISTS public.users (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     username TEXT UNIQUE NOT NULL,
-     email TEXT UNIQUE NOT NULL,
-     role TEXT NOT NULL,
-     profile_image TEXT,
-     bio TEXT,
-     is_online BOOLEAN DEFAULT FALSE,
-     last_seen TIMESTAMP WITH TIME ZONE,
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
+```sql
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT NOT NULL,
+  profile_image TEXT,
+  bio TEXT,
+  is_online BOOLEAN NOT NULL DEFAULT FALSE,
+  last_seen TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
 4. **Run the SQL Script**
    - Open the `sql.txt` file in your project.
    - Copy the SQL queries from the file.
-   - Paste the queries into the SQL Editor and click **Run**.
-   - The script includes conflict handling to avoid duplicate entries based on unique constraints.
-
----
+   - Paste into the SQL Editor and click **Run**.
 
 ## Contributing
 
