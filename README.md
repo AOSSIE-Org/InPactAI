@@ -182,23 +182,39 @@ uvicorn main:app --reload
 
 To populate the database with initial data, follow these steps:
 
-1. **Open Supabase Dashboard**
 
-   - Go to [Supabase](https://supabase.com/) and log in.
+1. **Open Supabase Dashboard**
+   - Go to https://supabase.com/ and log in.
    - Select your created project.
 
 2. **Access the SQL Editor**
 
    - In the left sidebar, click on **SQL Editor**.
 
-3. **Run the SQL Script**
-   - Open the `sql.txt` file in your project.
+3. **Create Required Tables**
+   - Paste and run the following SQL in the Supabase SQL Editor:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT NOT NULL,
+  profile_image TEXT,
+  bio TEXT,
+  is_online BOOLEAN NOT NULL DEFAULT FALSE,
+  last_seen TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+1. **Run the SQL Script**
+   - Open `Backend/sql.txt` in your project.
    - Copy the SQL queries from the file.
-   - Paste the queries into the SQL Editor and click **Run**.
-
-This will populate the database with the required initial data for the platform. 🚀
-
----
+   - Paste into the SQL Editor and click **Run**.
+   - ⚠️ Note: This script contains plain INSERT statements and should be run only once during initial setup. Re-running it may cause duplicate key errors due to unique constraints on username and email.
 
 ## Contributing
 
