@@ -210,8 +210,8 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 ```
 
-4. **Run the SQL Script**
-   - Open the `sql.txt` file in your project.
+1. **Run the SQL Script**
+   - Open `Backend/sql.txt` in your project.
    - Copy the SQL queries from the file.
    - Paste into the SQL Editor and click **Run**.
 
