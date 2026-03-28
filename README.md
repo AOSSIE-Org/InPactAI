@@ -214,6 +214,7 @@ CREATE TABLE IF NOT EXISTS public.users (
    - Open `Backend/sql.txt` in your project.
    - Copy the SQL queries from the file.
    - Paste into the SQL Editor and click **Run**.
+   - ⚠️ Note: This script contains plain INSERT statements and should be run only once during initial setup. Re-running it may cause duplicate key errors due to unique constraints on username and email.
 
 ## Contributing
 
