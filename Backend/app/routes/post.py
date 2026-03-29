@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from ..db.db import AsyncSessionLocal
@@ -10,8 +10,8 @@ from ..schemas.schema import (
     UserCreate, AudienceInsightsCreate, SponsorshipCreate, UserPostCreate,
     SponsorshipApplicationCreate, SponsorshipPaymentCreate, CollaborationCreate
 )
+from ..utils.pagination import get_pagination_params, paginate_query
 
-from fastapi import APIRouter, HTTPException
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -53,9 +53,18 @@ async def create_user(user: UserCreate):
     return response
 
 @router.get("/users/")
-async def get_users():
-    result = supabase.table("users").select("*").execute()
-    return result
+async def get_users(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("users").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("users").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== AUDIENCE INSIGHTS ROUTES ==========
 @router.post("/audience-insights/")
@@ -78,9 +87,18 @@ async def create_audience_insights(insights: AudienceInsightsCreate):
     return response
 
 @router.get("/audience-insights/")
-async def get_audience_insights():
-    result = supabase.table("audience_insights").select("*").execute()
-    return result
+async def get_audience_insights(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("audience_insights").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("audience_insights").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== SPONSORSHIP ROUTES ==========
 @router.post("/sponsorships/")
@@ -103,9 +121,18 @@ async def create_sponsorship(sponsorship: SponsorshipCreate):
     return response
 
 @router.get("/sponsorships/")
-async def get_sponsorships():
-    result = supabase.table("sponsorships").select("*").execute()
-    return result
+async def get_sponsorships(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("sponsorships").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("sponsorships").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== USER POST ROUTES ==========
 @router.post("/posts/")
@@ -127,9 +154,18 @@ async def create_post(post: UserPostCreate):
     return response
 
 @router.get("/posts/")
-async def get_posts():
-    result = supabase.table("user_posts").select("*").execute()
-    return result
+async def get_posts(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("user_posts").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("user_posts").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== SPONSORSHIP APPLICATION ROUTES ==========
 @router.post("/sponsorship-applications/")
@@ -150,9 +186,18 @@ async def create_sponsorship_application(application: SponsorshipApplicationCrea
     return response
 
 @router.get("/sponsorship-applications/")
-async def get_sponsorship_applications():
-    result = supabase.table("sponsorship_applications").select("*").execute()
-    return result
+async def get_sponsorship_applications(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("sponsorship_applications").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("sponsorship_applications").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== SPONSORSHIP PAYMENT ROUTES ==========
 @router.post("/sponsorship-payments/")
@@ -172,9 +217,18 @@ async def create_sponsorship_payment(payment: SponsorshipPaymentCreate):
     return response
 
 @router.get("/sponsorship-payments/")
-async def get_sponsorship_payments():
-    result = supabase.table("sponsorship_payments").select("*").execute()
-    return result
+async def get_sponsorship_payments(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("sponsorship_payments").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("sponsorship_payments").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
 
 # ========== COLLABORATION ROUTES ==========
 @router.post("/collaborations/")
@@ -194,6 +248,15 @@ async def create_collaboration(collab: CollaborationCreate):
     return response
 
 @router.get("/collaborations/")
-async def get_collaborations():
-    result = supabase.table("collaborations").select("*").execute()
-    return result
+async def get_collaborations(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of records to return")
+):
+    skip, limit = get_pagination_params(skip, limit)
+    start = skip
+    end = skip + limit - 1
+    
+    result = supabase.table("collaborations").select("*").order("id").range(start, end).execute()
+    count_result = supabase.table("collaborations").select("*", count="exact").limit(0).execute()
+    total_count = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+    return paginate_query(result, skip, limit, total_count)
