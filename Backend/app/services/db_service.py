@@ -11,6 +11,20 @@ supabase: Client = create_client(url, key)
 
 
 def match_creators_for_brand(sponsorship_id: str) -> List[Dict[str, Any]]:
+    """
+    Finds creator matches for a given brand sponsorship.
+
+    Analyzes audience insights for all creators and calculates a match score
+    based on the sponsorship's requirements (age, location, engagement rate, budget).
+
+    Args:
+        sponsorship_id (str): The unique identifier of the sponsorship.
+
+    Returns:
+        List[Dict[str, Any]]: A list of matching creators, including their match details.
+                              Returns an empty list if the sponsorship is not found or
+                              no suitable creators are found.
+    """
     # Fetch sponsorship details
     sponsorship_resp = supabase.table("sponsorships").select("*").eq("id", sponsorship_id).execute()
     if not sponsorship_resp.data:
@@ -49,6 +63,20 @@ def match_creators_for_brand(sponsorship_id: str) -> List[Dict[str, Any]]:
 
 
 def match_brands_for_creator(creator_id: str) -> List[Dict[str, Any]]:
+    """
+    Finds brand sponsorship matches for a given creator.
+
+    Analyzes all available sponsorships and calculates a match score based on
+    the creator's audience insights (age, location, engagement, price).
+
+    Args:
+        creator_id (str): The unique identifier of the creator.
+
+    Returns:
+        List[Dict[str, Any]]: A list of matching sponsorships, including their match details.
+                              Returns an empty list if the creator's audience data is not found
+                              or no suitable sponsorships are found.
+    """
     # Fetch creator's audience insights
     audience_resp = supabase.table("audience_insights").select("*").eq("user_id", creator_id).execute()
     if not audience_resp.data:

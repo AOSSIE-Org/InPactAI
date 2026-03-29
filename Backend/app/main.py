@@ -19,6 +19,17 @@ load_dotenv()
 
 # Async function to create database tables with exception handling
 async def create_tables():
+    """
+    Creates database tables asynchronously if the database engine is available.
+
+    This function attempts to create all tables defined in the SQLAlchemy models
+    (models.Base and chat.Base). It handles cases where the database engine
+    might not be initialized due to connection errors.
+    """
+    if engine is None:
+        print("⚠️ Database engine is not available. Skipping table creation.")
+        return
+
     try:
         async with engine.begin() as conn:
             await conn.run_sync(models.Base.metadata.create_all)
@@ -31,9 +42,22 @@ async def create_tables():
 # Lifespan context manager for startup and shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for the FastAPI application.
+
+    Handles startup and shutdown events. On startup, it attempts to
+    create database tables and seed the database.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+    """
     print("App is starting...")
     await create_tables()
-    await seed_db()
+    # verify engine is not None before seeding
+    if engine:
+        await seed_db()
+    else:
+        print("⚠️ Database engine is not available. Skipping data seeding.")
     yield
     print("App is shutting down...")
 
@@ -60,6 +84,12 @@ app.include_router(ai.youtube_router)
 
 @app.get("/")
 async def home():
+    """
+    Root endpoint for the API.
+
+    Returns:
+        dict: A welcome message.
+    """
     try:
         return {"message": "Welcome to Inpact API!"}
     except Exception as e:
