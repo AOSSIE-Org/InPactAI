@@ -7,9 +7,28 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ⚠️ VS Code TypeScript Version Notice
+
+This project uses **TypeScript 5.5+** features.  
+VS Code may default to its bundled TypeScript version (for example, 5.2), which can cause
+false-positive TypeScript configuration errors in the editor, even though the project builds
+and runs correctly.
+
+### Fix: Use Workspace TypeScript Version
+
+To ensure VS Code uses the project’s local TypeScript version:
+
+1. Open any `.ts` or `.tsx` file
+2. Press `Ctrl + Shift + P`
+3. Select **Preferences: Open Workspace Settings (JSON)**
+4. Add the following configuration:
+   ```json
+   {
+     "typescript.tsdk": "node_modules/typescript/lib"
+   }
+
 
 ```js
 export default tseslint.config({
@@ -29,6 +48,7 @@ export default tseslint.config({
     },
   },
 })
+
 ```
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
