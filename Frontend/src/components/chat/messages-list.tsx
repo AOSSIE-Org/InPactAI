@@ -14,11 +14,11 @@ export default function MessagesList({ messages }: { messages: Message[] }) {
     (state: RootState) => state.chat.selectedChatId
   );
 
+  const { markMessageAsSeen, sendMessage } = useChat();
+
   useEffect(() => {
     setLastMarkedAsSeen(new Date().toISOString());
   }, [selectedChatId]);
-
-  const { markMessageAsSeen } = useChat();
 
   useEffect(() => {
     const unseenMessages = messages.filter(
@@ -33,56 +33,43 @@ export default function MessagesList({ messages }: { messages: Message[] }) {
       });
       setLastMarkedAsSeen(new Date().toISOString());
     }
-  }, [messages]);
+  }, [messages, lastMarkedAsSeen, markMessageAsSeen]);
 
   return (
-    <>
+    <div className="flex flex-col w-full px-4">
       {messages.length > 0 ? (
         <>
           {messages.reduce((acc: JSX.Element[], message, index, array) => {
-            // Add date separator for first message
+            // Date Separator Logic
+            const messageDate = parseISO(message.createdAt);
             if (index === 0) {
-              const firstDate = parseISO(message.createdAt);
               acc.push(
-                <div
-                  key={`date-first-${message.id}`}
-                  className="flex justify-center my-4"
-                >
+                <div key={`date-first-${message.id}`} className="flex justify-center my-4">
                   <div className="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-500">
-                    {format(firstDate, "PPP")}
+                    {format(messageDate, "PPP")}
                   </div>
                 </div>
               );
             }
 
-            // Add the message component
-            acc.push(<MessageItem key={message.id} message={message} />);
+            // Push Message Item
+            acc.push(
+              <MessageItem 
+                key={message.id} 
+                message={message} 
+                onSendMessage={sendMessage} 
+              />
+            );
 
-            // Check if the next message is from a different date
+            // Date separator for subsequent messages
             if (index < array.length - 1) {
-              const currentDate = parseISO(message.createdAt);
               const nextDate = parseISO(array[index + 1].createdAt);
-
-              // Check if dates are different
-              if (
-                !isEqual(
-                  new Date(
-                    currentDate.getFullYear(),
-                    currentDate.getMonth(),
-                    currentDate.getDate()
-                  ),
-                  new Date(
-                    nextDate.getFullYear(),
-                    nextDate.getMonth(),
-                    nextDate.getDate()
-                  )
-                )
-              ) {
+              if (!isEqual(
+                new Date(messageDate.setHours(0,0,0,0)), 
+                new Date(nextDate.setHours(0,0,0,0))
+              )) {
                 acc.push(
-                  <div
-                    key={`date-${message.id}`}
-                    className="flex justify-center my-4"
-                  >
+                  <div key={`date-${array[index+1].id}`} className="flex justify-center my-4">
                     <div className="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-500">
                       {format(nextDate, "PPP")}
                     </div>
@@ -95,10 +82,10 @@ export default function MessagesList({ messages }: { messages: Message[] }) {
           }, [])}
         </>
       ) : (
-        <div className="flex justify-center items-center h-full">
-          <p className="text-gray-500">No messages yet</p>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-400 italic">No messages yet. Start a conversation!</p>
         </div>
       )}
-    </>
+    </div>
   );
 }
