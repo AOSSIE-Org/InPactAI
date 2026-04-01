@@ -22,7 +22,8 @@ import { PerformanceMetrics } from "../components/dashboard/performance-metrics"
 import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
-import CollaborationsPage from "./Collaborations";
+import CollaborationsPage from "./Collaborations"
+import AvailabilityToggle from "../components/AvailabilityToggle";
 
 export default function DashboardPage() {
   const {logout, user} = useAuth();
@@ -38,6 +39,7 @@ export default function DashboardPage() {
           <div className="flex items-center space-x-4">
   {[
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/brand/creators", icon: Search, label: "Find Creators" },
     { to: "/dashboard/sponsorships", icon: Briefcase, label: "Sponsorships" },
     { to: "/dashboard/collaborations", icon: Users, label: "Collaborations" },
     { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
@@ -113,6 +115,9 @@ export default function DashboardPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
+            {/* Availability Status Toggle */}
+            <AvailabilityToggle />
+            
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card className="bg-[hsl(0,0%,100%)] border-[hsl(214.3,31.8%,91.4%)]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
