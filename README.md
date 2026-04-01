@@ -192,6 +192,9 @@ To populate the database with initial data, follow these steps:
    - In the left sidebar, click on **SQL Editor**.
 
 3. **Run the SQL Script**
+   - Open the `schema.sql` file in your project.
+   - Copy the SQL queries from the file.
+   - Paste the queries into the SQL Editor and click **Run**.
    - Open the `sql.txt` file in your project.
    - Copy the SQL queries from the file.
    - Paste the queries into the SQL Editor and click **Run**.
