@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inpact Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #121212;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        body.dark-mode .navbar {
+            background: #1e1e1e;
+            border-bottom-color: #2a2a2a;
+        }
+
+        /* Left Section */
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Brand Logo */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-right: 1.5rem;
+            cursor: pointer;
+        }
+
+        body.dark-mode .brand {
+            color: #ffffff;
+        }
+
+        .brand-icon {
+            font-size: 1.5rem;
+            color: #7c3aed;
+        }
+
+        /* Navigation Icons */
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-icon {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: none;
+            color: #525252;
+        }
+
+        body.dark-mode .nav-icon {
+            color: #a3a3a3;
+        }
+
+        .nav-icon:hover {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        body.dark-mode .nav-icon:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .nav-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #525252;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 2000;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .tooltip {
+            background: #404040;
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom-color: #525252;
+        }
+
+        body.dark-mode .tooltip::before {
+            border-bottom-color: #404040;
+        }
+
+        .nav-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Right Section */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 320px;
+            height: 40px;
+            padding: 0 1rem 0 2.5rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fafafa;
+            color: #1a1a1a;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .search-input {
+            background: #2a2a2a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            background: white;
+        }
+
+        body.dark-mode .search-input:focus {
+            background: #1e1e1e;
+        }
+
+        .search-input::placeholder {
+            color: #a3a3a3;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a3a3a3;
+            pointer-events: none;
+        }
+
+        .search-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Right Icons */
+        .right-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Profile Circle */
+        .profile-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #525252;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: none;
+        }
+
+        body.dark-mode .profile-circle {
+            background: #2a2a2a;
+            color: #a3a3a3;
+        }
+
+        .profile-circle:hover {
+            background: #d4d4d4;
+        }
+
+        body.dark-mode .profile-circle:hover {
+            background: #3a3a3a;
+        }
+
+        /* Screen Reader Only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Content */
+        .content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        body.dark-mode .demo-card {
+            background: #1e1e1e;
+            border: 1px solid #2a2a2a;
+        }
+
+        .demo-card h2 {
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        body.dark-mode .demo-card h2 {
+            color: #ffffff;
+        }
+
+        .demo-card p {
+            color: #525252;
+            line-height: 1.6;
+        }
+
+        body.dark-mode .demo-card p {
+            color: #a3a3a3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+            .search-input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <!-- Brand -->
+            <div class="brand">
+                <span class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M12.586 2.586A2 2 0 0011.172 2H4a2 2 0 00-2 2v16a2 2 0 002 2h16a2 2 0 002-2v-7.172a2 2 0 00-.586-1.414l-8-8z"/>
+                        <path d="M7 12l3 3 7-7"/>
+                    </svg>
+                </span>
+                <span>Inpact</span>
+            </div>
+
+            <!-- Navigation Icons -->
+            <div class="nav-icons">
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span class="sr-only">Dashboard</span>
+                    <span class="tooltip">Dashboard</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2"/>
+                        <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                    </svg>
+                    <span class="sr-only">Projects</span>
+                    <span class="tooltip">Projects</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    <span class="sr-only">Team</span>
+                    <span class="tooltip">Team</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <path d="M14 2v6h6"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <line x1="10" y1="9" x2="8" y2="9"/>
+                    </svg>
+                    <span class="sr-only">Documents</span>
+                    <span class="tooltip">Documents</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"/>
+                        <line x1="18" y1="20" x2="18" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="16"/>
+                    </svg>
+                    <span class="sr-only">Analytics</span>
+                    <span class="tooltip">Analytics</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                    <span class="sr-only">Messages</span>
+                    <span class="tooltip">Messages</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="navbar-right">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <span class="search-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                </span>
+                <input type="text" class="search-input" placeholder="Search...">
+            </div>
+
+            <!-- Right Icons -->
+            <div class="right-icons">
+                <button class="nav-icon" onclick="toggleTheme()">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <span class="sr-only">Toggle Theme</span>
+                    <span class="tooltip">Toggle Theme</span>
+                </button>
+
+                <button class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span class="sr-only">Logout</span>
+                    <span class="tooltip">Logout</span>
+                </button>
+
+                <button class="profile-circle">
+                    m
+                    <span class="tooltip">Profile</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="demo-card">
+            <h2>✅ Exact UI Recreated with Tooltips</h2>
+            <p><strong>Hover over any icon to see tooltips!</strong> All icons match your design exactly using SVG graphics.</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('themeIcon');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+            } else {
+                icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+            }
+        }
+    </script>
+</body>
+</html>
