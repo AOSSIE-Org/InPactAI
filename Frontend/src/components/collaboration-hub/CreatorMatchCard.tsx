@@ -33,19 +33,21 @@ const getAudienceMatchColor = (level: string) => {
 
 // New subcomponents for readability and maintainability
 const CreatorStats: React.FC<{followers: string, engagement: string, content: string, collabs: number}> = ({ followers, engagement, content, collabs }) => (
-  <div className="grid grid-cols-2 gap-2 text-xs text-gray-700 w-full mb-2">
-    <div><span className="font-semibold">Followers</span><br />{followers}</div>
-    <div><span className="font-semibold">Engagement</span><br />{engagement}</div>
-    <div><span className="font-semibold">Content</span><br />{content}</div>
-    <div><span className="font-semibold">Collabs</span><br />{collabs} completed</div>
+  <div className="grid grid-cols-2 gap-3 text-xs text-gray-700 w-full mb-3">
+    <div className="space-y-1"><span className="font-semibold block">Followers</span><span className="block">{followers}</span></div>
+    <div className="space-y-1"><span className="font-semibold block">Engagement</span><span className="block">{engagement}</span></div>
+    <div className="space-y-1"><span className="font-semibold block">Content</span><span className="block truncate">{content}</span></div>
+    <div className="space-y-1"><span className="font-semibold block">Collabs</span><span className="block">{collabs} completed</span></div>
   </div>
 );
 
 const AudienceMatchBar: React.FC<{audienceMatch: string}> = ({ audienceMatch }) => (
-  <div className="flex items-center gap-2 w-full justify-center mb-2">
-    <span className="text-xs text-gray-500">Audience Match</span>
-    <span className="font-semibold text-xs text-gray-700">{audienceMatch}</span>
-    <div className="flex-1 h-2 rounded bg-gray-200 mx-2 min-w-[60px] max-w-[80px]" role="progressbar" aria-valuenow={audienceMatch === 'Very High' ? 100 : audienceMatch === 'High' ? 75 : audienceMatch === 'Good' ? 50 : 0} aria-valuemin={0} aria-valuemax={100}>
+  <div className="w-full mb-3 space-y-2">
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-gray-500">Audience Match</span>
+      <span className="font-semibold text-xs text-gray-700">{audienceMatch}</span>
+    </div>
+    <div className="w-full h-2 rounded bg-gray-200" role="progressbar" aria-valuenow={audienceMatch === 'Very High' ? 100 : audienceMatch === 'High' ? 75 : audienceMatch === 'Good' ? 50 : 0} aria-valuemin={0} aria-valuemax={100}>
       <div className={`h-2 rounded ${getAudienceMatchColor(audienceMatch)}`} style={{ width: audienceMatch === "Very High" ? "100%" : audienceMatch === "High" ? "75%" : "50%" }} />
     </div>
   </div>

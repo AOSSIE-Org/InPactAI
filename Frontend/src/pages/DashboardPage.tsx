@@ -190,7 +190,7 @@ export default function DashboardPage() {
                   <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Creators with complementary audiences</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CollaborationsPage />
+                  <CollaborationsPage compact={true} />
                 </CardContent>
               </Card>
             </div>

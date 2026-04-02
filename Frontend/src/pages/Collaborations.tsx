@@ -20,7 +20,7 @@ import { mockCollabIdeas, mockRequestTexts } from "../components/collaboration-h
 import NewCollaborationModal from "../components/collaboration-hub/NewCollaborationModal";
 import CreatorSearchModal from "../components/collaboration-hub/CreatorSearchModal";
 
-export default function CollaborationsPage({ showHeader = true }: { showHeader?: boolean }) {
+export default function CollaborationsPage({ showHeader = true, compact = false }: { showHeader?: boolean; compact?: boolean }) {
   const {
     modals,
     filters,
@@ -91,8 +91,9 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
         </header>
       )}
       <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        <div className={compact ? "w-full" : "grid grid-cols-1 md:grid-cols-4 gap-6 items-start"}>
           {/* Filter Sidebar */}
+          {!compact && (
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="text-gray-900">Filters</CardTitle>
@@ -184,8 +185,9 @@ export default function CollaborationsPage({ showHeader = true }: { showHeader?:
               )}
             </CardContent>
           </Card>
+          )}
           {/* Main Content */}
-          <div className="md:col-span-3 pl-0 md:pl-4 space-y-4 w-full">
+          <div className={compact ? "w-full space-y-4" : "md:col-span-3 pl-0 md:pl-4 space-y-4 w-full"}>
             {/* Tabs for AI Matches, Active Collabs, Requests */}
             <Tabs defaultValue="matches">
               <TabsList className="grid w-full grid-cols-3 bg-gray-100 mb-2">
