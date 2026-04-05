@@ -23,6 +23,7 @@ import { RecentActivity } from "../components/dashboard/recent-activity"
 import { SponsorshipMatches } from "../components/dashboard/sponsorship-matches"
 import { useAuth } from "../context/AuthContext"
 import CollaborationsPage from "./Collaborations";
+import CreatorCollaborations from "@/components/dashboard/creator-collaborations"
 
 export default function DashboardPage() {
   const {logout, user} = useAuth();
@@ -190,7 +191,7 @@ export default function DashboardPage() {
                   <CardDescription className="text-[hsl(215.4,16.3%,46.9%)]">Creators with complementary audiences</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CollaborationsPage />
+                  < CreatorCollaborations />
                 </CardContent>
               </Card>
             </div>
