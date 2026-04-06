@@ -266,6 +266,8 @@ graph TD;
 
 For queries, issues, or feature requests, please raise an issue or reach out on our Discord server.
 
+You can also check out our [YouTube channel](https://www.youtube.com/@AOSSIE-Org) for tutorials and updates.
+
 
 Happy Coding!
 
