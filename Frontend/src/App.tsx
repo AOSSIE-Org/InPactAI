@@ -20,6 +20,7 @@ import PublicRoute from "./components/PublicRoute";
 import Dashboard from "./pages/Brand/Dashboard";
 import BasicDetails from "./pages/BasicDetails";
 import Onboarding from "./components/Onboarding";
+import ScrollToTop from "./components/ui/scroll-to-top";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +46,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <ScrollToTop />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
