@@ -2,6 +2,8 @@
 
 # Inpact - AI-Powered Creator Collaboration & Sponsorship Matchmaking
 
+**v1 status:** signup, onboarding, sponsorship matches, and chat. Contract drafting, deal pricing, and ROI analytics are not in this release.
+
 Inpact is an open-source AI-powered platform designed to connect content creators, brands, and agencies through data-driven insights. By leveraging Generative AI (GenAI), audience analytics, and engagement metrics, Inpact ensures highly relevant sponsorship opportunities for creators while maximizing ROI for brands investing in influencer marketing.
 
 ## Features
@@ -84,15 +86,15 @@ Ensure you have the following installed:
 #### 1. Clone the repository
 
 ```sh
-git clone https://github.com/AOSSIE-Org/InPact.git
-cd inpact
+git clone https://github.com/AOSSIE-Org/InPactAI.git
+cd InPactAI
 ```
 
 #### 2. Frontend Setup
 
 1. Navigate to the frontend directory:
 ```sh
-cd frontend
+cd Frontend
 ```
 
 2. Install dependencies:
@@ -101,7 +103,11 @@ npm install
 ```
 
 
-3. Create a `.env` file using `.env-example` file:
+3. Copy the env example and fill in the Supabase anon key and API URL:
+```sh
+copy .env.example .env
+```
+On macOS or Linux, use `cp .env.example .env`. Set `VITE_API_URL` to `http://localhost:8000` for local development.
 
 
 
@@ -116,7 +122,7 @@ npm install
 
 1. Navigate to the backend directory:
 ```sh
-cd ../backend
+cd ../Backend
 ```
 
 2. Install dependencies:
@@ -125,14 +131,13 @@ pip install -r requirements.txt
 ```
 
 
-3. Navigate to the app directory:
-```sh
-cd app
-```
+3. Create a `.env` file in `Backend/` using `.env-example` as a reference. Stay in `Backend/`. Uvicorn imports the `app` package from here.
 
-4. Create a `.env` file using `.env-example` as a reference.
+Required to talk to Postgres: `user`, `password`, `host`, `port`, `dbname`.
 
-5. Obtain Supabase credentials:
+Optional: `SUPABASE_URL` and `SUPABASE_KEY` (post and match routes return 503 without them), `GEMINI_API_KEY` (trending niches), `YOUTUBE_API_KEY` (channel lookup), `GROQ_API_KEY` (unused in this release). `CORS_ORIGINS` defaults to `http://localhost:5173`. `REDIS_HOST` and `REDIS_PORT` default to localhost:6379.
+
+4. Obtain Supabase credentials:
 
    - Go to [Supabase](https://supabase.com/)
    - Log in and create a new project
@@ -161,21 +166,33 @@ cd app
      ```
 
 
-6. Get the Groq API key:
-   - Visit [Groq Console](https://console.groq.com/)
-   - Create an API key and paste it into the `.env` file
+6. Chat needs Redis. From `Backend/`:
+```sh
+docker compose up -d
+```
 
-#### 4. Start Development Servers
+7. Gemini and YouTube keys are optional. Groq is not used in this release.
+
+#### 4. Landing page
+
+From the repo root:
+```sh
+cd LandingPage
+npm install
+npm run dev
+```
+
+#### 5. Start Development Servers
 
 
-1. Start the frontend server (from the frontend directory):
+1. Start the frontend server (from the `Frontend` directory):
 ```sh
 npm run dev
 ```
 
-2. Start the backend server (from the backend/app directory):
+2. Start the backend server (from the `Backend` directory):
 ```sh
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Data Population
