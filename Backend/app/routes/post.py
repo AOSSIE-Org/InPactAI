@@ -20,9 +20,26 @@ from datetime import datetime, timezone
 
 # Load environment variables
 load_dotenv()
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+
+_supabase_client: Client | None = None
+
+
+def get_supabase() -> Client:
+    """Build the Supabase client on first use so import does not require env vars."""
+    global _supabase_client
+    if _supabase_client is not None:
+        return _supabase_client
+
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
+    if not url or not key:
+        raise HTTPException(
+            status_code=503,
+            detail="Supabase is not configured: missing SUPABASE_URL and/or SUPABASE_KEY.",
+        )
+
+    _supabase_client = create_client(url, key)
+    return _supabase_client
 
 # Define Router
 router = APIRouter()
@@ -40,7 +57,7 @@ async def create_user(user: UserCreate):
     user_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("users").insert({
+    response = get_supabase().table("users").insert({
         "id": user_id,
         "username": user.username,
         "email": user.email,
@@ -54,7 +71,7 @@ async def create_user(user: UserCreate):
 
 @router.get("/users/")
 async def get_users():
-    result = supabase.table("users").select("*").execute()
+    result = get_supabase().table("users").select("*").execute()
     return result
 
 # ========== AUDIENCE INSIGHTS ROUTES ==========
@@ -63,7 +80,7 @@ async def create_audience_insights(insights: AudienceInsightsCreate):
     insight_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("audience_insights").insert({
+    response = get_supabase().table("audience_insights").insert({
         "id": insight_id,
         "user_id": insights.user_id,
         "audience_age_group": insights.audience_age_group,
@@ -79,7 +96,7 @@ async def create_audience_insights(insights: AudienceInsightsCreate):
 
 @router.get("/audience-insights/")
 async def get_audience_insights():
-    result = supabase.table("audience_insights").select("*").execute()
+    result = get_supabase().table("audience_insights").select("*").execute()
     return result
 
 # ========== SPONSORSHIP ROUTES ==========
@@ -88,7 +105,7 @@ async def create_sponsorship(sponsorship: SponsorshipCreate):
     sponsorship_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("sponsorships").insert({
+    response = get_supabase().table("sponsorships").insert({
         "id": sponsorship_id,
         "brand_id": sponsorship.brand_id,
         "title": sponsorship.title,
@@ -104,7 +121,7 @@ async def create_sponsorship(sponsorship: SponsorshipCreate):
 
 @router.get("/sponsorships/")
 async def get_sponsorships():
-    result = supabase.table("sponsorships").select("*").execute()
+    result = get_supabase().table("sponsorships").select("*").execute()
     return result
 
 # ========== USER POST ROUTES ==========
@@ -113,7 +130,7 @@ async def create_post(post: UserPostCreate):
     post_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("user_posts").insert({
+    response = get_supabase().table("user_posts").insert({
         "id": post_id,
         "user_id": post.user_id,
         "title": post.title,
@@ -128,7 +145,7 @@ async def create_post(post: UserPostCreate):
 
 @router.get("/posts/")
 async def get_posts():
-    result = supabase.table("user_posts").select("*").execute()
+    result = get_supabase().table("user_posts").select("*").execute()
     return result
 
 # ========== SPONSORSHIP APPLICATION ROUTES ==========
@@ -137,7 +154,7 @@ async def create_sponsorship_application(application: SponsorshipApplicationCrea
     application_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("sponsorship_applications").insert({
+    response = get_supabase().table("sponsorship_applications").insert({
         "id": application_id,
         "creator_id": application.creator_id,
         "sponsorship_id": application.sponsorship_id,
@@ -151,7 +168,7 @@ async def create_sponsorship_application(application: SponsorshipApplicationCrea
 
 @router.get("/sponsorship-applications/")
 async def get_sponsorship_applications():
-    result = supabase.table("sponsorship_applications").select("*").execute()
+    result = get_supabase().table("sponsorship_applications").select("*").execute()
     return result
 
 # ========== SPONSORSHIP PAYMENT ROUTES ==========
@@ -160,7 +177,7 @@ async def create_sponsorship_payment(payment: SponsorshipPaymentCreate):
     payment_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("sponsorship_payments").insert({
+    response = get_supabase().table("sponsorship_payments").insert({
         "id": payment_id,
         "creator_id": payment.creator_id,
         "sponsorship_id": payment.sponsorship_id,
@@ -173,7 +190,7 @@ async def create_sponsorship_payment(payment: SponsorshipPaymentCreate):
 
 @router.get("/sponsorship-payments/")
 async def get_sponsorship_payments():
-    result = supabase.table("sponsorship_payments").select("*").execute()
+    result = get_supabase().table("sponsorship_payments").select("*").execute()
     return result
 
 # ========== COLLABORATION ROUTES ==========
@@ -182,7 +199,7 @@ async def create_collaboration(collab: CollaborationCreate):
     collaboration_id = generate_uuid()
     t = current_timestamp()
 
-    response = supabase.table("collaborations").insert({
+    response = get_supabase().table("collaborations").insert({
         "id": collaboration_id,
         "creator_1_id": collab.creator_1_id,
         "creator_2_id": collab.creator_2_id,
@@ -195,5 +212,5 @@ async def create_collaboration(collab: CollaborationCreate):
 
 @router.get("/collaborations/")
 async def get_collaborations():
-    result = supabase.table("collaborations").select("*").execute()
+    result = get_supabase().table("collaborations").select("*").execute()
     return result
