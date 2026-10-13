@@ -1,24 +1,42 @@
 from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from typing import List, Dict, Any
 
 # Load environment variables
 load_dotenv()
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+
+_supabase_client: Client | None = None
+
+
+def get_supabase() -> Client:
+    """Build the Supabase client on first use so import does not require env vars."""
+    global _supabase_client
+    if _supabase_client is not None:
+        return _supabase_client
+
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
+    if not url or not key:
+        raise HTTPException(
+            status_code=503,
+            detail="Supabase is not configured: missing SUPABASE_URL and/or SUPABASE_KEY.",
+        )
+
+    _supabase_client = create_client(url, key)
+    return _supabase_client
 
 
 def match_creators_for_brand(sponsorship_id: str) -> List[Dict[str, Any]]:
     # Fetch sponsorship details
-    sponsorship_resp = supabase.table("sponsorships").select("*").eq("id", sponsorship_id).execute()
+    sponsorship_resp = get_supabase().table("sponsorships").select("*").eq("id", sponsorship_id).execute()
     if not sponsorship_resp.data:
         return []
     sponsorship = sponsorship_resp.data[0]
 
     # Fetch all audience insights (for creators)
-    audience_resp = supabase.table("audience_insights").select("*").execute()
+    audience_resp = get_supabase().table("audience_insights").select("*").execute()
     creators = []
     for audience in audience_resp.data:
         # Basic matching logic: audience, engagement, price, etc.
@@ -50,13 +68,13 @@ def match_creators_for_brand(sponsorship_id: str) -> List[Dict[str, Any]]:
 
 def match_brands_for_creator(creator_id: str) -> List[Dict[str, Any]]:
     # Fetch creator's audience insights
-    audience_resp = supabase.table("audience_insights").select("*").eq("user_id", creator_id).execute()
+    audience_resp = get_supabase().table("audience_insights").select("*").eq("user_id", creator_id).execute()
     if not audience_resp.data:
         return []
     audience = audience_resp.data[0]
 
     # Fetch all sponsorships
-    sponsorships_resp = supabase.table("sponsorships").select("*").execute()
+    sponsorships_resp = get_supabase().table("sponsorships").select("*").execute()
     matches = []
     for sponsorship in sponsorships_resp.data:
         match_score = 0
