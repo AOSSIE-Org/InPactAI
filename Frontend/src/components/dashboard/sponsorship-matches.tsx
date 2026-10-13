@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { Card, CardContent } from "../ui/card"
 import { Badge } from "../ui/badge"
+import { API_URL } from "../../lib/utils"
 
 interface SponsorshipMatch {
   sponsorship_id: string;
@@ -26,7 +27,7 @@ export function SponsorshipMatches({ creatorId }: SponsorshipMatchesProps) {
     if (!creatorId) return;
     setLoading(true);
     setError(null);
-    fetch(`/api/match/brands-for-creator/${creatorId}`)
+    fetch(`${API_URL}/match/brands-for-creator/${creatorId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch matches");
         return res.json();

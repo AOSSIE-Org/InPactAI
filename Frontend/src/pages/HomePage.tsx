@@ -25,6 +25,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { API_URL } from "../lib/utils";
 import { MainNav } from "../components/main-nav";
 import { ModeToggle } from "../components/mode-toggle";
 import { UserNav } from "../components/user-nav";
@@ -270,7 +271,7 @@ function TrendingNichesSection() {
 
   // Fetch trending niches from the backend API on mount
   useEffect(() => {
-    fetch("/api/trending-niches")
+    fetch(`${API_URL}/api/trending-niches`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch trending niches");
         return res.json();
