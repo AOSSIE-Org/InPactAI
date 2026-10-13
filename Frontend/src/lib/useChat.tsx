@@ -49,8 +49,9 @@ export const ChatProvider: React.FC<{
   useEffect(() => {
     if (!userId) return;
 
+    const socketProtocol = API_URL.startsWith("https://") ? "wss://" : "ws://";
     const websocket = new WebSocket(
-      `ws://${API_URL.replace(/^https?:\/\//, "")}/chat/ws/${userId}`
+      `${socketProtocol}${API_URL.replace(/^https?:\/\//, "")}/chat/ws/${userId}`
     );
 
     websocket.onopen = () => {
