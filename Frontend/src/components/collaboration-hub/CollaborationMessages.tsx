@@ -26,6 +26,7 @@ const CollaborationMessages = ({
         <MessageSquare className="h-5 w-5" />
         Messages
       </CardTitle>
+      <p className="text-sm text-gray-500">Sample conversation. Live creator chat is on the Messages page.</p>
     </CardHeader>
     <CardContent>
       <div className="space-y-4 mb-4">
