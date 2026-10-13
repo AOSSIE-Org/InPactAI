@@ -1,0 +1,222 @@
+.
+├── ./.coderabbit.yaml
+├── ./.github
+│   ├── ./.github/ISSUE_TEMPLATE
+│   │   ├── ./.github/ISSUE_TEMPLATE/bug.yml
+│   │   ├── ./.github/ISSUE_TEMPLATE/documentation_update.yml
+│   │   └── ./.github/ISSUE_TEMPLATE/feature_request.yml
+│   ├── ./.github/PULL_REQUEST_TEMPLATE.md
+│   └── ./.github/workflows
+│       └── ./.github/workflows/update-project-structure.yml
+├── ./.gitignore
+├── ./Backend
+│   ├── ./Backend/.env-example
+│   ├── ./Backend/.gitignore
+│   ├── ./Backend/app
+│   │   ├── ./Backend/app/config.py
+│   │   ├── ./Backend/app/db
+│   │   │   ├── ./Backend/app/db/db.py
+│   │   │   └── ./Backend/app/db/seed.py
+│   │   ├── ./Backend/app/main.py
+│   │   ├── ./Backend/app/models
+│   │   │   ├── ./Backend/app/models/chat.py
+│   │   │   ├── ./Backend/app/models/models.py
+│   │   │   ├── ./Backend/app/models/posts.py
+│   │   │   └── ./Backend/app/models/users.py
+│   │   ├── ./Backend/app/routes
+│   │   │   ├── ./Backend/app/routes/ai.py
+│   │   │   ├── ./Backend/app/routes/auth.py
+│   │   │   ├── ./Backend/app/routes/chat.py
+│   │   │   ├── ./Backend/app/routes/match.py
+│   │   │   └── ./Backend/app/routes/post.py
+│   │   ├── ./Backend/app/schemas
+│   │   │   └── ./Backend/app/schemas/schema.py
+│   │   └── ./Backend/app/services
+│   │       ├── ./Backend/app/services/ai_services.py
+│   │       ├── ./Backend/app/services/chat_pubsub.py
+│   │       ├── ./Backend/app/services/chat_services.py
+│   │       ├── ./Backend/app/services/db_service.py
+│   │       └── ./Backend/app/services/redis_client.py
+│   ├── ./Backend/docker-compose.yml
+│   ├── ./Backend/requirements.txt
+│   └── ./Backend/sql.txt
+├── ./COPYRIGHT.md
+├── ./Frontend
+│   ├── ./Frontend/.gitignore
+│   ├── ./Frontend/.npmrc
+│   ├── ./Frontend/README.md
+│   ├── ./Frontend/components.json
+│   ├── ./Frontend/env-example
+│   ├── ./Frontend/eslint.config.js
+│   ├── ./Frontend/index.html
+│   ├── ./Frontend/package-lock.json
+│   ├── ./Frontend/package.json
+│   ├── ./Frontend/public
+│   │   ├── ./Frontend/public/Home.png
+│   │   ├── ./Frontend/public/brand.png
+│   │   ├── ./Frontend/public/contnetcreator.png
+│   │   ├── ./Frontend/public/facebook.png
+│   │   ├── ./Frontend/public/instagram.png
+│   │   ├── ./Frontend/public/tiktok.png
+│   │   └── ./Frontend/public/youtube.png
+│   ├── ./Frontend/src
+│   │   ├── ./Frontend/src/App.css
+│   │   ├── ./Frontend/src/App.tsx
+│   │   ├── ./Frontend/src/assets
+│   │   │   └── ./Frontend/src/assets/react.svg
+│   │   ├── ./Frontend/src/components
+│   │   │   ├── ./Frontend/src/components/Onboarding.tsx
+│   │   │   ├── ./Frontend/src/components/ProtectedRoute.tsx
+│   │   │   ├── ./Frontend/src/components/PublicRoute.tsx
+│   │   │   ├── ./Frontend/src/components/analytics
+│   │   │   │   ├── ./Frontend/src/components/analytics/audience-metrics.tsx
+│   │   │   │   ├── ./Frontend/src/components/analytics/campaign-comparison.tsx
+│   │   │   │   ├── ./Frontend/src/components/analytics/performance-overview.tsx
+│   │   │   │   └── ./Frontend/src/components/analytics/revenue-analytics.tsx
+│   │   │   ├── ./Frontend/src/components/chat
+│   │   │   │   ├── ./Frontend/src/components/chat/chat-item.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/chat-list.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/chat-search.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/chat.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/create-new-chat.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/message-input.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/message-item.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/messages-list.tsx
+│   │   │   │   ├── ./Frontend/src/components/chat/messages-view.tsx
+│   │   │   │   └── ./Frontend/src/components/chat/selected-user-card.tsx
+│   │   │   ├── ./Frontend/src/components/collaboration-hub
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/ActiveCollabCard.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/ActiveCollabsGrid.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollabRequests.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationDeliverables.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationMessages.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationMessagesTab.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationOverview.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationOverviewTab.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationProjectStats.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationQuickActions.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaborationTimelineTab.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CollaboratorSidebar.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/ConnectModal.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CreatorMatchCard.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CreatorMatchGrid.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/CreatorSearchModal.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/NewCollaborationModal.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/ViewProfileModal.tsx
+│   │   │   │   ├── ./Frontend/src/components/collaboration-hub/activeCollabsMockData.ts
+│   │   │   │   └── ./Frontend/src/components/collaboration-hub/mockProfileData.ts
+│   │   │   ├── ./Frontend/src/components/contracts
+│   │   │   │   ├── ./Frontend/src/components/contracts/contract-generator.tsx
+│   │   │   │   └── ./Frontend/src/components/contracts/contract-templates.tsx
+│   │   │   ├── ./Frontend/src/components/dashboard
+│   │   │   │   ├── ./Frontend/src/components/dashboard/creator-collaborations.tsx
+│   │   │   │   ├── ./Frontend/src/components/dashboard/creator-matches.tsx
+│   │   │   │   ├── ./Frontend/src/components/dashboard/performance-metrics.tsx
+│   │   │   │   ├── ./Frontend/src/components/dashboard/recent-activity.tsx
+│   │   │   │   └── ./Frontend/src/components/dashboard/sponsorship-matches.tsx
+│   │   │   ├── ./Frontend/src/components/date-range-picker.tsx
+│   │   │   ├── ./Frontend/src/components/loading.tsx
+│   │   │   ├── ./Frontend/src/components/main-nav.tsx
+│   │   │   ├── ./Frontend/src/components/mode-toggle.tsx
+│   │   │   ├── ./Frontend/src/components/theme-provider.tsx
+│   │   │   ├── ./Frontend/src/components/ui
+│   │   │   │   ├── ./Frontend/src/components/ui/avatar.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/badge.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/button.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/calendar.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/card.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/dialog.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/dropdown-menu.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/input.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/label.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/popover.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/scroll-area.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/select.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/separator.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/slider.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/switch.tsx
+│   │   │   │   ├── ./Frontend/src/components/ui/tabs.tsx
+│   │   │   │   └── ./Frontend/src/components/ui/textarea.tsx
+│   │   │   └── ./Frontend/src/components/user-nav.tsx
+│   │   ├── ./Frontend/src/context
+│   │   │   └── ./Frontend/src/context/AuthContext.tsx
+│   │   ├── ./Frontend/src/hooks
+│   │   │   └── ./Frontend/src/hooks/useCollaborationState.ts
+│   │   ├── ./Frontend/src/index.css
+│   │   ├── ./Frontend/src/lib
+│   │   │   ├── ./Frontend/src/lib/useChat.tsx
+│   │   │   └── ./Frontend/src/lib/utils.ts
+│   │   ├── ./Frontend/src/main.tsx
+│   │   ├── ./Frontend/src/pages
+│   │   │   ├── ./Frontend/src/pages/Analytics.tsx
+│   │   │   ├── ./Frontend/src/pages/BasicDetails.tsx
+│   │   │   ├── ./Frontend/src/pages/Brand
+│   │   │   │   └── ./Frontend/src/pages/Brand/Dashboard.tsx
+│   │   │   ├── ./Frontend/src/pages/CollaborationDetails.tsx
+│   │   │   ├── ./Frontend/src/pages/Collaborations.tsx
+│   │   │   ├── ./Frontend/src/pages/Contracts.tsx
+│   │   │   ├── ./Frontend/src/pages/DashboardPage.tsx
+│   │   │   ├── ./Frontend/src/pages/ForgotPassword.tsx
+│   │   │   ├── ./Frontend/src/pages/HomePage.tsx
+│   │   │   ├── ./Frontend/src/pages/Login.tsx
+│   │   │   ├── ./Frontend/src/pages/Messages.tsx
+│   │   │   ├── ./Frontend/src/pages/ResetPassword.tsx
+│   │   │   ├── ./Frontend/src/pages/RoleSelection.tsx
+│   │   │   ├── ./Frontend/src/pages/Signup.tsx
+│   │   │   └── ./Frontend/src/pages/Sponsorships.tsx
+│   │   ├── ./Frontend/src/redux
+│   │   │   ├── ./Frontend/src/redux/chatSlice.ts
+│   │   │   └── ./Frontend/src/redux/store.ts
+│   │   ├── ./Frontend/src/types
+│   │   │   └── ./Frontend/src/types/chat.ts
+│   │   ├── ./Frontend/src/utils
+│   │   │   ├── ./Frontend/src/utils/demoInsert.ts
+│   │   │   └── ./Frontend/src/utils/supabase.tsx
+│   │   └── ./Frontend/src/vite-env.d.ts
+│   ├── ./Frontend/tsconfig.app.json
+│   ├── ./Frontend/tsconfig.json
+│   ├── ./Frontend/tsconfig.node.json
+│   └── ./Frontend/vite.config.ts
+├── ./LICENSE.md
+├── ./LandingPage
+│   ├── ./LandingPage/.gitignore
+│   ├── ./LandingPage/README.md
+│   ├── ./LandingPage/eslint.config.js
+│   ├── ./LandingPage/index.html
+│   ├── ./LandingPage/package-lock.json
+│   ├── ./LandingPage/package.json
+│   ├── ./LandingPage/public
+│   │   ├── ./LandingPage/public/aossie_logo.png
+│   │   └── ./LandingPage/public/vite.svg
+│   ├── ./LandingPage/src
+│   │   ├── ./LandingPage/src/App.css
+│   │   ├── ./LandingPage/src/App.tsx
+│   │   ├── ./LandingPage/src/Pages
+│   │   │   ├── ./LandingPage/src/Pages/Landing.tsx
+│   │   │   ├── ./LandingPage/src/Pages/Legal.tsx
+│   │   │   └── ./LandingPage/src/Pages/Privacy.tsx
+│   │   ├── ./LandingPage/src/assets
+│   │   │   └── ./LandingPage/src/assets/react.svg
+│   │   ├── ./LandingPage/src/components
+│   │   │   ├── ./LandingPage/src/components/Footer.tsx
+│   │   │   ├── ./LandingPage/src/components/Header.tsx
+│   │   │   ├── ./LandingPage/src/components/bg.tsx
+│   │   │   ├── ./LandingPage/src/components/card.tsx
+│   │   │   ├── ./LandingPage/src/components/carousel.tsx
+│   │   │   ├── ./LandingPage/src/components/form.tsx
+│   │   │   ├── ./LandingPage/src/components/github.tsx
+│   │   │   ├── ./LandingPage/src/components/howitworks.tsx
+│   │   │   ├── ./LandingPage/src/components/integration.tsx
+│   │   │   ├── ./LandingPage/src/components/sendbutton.tsx
+│   │   │   └── ./LandingPage/src/components/watchlist.tsx
+│   │   ├── ./LandingPage/src/index.css
+│   │   ├── ./LandingPage/src/main.tsx
+│   │   └── ./LandingPage/src/vite-env.d.ts
+│   ├── ./LandingPage/tsconfig.app.json
+│   ├── ./LandingPage/tsconfig.json
+│   ├── ./LandingPage/tsconfig.node.json
+│   └── ./LandingPage/vite.config.ts
+├── ./README.md
+└── ./project_structure.txt
+
+36 directories, 184 files
