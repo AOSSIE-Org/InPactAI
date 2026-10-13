@@ -91,6 +91,9 @@ export default function NewCollaborationModal({ open, onClose, onSubmit }: NewCo
           <DialogHeader>
             <DialogTitle>New Collaboration Request</DialogTitle>
           </DialogHeader>
+          <p className="text-sm text-gray-500">
+            Search results on this screen are sample data. Sending a request is not available in this release.
+          </p>
           
           {/* Stepper */}
           <div className="flex justify-between mb-4 text-xs">
