@@ -6,12 +6,14 @@ from .models import models, chat
 from .routes.post import router as post_router
 from .routes.chat import router as chat_router
 from .routes.match import router as match_router
+from .routes.engagement import router as engagement_router
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from app.routes import ai
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -27,13 +29,26 @@ async def create_tables():
     except SQLAlchemyError as e:
         print(f"❌ Error creating tables: {e}")
 
+async def startup_sequence():
+    await create_tables()
+    await seed_db()
 
-# Lifespan context manager for startup and shutdown events
+# Lifespan context manager for startup and shutdown events with retries
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("App is starting...")
-    await create_tables()
-    await seed_db()
+    last_error = None
+    for attempt in range(1, 6):  # up to 5 retries
+        try:
+            await startup_sequence()
+            last_error = None
+            break
+        except Exception as e:
+            last_error = e
+            print(f"Startup attempt {attempt} failed: {e}")
+            await asyncio.sleep(2)
+    if last_error:
+        print(f"⚠️ Startup continuing without DB initialization due to repeated errors: {last_error}")
     yield
     print("App is shutting down...")
 
@@ -54,6 +69,7 @@ app.add_middleware(
 app.include_router(post_router)
 app.include_router(chat_router)
 app.include_router(match_router)
+app.include_router(engagement_router)
 app.include_router(ai.router)
 app.include_router(ai.youtube_router)
 
