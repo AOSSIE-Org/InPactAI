@@ -3,13 +3,14 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import os
 from dotenv import load_dotenv
-
+from urllib.parse import quote_plus
 # Load environment variables from .env
 load_dotenv()
 
 # Fetch database credentials
 USER = os.getenv("user")
-PASSWORD = os.getenv("password")
+raw_password = os.getenv("password")
+PASSWORD = quote_plus(raw_password) if raw_password else None
 HOST = os.getenv("host")
 PORT = os.getenv("port")
 DBNAME = os.getenv("dbname")

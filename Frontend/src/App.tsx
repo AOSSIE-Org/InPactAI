@@ -20,6 +20,7 @@ import PublicRoute from "./components/PublicRoute";
 import Dashboard from "./pages/Brand/Dashboard";
 import BasicDetails from "./pages/BasicDetails";
 import Onboarding from "./components/Onboarding";
+import Footer from "./components/footer";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -44,8 +45,10 @@ function App() {
 
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1">
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={
@@ -134,8 +137,12 @@ function App() {
             }
           />
         </Routes>
-      </AuthProvider>
-    </Router>
+        </div>
+
+        <Footer />
+      </div>
+    </AuthProvider>
+  </Router>
   );
 }
 
